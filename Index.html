@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f5;--surface:#fff;--surface2:#f8f9fb;
+  --border:#e3e6ec;--border2:#d0d4dc;
+  --text:#1a1d23;--text2:#4a5064;--text3:#8890a4;
+  --primary:#0d9b6a;--primary-light:#e8f7f1;--primary-dark:#087a54;
+  --accent:#2563eb;--accent-light:#eff4ff;
+  --amber:#d97706;--amber-light:#fef9ee;--amber-border:#fde68a;
+  --rose:#dc2626;--rose-light:#fef2f2;--rose-border:#fecaca;
+  --indigo:#4f46e5;--indigo-light:#eef2ff;
+  --sidebar:#111827;--sidebar-text:#9ca3af;--sidebar-active:#10b981;
+  --radius:10px;--radius-lg:16px;
+  --shadow:0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+  --transition:all .25s cubic-bezier(.4,0,.2,1);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;color:var(--text);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit;color:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit}
+
+.app{display:flex;height:100vh;height:100dvh}
+
+/* Sidebar */
+.sidebar{width:72px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;z-index:100;flex-shrink:0}
+.sidebar .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#34d399);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;letter-spacing:-1px}
+.sidebar .nav-item{width:52px;height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sidebar-text);transition:var(--transition);gap:3px;position:relative}
+.sidebar .nav-item i{font-size:17px;transition:var(--transition)}
+.sidebar .nav-item span{font-size:9px;font-weight:500;opacity:.8;line-height:1}
+.sidebar .nav-item:hover{background:rgba(255,255,255,.06)}
+.sidebar .nav-item.active{color:#fff;background:rgba(16,185,129,.15)}
+.sidebar .nav-item.active::before{content:'';position:absolute;left:-2px;top:50%;transform:translateY(-50%);width:4px;height:24px;border-radius:0 4px 4px 0;background:var(--sidebar-active)}
+.sidebar .nav-item.active i{color:var(--sidebar-active)}
+.sidebar .spacer{flex:1}
+.sidebar .nav-badge{position:absolute;top:6px;right:6px;min-width:16px;height:16px;background:var(--rose);color:#fff;font-size:9px;font-weight:700;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0}
+.topbar-title{font-weight:700;font-size:17px;color:var(--text)}
+.topbar-title i{color:var(--primary);margin-right:6px}
+.topbar .spacer{flex:1}
+.topbar-info{font-size:13px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.topbar-btn{height:38px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:600;transition:var(--transition);display:inline-flex;align-items:center;gap:6px}
+.topbar-btn.outline{border:1px solid var(--border);color:var(--text2)}
+.topbar-btn.outline:hover{background:var(--surface2);border-color:var(--border2)}
+.topbar-btn.primary{background:var(--primary);color:#fff}
+.topbar-btn.primary:hover{background:var(--primary-dark)}
+
+.content{flex:1;overflow:hidden;position:relative}
+.panel{position:absolute;inset:0;padding:28px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .25s ease;-webkit-overflow-scrolling:touch}
+.panel.active{opacity:1;pointer-events:auto}
+.panel-inner{max-width:1100px;margin:0 auto}
+
+.bottombar{height:60px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:8px;flex-shrink:0}
+.step-dots{display:flex;gap:6px;align-items:center}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:var(--transition)}
+.step-dot.active{background:var(--primary);width:24px;border-radius:4px}
+.bottombar .spacer{flex:1}
+.btn-nav{height:44px;padding:0 24px;border-radius:12px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:7px;transition:var(--transition)}
+.btn-nav.back{color:var(--text2);border:1px solid var(--border)}
+.btn-nav.back:hover{background:var(--surface2)}
+.btn-nav.next{background:var(--primary);color:#fff}
+.btn-nav.next:hover{background:var(--primary-dark)}
+.btn-nav:disabled{opacity:.3;pointer-events:none}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px}
+.card-title{font-size:17px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--primary)}
+.big-btn{min-height:72px;padding:18px 22px;border-radius:var(--radius-lg);border:2px solid var(--border);background:var(--surface);text-align:left;width:100%;transition:var(--transition);display:flex;align-items:center;gap:16px}
+.big-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.big-btn.selected{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(13,155,106,.15)}
+.big-btn .icon-circle{width:48px;height:48px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.big-btn .btn-label{font-weight:700;font-size:16px;line-height:1.3}
+.big-btn .btn-desc{font-size:13px;color:var(--text3);margin-top:2px;line-height:1.4}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;white-space:nowrap}
+.badge.nhi{background:var(--primary-light);color:var(--primary-dark);border:1px solid #a7f3d0}
+.badge.self{background:var(--rose-light);color:var(--rose);border:1px solid var(--rose-border)}
+.badge.info{background:var(--accent-light);color:var(--accent);border:1px solid #bfdbfe}
+.badge.warn{background:var(--amber-light);color:var(--amber);border:1px solid var(--amber-border)}
+.tx-box{padding:14px 18px;border-radius:var(--radius);margin-bottom:8px}
+.tx-box.green{background:var(--primary-light);border:1px solid #a7f3d0}
+.tx-box.blue{background:var(--accent-light);border:1px solid #bfdbfe}
+.tx-box.amber{background:var(--amber-light);border:1px solid var(--amber-border)}
+.tx-box.rose{background:var(--rose-light);border:1px solid var(--rose-border)}
+.tx-box.gray{background:var(--surface2);border:1px solid var(--border)}
+.tx-box.dark{background:var(--sidebar);color:#fff;border:none}
+.tx-box h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.tx-box p{font-size:14px;line-height:1.6;opacity:.85}
+.tx-box .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px}
+.tx-box .note{font-size:12px;color:var(--text3);margin-top:8px;font-style:italic}
+.tx-box.dark .note{color:rgba(255,255,255,.5)}
+#panel-checklist{padding:16px!important;overflow:hidden!important}
+.ck-page{height:100%;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.ck-header{padding:20px 24px 14px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.ck-body{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:0}
+.ck-col{display:flex;flex-direction:column;padding:10px 16px;overflow:hidden}
+.ck-col:first-child{border-right:1px solid var(--border)}
+.ck-grp{display:flex;flex-direction:column;flex:1;min-height:0}
+.ck-grp-title{font-size:12px;font-weight:700;color:var(--primary);padding:6px 4px 4px;border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px}
+.ck-grp-items{flex:1;display:flex;flex-direction:column;gap:5px;padding:6px 0}
+.ck-item{display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border);transition:var(--transition);cursor:pointer;flex:1;min-height:0}
+.ck-item:hover{background:var(--surface2)}
+.ck-item.done{background:var(--primary-light);border-color:#a7f3d0}
+.ck-item.done .ck-label{text-decoration:line-through;color:var(--text3)}
+.ck-box{width:24px;height:24px;border-radius:6px;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:var(--transition);color:transparent;font-size:13px}
+.ck-item.done .ck-box{background:var(--primary);border-color:var(--primary);color:#fff}
+.ck-label{font-size:15px;flex:1}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.q-step{margin-bottom:20px}
+.q-label{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.q-num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--primary);color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.q-options{display:grid;gap:8px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;text-align:center}
+.stat-card .stat-num{font-size:28px;font-weight:900;color:var(--primary);font-family:'JetBrains Mono',monospace}
+.stat-card .stat-label{font-size:12px;color:var(--text3);margin-top:4px}
+/* Stats tabbed layout */
+#panel-stats{padding:0!important;overflow:hidden!important}
+.stat-page{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.stat-top{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:16px 24px 8px;flex-wrap:wrap;gap:8px}
+.stat-filter{flex-shrink:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 24px 10px}
+.sf-date{height:30px;padding:0 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit}
+.sf-sel{height:30px;padding:0 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);font-family:inherit}
+.stat-tabs{flex-shrink:0;display:flex;gap:4px;padding:0 24px 12px;border-bottom:1px solid var(--border)}
+.stat-tab{height:36px;padding:0 16px;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:var(--text3);border:1px solid transparent;border-bottom:none;display:inline-flex;align-items:center;gap:6px;transition:var(--transition)}
+.stat-tab:hover{color:var(--text);background:var(--surface2)}
+.stat-tab.on{color:var(--primary);background:var(--surface);border-color:var(--border);position:relative}
+.stat-tab.on::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--surface)}
+.stat-content{flex:1;overflow-y:auto;padding:16px 24px;-webkit-overflow-scrolling:touch}
+.stat-pane{display:none}
+.stat-pane.active{display:block}
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;max-height:320px;display:flex;flex-direction:column}
+.chart-wrap h4{font-size:14px;font-weight:700;margin-bottom:8px;flex-shrink:0}
+.chart-wrap canvas{flex:1;min-height:0}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+/* Patient page — viewport fill */
+#panel-patient{padding:16px!important;overflow:hidden!important}
+.pt-page{height:100%;display:flex;flex-direction:column}
+.pt-lbl{font-size:14px;font-weight:600;margin-bottom:6px;display:block}
+.pt-input{width:100%;height:46px;padding:0 14px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;background:var(--surface);outline:none;transition:var(--transition)}
+.pt-input:focus{border-color:var(--primary)}
+/* Pathway — 3 column layout */
+#panel-pathway{padding:16px!important;overflow:hidden!important}
+.pw-layout{height:100%;display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.pw-side{width:180px;flex-shrink:0;border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:10px;background:var(--surface2)}
+.pw-side-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.pw-side-row{display:flex;justify-content:space-between;align-items:center;font-size:15px;padding:5px 0;border-bottom:1px dashed var(--border)}
+.pw-side-row:last-child{border:none}
+.pw-side-row .l{color:var(--text2);font-size:13px}
+.pw-side-row .v{font-weight:700}
+.pw-main{flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch}
+.pw-cost{width:240px;flex-shrink:0;border-left:1px solid var(--border);padding:20px;overflow-y:auto;background:var(--surface2)}
+.pw-cost-title{font-size:13px;font-weight:700;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.pw-cost-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--border)}
+.pw-cost-row:last-child{border:none}
+.pw-cost-row .l{color:var(--text2)}
+.pw-cost-row .v{font-weight:700;text-align:right;white-space:nowrap}
+.empty-state i{font-size:52px;opacity:.3;margin-bottom:16px}
+.empty-state h4{font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.note-area{width:100%;min-height:100px;padding:16px 18px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);resize:vertical;font-size:15px;line-height:1.6;outline:none;transition:var(--transition)}
+.note-area:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(13,155,106,.1)}
+.alert-box{padding:16px 20px;border-radius:var(--radius);font-size:14px;line-height:1.6;display:flex;align-items:flex-start;gap:10px}
+.alert-box.warn{background:var(--amber-light);border:1px solid var(--amber-border);color:#92400e}
+.alert-box.info{background:var(--accent-light);border:1px solid #bfdbfe;color:#1e40af}
+.alert-box.danger{background:var(--rose-light);border:1px solid var(--rose-border);color:#991b1b}
+.alert-box i{margin-top:2px;flex-shrink:0}
+.filter-btn{height:34px;font-size:13px;padding:0 14px;border-radius:7px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:4px;transition:var(--transition)}
+.filter-btn:hover{background:var(--surface2)}
+.filter-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.ck-stat-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ck-stat-row:last-child{border-bottom:none}
+.ck-stat-label{width:180px;font-size:13px;flex-shrink:0}
+.ck-stat-bar-wrap{flex:1;height:22px;background:var(--surface2);border-radius:6px;overflow:hidden;position:relative}
+.ck-stat-bar-fill{height:100%;border-radius:6px;transition:width .6s ease;min-width:2px}
+.ck-stat-bar-fill.high{background:var(--primary)}
+.ck-stat-bar-fill.mid{background:var(--amber)}
+.ck-stat-bar-fill.low{background:var(--rose)}
+.ck-stat-pct{width:48px;text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.cross-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cross-tbl th,.cross-tbl td{padding:10px 12px;text-align:center;border:1px solid var(--border)}
+.cross-tbl th{background:var(--surface2);font-weight:700;color:var(--text2);font-size:12px}
+.cross-tbl td{font-family:'JetBrains Mono',monospace}
+.cross-tbl td.hi{background:var(--primary-light);font-weight:700;color:var(--primary-dark)}
+.cross-tbl tr:last-child td{font-weight:700;background:var(--surface2)}
+.cross-tbl td:last-child{font-weight:700;background:var(--surface2)}
+
+@media(max-width:768px){
+  .sidebar{position:fixed;bottom:0;left:0;right:0;height:64px;width:100%;flex-direction:row;padding:0 8px;justify-content:space-around;z-index:200;border-top:1px solid rgba(255,255,255,.08)}
+  .sidebar .logo,.sidebar .spacer{display:none}
+  .sidebar .nav-item{width:auto;flex:1;max-width:64px;height:56px}
+  .sidebar .nav-item.active::before{left:50%;top:-2px;transform:translateX(-50%);width:24px;height:3px;border-radius:0 0 3px 3px}
+  .app{flex-direction:column}
+  .main{padding-bottom:64px}
+  .panel{padding:16px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .grid-4{grid-template-columns:1fr 1fr}
+  .topbar{padding:0 16px}
+  .ck-stat-label{width:120px;font-size:12px}
+}
+/* Decision card-based navigation */
+.dt-step-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:24px}
+.dt-dot{width:32px;height:32px;border-radius:50%;background:var(--border);color:var(--text3);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.dt-dot.active{background:var(--primary);color:#fff}
+.dt-dot.done{background:var(--primary-light);color:var(--primary);border:2px solid var(--primary)}
+.dt-line{width:32px;height:2px;background:var(--border);transition:var(--transition)}
+.dt-line.done{background:var(--primary)}
+.dt-card{display:none;animation:dtFadeIn .25s ease}
+.dt-card.active{display:block}
+@keyframes dtFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.dt-back-btn{display:inline-flex;align-items:center;gap:6px;margin-top:20px;padding:10px 20px;border-radius:var(--radius);border:1px solid var(--border);color:var(--text2);font-size:14px;font-weight:500;transition:var(--transition);background:var(--surface)}
+.dt-back-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+/* Backup panel */
+.rec-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);margin-bottom:8px;cursor:pointer;transition:var(--transition)}
+.rec-row:hover{border-color:var(--primary);box-shadow:var(--shadow)}
+.rec-row .rec-info{flex:1;min-width:0}
+.rec-row .rec-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.rec-row .rec-meta{font-size:12px;color:var(--text3);margin-top:3px}
+.rec-row .rec-date{font-size:11px;color:var(--text3);white-space:nowrap;font-family:'JetBrains Mono',monospace}
+.rec-row .rec-del{color:var(--rose);font-size:14px;padding:8px;flex-shrink:0;transition:var(--transition);border-radius:8px}
+.rec-row .rec-del:hover{background:var(--rose-light)}
+mark{background:#fef08a;border-radius:2px;padding:0 1px}
+/* Summary — 2-col stacked, NO scroll */
+#panel-summary{padding:0!important;overflow:hidden!important}
+.sum-vp{height:100%;padding:14px}
+.sum-page{height:100%;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.sum-hdr{flex-shrink:0;border-bottom:2px solid var(--primary);padding:12px 28px 10px}
+.sum-org{font-size:20px;font-weight:900;text-align:center;margin-bottom:6px}
+.sum-dot{margin:0 8px;color:var(--text3);font-weight:400}
+.sum-pt{display:flex;flex-wrap:wrap;justify-content:center;gap:0}
+.sum-pt .sp{padding:3px 16px;display:flex;align-items:center;gap:5px;font-size:16px}
+.sum-pt .sp .l{color:var(--text3);font-size:12px}
+.sum-pt .sp .v{font-weight:700}
+.sum-cols{flex:1;display:flex;min-height:0;overflow:hidden}
+.sum-left,.sum-right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.sum-left{border-right:1px solid var(--border)}
+.sum-sec{flex-shrink:0;padding:14px 28px;border-bottom:1px solid var(--border)}
+.sum-sec.sum-grow{flex:1;border-bottom:none;overflow:hidden;padding-top:14px}
+.sum-sec.compact{padding:10px 28px}
+.st{font-size:14px;font-weight:800;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.st i{font-size:16px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:16px;border-bottom:1px dashed var(--border)}
+.sr:last-child{border:none}
+.sr .l{color:var(--text2)}
+.sr .v{font-weight:700}
+.diag-row{display:flex;flex-wrap:wrap;gap:6px 16px}
+.diag-tag{font-size:15px;display:flex;align-items:center;gap:5px}
+.diag-tag .l{color:var(--text3);font-size:12px}
+.diag-tag .v{font-weight:700}
+.stx{padding:8px 0;border-bottom:1px dashed var(--border)}
+.stx:last-child{border:none}
+.stx .tl{font-weight:700;font-size:14px;color:var(--text2);margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.stx .tv{font-size:16px;line-height:1.5}
+.sbar{height:7px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.sbar>div{height:100%;border-radius:99px}
+.sck{display:grid;grid-template-columns:1fr 1fr;gap:5px 20px}
+.sci{font-size:15px;padding:5px 0;display:flex;align-items:center;gap:8px;color:var(--rose)}
+.sci i{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.sck-ok{text-align:center;padding:20px 0;color:var(--primary);font-size:18px;font-weight:700}
+.sck-ok i{margin-right:6px}
+.snote{font-size:15px;color:var(--text2);line-height:1.6;white-space:pre-wrap}
+.snote-empty{color:var(--text3);font-size:14px;font-style:italic}
+.sum-alerts{flex-shrink:0;border-top:1px solid var(--rose-border);background:var(--rose-light);padding:9px 28px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sum-alerts .at{font-size:13px;font-weight:700;color:var(--rose);white-space:nowrap;margin-right:2px}
+.sum-alerts .ai{font-size:13px;color:#991b1b;display:flex;align-items:center;gap:4px}
+.sum-alerts .ai i{font-size:10px;color:var(--rose)}
+.sum-alerts .as{color:var(--rose-border)}
+.sum-actions{flex-shrink:0;display:flex;gap:14px;justify-content:center;padding:12px 28px;border-top:1px solid var(--border);background:var(--surface2)}
+@media(max-width:800px){.sum-cols{flex-direction:column}.sum-left{border-right:none;border-bottom:1px solid var(--border)}}
+/* Backup panel */
+.bk-card{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px}
+.bk-btn{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:var(--radius);border:1px solid var(--border);width:100%;text-align:left;font-size:15px;transition:var(--transition);background:var(--surface);margin-bottom:10px}
+.bk-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.bk-btn i{font-size:20px;width:24px;text-align:center;flex-shrink:0}
+.bk-btn .bk-desc{font-size:12px;color:var(--text3);margin-top:2px}
+@page{size:landscape;margin:8mm}
+@media print{
+  .sidebar,.topbar,.bottombar{display:none!important}
+  .app{display:block}.main{display:block}
+  .content{overflow:visible;position:static}
+  .panel{position:static;opacity:1;pointer-events:auto;overflow:visible}
+  .panel:not(.active){display:none}
+  body{overflow:auto;font-size:14px}
+  .sum-actions{display:none!important}
+  .sum-vp{height:auto;padding:0}
+  .sum-page{border:none;height:auto;box-shadow:none}
+  .sum-hdr{padding:8px 20px 6px}
+  .sum-org{font-size:17px}
+  .sum-pt .sp{font-size:13px;padding:2px 12px}
+  .sum-cols{overflow:visible}
+  .sum-left,.sum-right{overflow:visible}
+  .sum-sec{padding:12px 20px;overflow:visible}
+  .sr{font-size:14px;padding:5px 0}
+  .stx .tv{font-size:14px}
+  .sci{font-size:13px}
+  .sum-alerts{padding:6px 20px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo" title="彰濱秀傳癌症中心">秀</div>
+    <button class="nav-item active" data-panel="patient" onclick="APP.go('patient')"><i class="fa-solid fa-user-pen"></i><span>病人</span></button>
+    <button class="nav-item" data-panel="checklist" onclick="APP.go('checklist')"><i class="fa-solid fa-clipboard-check"></i><span>檢查</span><span class="nav-badge" id="ck-badge" style="display:none">0</span></button>
+    <button class="nav-item" data-panel="decision" onclick="APP.go('decision')"><i class="fa-solid fa-route"></i><span>決策</span></button>
+    <button class="nav-item" data-panel="pathway" onclick="APP.go('pathway')"><i class="fa-solid fa-map"></i><span>路徑</span></button>
+    <button class="nav-item" data-panel="summary" onclick="APP.go('summary')"><i class="fa-solid fa-id-card-clip"></i><span>總覽</span></button>
+    <div class="spacer"></div>
+    <button class="nav-item" data-panel="records" onclick="APP.go('records')"><i class="fa-solid fa-folder-open"></i><span>紀錄</span></button>
+    <button class="nav-item" data-panel="stats" onclick="APP.go('stats')"><i class="fa-solid fa-chart-pie"></i><span>統計</span></button>
+    <button class="nav-item" data-panel="backup" onclick="APP.go('backup')"><i class="fa-solid fa-hard-drive"></i><span>備份</span></button>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> 肺癌臨床路徑</div>
+      <div class="spacer"></div>
+      <span class="topbar-info" id="topbar-date"></span>
+      <button class="topbar-btn outline" onclick="window.print()"><i class="fa-solid fa-print"></i> 列印</button>
+      <button class="topbar-btn outline" onclick="APP.newPatient()"><i class="fa-solid fa-plus"></i> 新病人</button>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══ PANEL: PATIENT ═══ -->
+      <div class="panel active" id="panel-patient">
+        <div class="pt-page">
+          <div class="card" style="flex:1;display:flex;flex-direction:column;padding:20px 28px">
+            <div class="card-title" style="margin-bottom:12px"><i class="fa-solid fa-user-pen"></i> 病人資訊</div>
+            <div style="display:flex;flex-direction:column;gap:12px;flex:1">
+              <div class="grid-2">
+                <div>
+                  <label class="pt-lbl">病人代號 *</label>
+                  <input id="pt-code" type="text" placeholder="例：A0012" maxlength="20" class="pt-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <div>
+                  <label class="pt-lbl">姓名</label>
+                  <input id="pt-name" type="text" placeholder="王小明" maxlength="20" class="pt-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+              </div>
+              <div class="grid-2">
+                <div>
+                  <label class="pt-lbl">收案日期</label>
+                  <input id="pt-casedate" type="date" class="pt-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'" onchange="APP.calcAge()">
+                </div>
+                <div>
+                  <label class="pt-lbl">出生日期</label>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <input id="pt-birthday" type="date" class="pt-input" style="flex:1" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'" onchange="APP.calcAge()">
+                    <span id="pt-age-display" style="font-size:15px;font-weight:700;color:var(--primary);white-space:nowrap;min-width:48px"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div>
+                  <label class="pt-lbl">性別</label>
+                  <div style="display:flex;gap:8px">
+                    <button class="big-btn gender-btn" data-val="M" onclick="APP.pickGender('M')" style="min-height:44px;justify-content:center;flex:1;padding:8px"><span class="btn-label">男</span></button>
+                    <button class="big-btn gender-btn" data-val="F" onclick="APP.pickGender('F')" style="min-height:44px;justify-content:center;flex:1;padding:8px"><span class="btn-label">女</span></button>
+                  </div>
+                </div>
+                <div>
+                  <label class="pt-lbl">ECOG</label>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="big-btn ecog-btn" data-val="0" onclick="APP.pickECOG('0')" style="min-height:44px;flex:1;flex-direction:column;align-items:center;padding:6px"><span class="btn-label" style="font-size:16px">0</span><span class="btn-desc" style="font-size:10px">正常</span></button>
+                    <button class="big-btn ecog-btn" data-val="1" onclick="APP.pickECOG('1')" style="min-height:44px;flex:1;flex-direction:column;align-items:center;padding:6px"><span class="btn-label" style="font-size:16px">1</span><span class="btn-desc" style="font-size:10px">輕度</span></button>
+                    <button class="big-btn ecog-btn" data-val="2" onclick="APP.pickECOG('2')" style="min-height:44px;flex:1;flex-direction:column;align-items:center;padding:6px"><span class="btn-label" style="font-size:16px">2</span><span class="btn-desc" style="font-size:10px">&lt;50%臥床</span></button>
+                    <button class="big-btn ecog-btn" data-val="3" onclick="APP.pickECOG('3')" style="min-height:44px;flex:1;flex-direction:column;align-items:center;padding:6px"><span class="btn-label" style="font-size:16px">3</span><span class="btn-desc" style="font-size:10px">&gt;50%臥床</span></button>
+                    <button class="big-btn ecog-btn" data-val="4" onclick="APP.pickECOG('4')" style="min-height:44px;flex:1;flex-direction:column;align-items:center;padding:6px"><span class="btn-label" style="font-size:16px">4</span><span class="btn-desc" style="font-size:10px">全臥床</span></button>
+                  </div>
+                </div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+                <label class="pt-lbl">備註</label>
+                <textarea class="note-area" id="pt-notes" placeholder="記錄想問醫師的問題、特殊狀況…" style="flex:1;min-height:60px;resize:none" oninput="APP.S.notes=this.value"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL: RECORDS ═══ -->
+      <div class="panel" id="panel-records"><div class="panel-inner">
+        <div>
+          <!-- Search + filter bar -->
+          <div class="card" style="padding:14px 20px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="flex:1;min-width:200px;position:relative">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px"></i>
+                <input id="rec-search" type="text" placeholder="搜尋代號、姓名…" oninput="APP.filterRecords()" style="width:100%;height:40px;padding:0 14px 0 38px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;outline:none;transition:var(--transition)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+              </div>
+              <select id="rec-status" onchange="APP.filterRecords()" style="height:40px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface)">
+                <option value="all">全部</option><option value="saved">已存檔</option><option value="draft">草稿</option>
+              </select>
+              <select id="rec-type" onchange="APP.filterRecords()" style="height:40px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface)">
+                <option value="">全型態</option><option value="AD">腺癌</option><option value="SCC">鱗癌</option><option value="SCLC">小細胞</option>
+              </select>
+              <select id="rec-stage" onchange="APP.filterRecords()" style="height:40px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface)">
+                <option value="">全分期</option><option value="I-II">I-II</option><option value="III">III</option><option value="IV">IV</option><option value="LS">LS</option><option value="ES">ES</option>
+              </select>
+              <span id="rec-count" style="font-size:12px;color:var(--text3);white-space:nowrap;font-family:'JetBrains Mono',monospace"></span>
+            </div>
+          </div>
+          <!-- Record list -->
+          <div id="record-list" style="overflow-y:auto;max-height:calc(100dvh - 200px)"></div>
+        </div>
+      </div></div>
+
+      <!-- ═══ PANEL: DECISION ═══ -->
+      <div class="panel" id="panel-decision"><div class="panel-inner">
+        <!-- Step indicator -->
+        <div class="dt-step-bar" id="dt-step-bar">
+          <div class="dt-dot active" data-s="1">1</div><div class="dt-line"></div>
+          <div class="dt-dot" data-s="2">2</div><div class="dt-line"></div>
+          <div class="dt-dot" data-s="3">3</div><div class="dt-line"></div>
+          <div class="dt-dot" data-s="4">4</div>
+        </div>
+        <!-- Cards: only one visible at a time -->
+        <div class="dt-card active" id="dt-card-1">
+          <div class="card" style="padding:28px 24px">
+            <div class="q-label" style="margin-bottom:20px"><span class="q-num">1</span> 病理型態</div>
+            <div class="q-options">
+              <button class="big-btn dt-btn" data-q="type" data-val="AD" onclick="APP.dt('type','AD')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary)"><i class="fa-solid fa-lungs"></i></div><div><div class="btn-label">肺腺癌</div><div class="btn-desc">佔台灣最大宗，標靶選擇多</div></div></button>
+              <button class="big-btn dt-btn" data-q="type" data-val="SCC" onclick="APP.dt('type','SCC')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber)"><i class="fa-solid fa-shield-halved"></i></div><div><div class="btn-label">鱗狀上皮癌</div><div class="btn-desc">多與吸菸相關</div></div></button>
+              <button class="big-btn dt-btn" data-q="type" data-val="SCLC" onclick="APP.dt('type','SCLC')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose)"><i class="fa-solid fa-bolt"></i></div><div><div class="btn-label">小細胞肺癌</div><div class="btn-desc">生長快速，化放療敏感</div></div></button>
+            </div>
+          </div>
+        </div>
+        <div class="dt-card" id="dt-card-2">
+          <div class="card" style="padding:28px 24px">
+            <div class="q-label" style="margin-bottom:20px"><span class="q-num">2</span> <span id="q-stage-label">分期</span></div>
+            <div class="q-options" id="q-stage-opts"></div>
+            <button class="dt-back-btn" onclick="APP.dtBack(1)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
+          </div>
+        </div>
+        <div class="dt-card" id="dt-card-3">
+          <div class="card" style="padding:28px 24px">
+            <div class="q-label" style="margin-bottom:20px"><span class="q-num">3</span> 基因突變</div>
+            <div class="q-options grid-2">
+              <button class="big-btn dt-btn" data-q="mutation" data-val="EGFR" onclick="APP.dt('mutation','EGFR')"><div><div class="btn-label">EGFR</div><div class="btn-desc">最常見 50-60%</div></div></button>
+              <button class="big-btn dt-btn" data-q="mutation" data-val="ALK" onclick="APP.dt('mutation','ALK')"><div><div class="btn-label">ALK</div><div class="btn-desc">3-5%</div></div></button>
+              <button class="big-btn dt-btn" data-q="mutation" data-val="OTHER" onclick="APP.dt('mutation','OTHER')"><div><div class="btn-label">其他突變</div><div class="btn-desc">ROS1, BRAF, MET…</div></div></button>
+              <button class="big-btn dt-btn" data-q="mutation" data-val="NONE" onclick="APP.dt('mutation','NONE')"><div><div class="btn-label">無突變</div><div class="btn-desc">Wild-type</div></div></button>
+              <button class="big-btn dt-btn" data-q="mutation" data-val="PENDING" onclick="APP.dt('mutation','PENDING')"><div><div class="btn-label">等報告中</div></div></button>
+            </div>
+            <button class="dt-back-btn" onclick="APP.dtBack(2)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
+          </div>
+        </div>
+        <div class="dt-card" id="dt-card-4">
+          <div class="card" style="padding:28px 24px">
+            <div class="q-label" style="margin-bottom:20px"><span class="q-num">4</span> PD-L1</div>
+            <div class="q-options grid-2">
+              <button class="big-btn dt-btn" data-q="pdl1" data-val=">=50" onclick="APP.dt('pdl1','>=50')"><div><div class="btn-label">≥ 50%</div></div></button>
+              <button class="big-btn dt-btn" data-q="pdl1" data-val="1-49" onclick="APP.dt('pdl1','1-49')"><div><div class="btn-label">1–49%</div></div></button>
+              <button class="big-btn dt-btn" data-q="pdl1" data-val="<1" onclick="APP.dt('pdl1','<1')"><div><div class="btn-label">&lt; 1%</div></div></button>
+              <button class="big-btn dt-btn" data-q="pdl1" data-val="unknown" onclick="APP.dt('pdl1','unknown')"><div><div class="btn-label">未測定</div></div></button>
+            </div>
+            <button class="dt-back-btn" onclick="APP.dtBack(3)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
+          </div>
+        </div>
+        <div class="dt-card" id="dt-card-done">
+          <div class="card" style="text-align:center;padding:40px 24px">
+            <div style="font-size:48px;margin-bottom:12px">🎯</div>
+            <h3 style="font-size:20px;font-weight:900;margin-bottom:8px">決策完成</h3>
+            <p style="color:var(--text3);margin-bottom:24px" id="dt-summary-text"></p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+              <button class="btn-nav next" onclick="APP.go('pathway')" style="padding:0 28px"><i class="fa-solid fa-map"></i> 查看路徑</button>
+              <button class="btn-nav back" onclick="APP.dtBack('last')" style="padding:0 28px"><i class="fa-solid fa-pen"></i> 修改選擇</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+
+      <!-- ═══ PANEL: PATHWAY ═══ -->
+      <div class="panel" id="panel-pathway">
+        <div id="pw-empty" class="empty-state"><i class="fa-solid fa-route"></i><h4>尚未選擇決策</h4><p>請先至「決策」頁完成問答</p></div>
+        <div id="pw-wrap" class="pw-layout" style="display:none">
+          <div class="pw-side" id="pw-side"></div>
+          <div class="pw-main" id="pw-content"></div>
+          <div class="pw-cost" id="pw-cost"></div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL: SUMMARY ═══ -->
+      <div class="panel" id="panel-summary">
+        <div id="sum-empty" class="empty-state"><i class="fa-solid fa-id-card-clip"></i><h4>尚無病人資料</h4><p>請先至「病人」頁填寫基本資料</p></div>
+        <div id="sum-content" class="sum-vp" style="display:none">
+          <div class="sum-page">
+            <!-- Header -->
+            <div class="sum-hdr">
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽</div>
+              <div class="sum-pt" id="sum-patient"></div>
+            </div>
+            <!-- 2-column body -->
+            <div class="sum-cols">
+              <div class="sum-left">
+                <div class="sum-sec compact" id="sum-diagnosis"></div>
+                <div class="sum-sec sum-grow" id="sum-checklist"></div>
+              </div>
+              <div class="sum-right">
+                <div class="sum-sec" id="sum-treatment"></div>
+                <div class="sum-sec sum-grow" id="sum-notes-box"></div>
+              </div>
+            </div>
+            <!-- Alerts -->
+            <div class="sum-alerts" id="sum-alerts"></div>
+            <!-- Actions -->
+            <div class="sum-actions">
+              <button class="btn-nav next" onclick="APP.save()" style="padding:0 28px"><i class="fa-solid fa-floppy-disk"></i> <span id="sum-save-label">儲存紀錄</span></button>
+              <button class="btn-nav back" onclick="APP.printSummary()" style="padding:0 28px"><i class="fa-solid fa-print"></i> 列印</button>
+            </div>
+          </div>
+        </div>
+        <!-- Post-save -->
+        <div id="sum-saved" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:40px">
+            <div class="card" style="text-align:center;padding:40px 32px;max-width:440px;width:100%">
+              <div style="font-size:48px;margin-bottom:16px">✅</div>
+              <h3 style="font-size:20px;font-weight:900;margin-bottom:8px">紀錄已儲存</h3>
+              <p style="color:var(--text3);margin-bottom:24px" id="sum-saved-info"></p>
+              <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                <button class="btn-nav next" onclick="APP.newPatient()" style="padding:0 24px"><i class="fa-solid fa-plus"></i> 新病人</button>
+                <button class="btn-nav back" onclick="APP.go('records')" style="padding:0 24px"><i class="fa-solid fa-folder-open"></i> 紀錄列表</button>
+                <button class="btn-nav back" onclick="APP.continueSummary()" style="padding:0 24px"><i class="fa-solid fa-pen"></i> 繼續編輯</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL: CHECKLIST ═══ -->
+      <div class="panel" id="panel-checklist">
+        <div class="ck-page">
+          <div class="ck-header">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-clipboard-check" style="color:var(--primary)"></i> 診間檢查表</div>
+              <span id="ck-pct" style="font-size:16px;font-weight:700;color:var(--primary);font-family:'JetBrains Mono',monospace">0%</span>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:99px;margin-top:10px;overflow:hidden"><div id="ck-bar" style="height:100%;background:var(--primary);border-radius:99px;width:0%;transition:width .4s"></div></div>
+          </div>
+          <div class="ck-body" id="ck-list"></div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL: STATS ═══ -->
+      <div class="panel" id="panel-stats">
+        <div class="stat-page">
+          <!-- Top bar: title + export -->
+          <div class="stat-top">
+            <h3 style="font-size:18px;font-weight:900">統計儀表板</h3>
+            <div style="display:flex;gap:8px">
+              <button class="topbar-btn outline" onclick="APP.exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+              <button class="topbar-btn outline" onclick="APP.exportJSON()"><i class="fa-solid fa-file-code"></i> JSON</button>
+            </div>
+          </div>
+          <!-- Filter bar -->
+          <div class="stat-filter">
+            <span style="font-size:13px;font-weight:700;color:var(--text3);flex-shrink:0"><i class="fa-solid fa-filter" style="margin-right:4px"></i>篩選</span>
+            <button class="filter-btn on" data-sf="all" onclick="APP.statRange('all')">全部</button>
+            <button class="filter-btn" data-sf="month" onclick="APP.statRange('month')">本月</button>
+            <button class="filter-btn" data-sf="3m" onclick="APP.statRange('3m')">近三月</button>
+            <button class="filter-btn" data-sf="6m" onclick="APP.statRange('6m')">近半年</button>
+            <button class="filter-btn" data-sf="year" onclick="APP.statRange('year')">今年</button>
+            <span style="color:var(--border2)">│</span>
+            <input type="date" id="sf-from" class="sf-date" onchange="APP.statRange('custom')">
+            <span style="font-size:12px;color:var(--text3)">~</span>
+            <input type="date" id="sf-to" class="sf-date" onchange="APP.statRange('custom')">
+            <span style="color:var(--border2)">│</span>
+            <select id="sf-type" class="sf-sel" onchange="APP.statRefresh()">
+              <option value="">全型態</option><option value="AD">腺癌</option><option value="SCC">鱗癌</option><option value="SCLC">小細胞</option>
+            </select>
+            <select id="sf-stage" class="sf-sel" onchange="APP.statRefresh()">
+              <option value="">全分期</option><option value="I-II">I-II</option><option value="III">III</option><option value="IV">IV</option><option value="LS">LS</option><option value="ES">ES</option>
+            </select>
+          </div>
+          <!-- Tab row -->
+          <div class="stat-tabs" id="stat-tabs">
+            <button class="stat-tab on" data-st="overview" onclick="APP.statTab('overview')"><i class="fa-solid fa-chart-simple"></i> 概覽</button>
+            <button class="stat-tab" data-st="muttrend" onclick="APP.statTab('muttrend')"><i class="fa-solid fa-dna"></i> 突變趨勢</button>
+            <button class="stat-tab" data-st="checklist" onclick="APP.statTab('checklist')"><i class="fa-solid fa-clipboard-check"></i> 檢查分析</button>
+            <button class="stat-tab" data-st="cross" onclick="APP.statTab('cross')"><i class="fa-solid fa-table-cells"></i> 交叉表</button>
+            <button class="stat-tab" data-st="records" onclick="APP.statTab('records')"><i class="fa-solid fa-table"></i> 紀錄列表</button>
+          </div>
+          <!-- Tab content -->
+          <div class="stat-content">
+            <div class="stat-pane active" id="sp-overview">
+              <div class="grid-4" id="stat-cards" style="margin-bottom:16px"></div>
+              <div class="grid-2">
+                <div class="chart-wrap"><h4><i class="fa-solid fa-chart-pie" style="color:var(--primary);margin-right:4px"></i>型態分布</h4><canvas id="ch-type"></canvas></div>
+                <div class="chart-wrap"><h4><i class="fa-solid fa-chart-bar" style="color:var(--accent);margin-right:4px"></i>分期分布</h4><canvas id="ch-stage"></canvas></div>
+              </div>
+            </div>
+            <div class="stat-pane" id="sp-muttrend">
+              <div class="grid-2">
+                <div class="chart-wrap"><h4><i class="fa-solid fa-dna" style="color:var(--indigo);margin-right:4px"></i>突變分布</h4><canvas id="ch-mut"></canvas></div>
+                <div class="chart-wrap"><h4><i class="fa-solid fa-calendar" style="color:var(--amber);margin-right:4px"></i>月趨勢</h4><canvas id="ch-trend"></canvas></div>
+              </div>
+            </div>
+            <div class="stat-pane" id="sp-checklist">
+              <div class="grid-4" id="ck-stat-cards" style="margin-bottom:16px"></div>
+              <div class="card"><div id="ck-stat-bars"></div></div>
+            </div>
+            <div class="stat-pane" id="sp-cross">
+              <div class="card"><div style="overflow-x:auto" id="cross-table"></div></div>
+            </div>
+            <div class="stat-pane" id="sp-records">
+              <div class="card"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid var(--border);text-align:left"><th style="padding:10px 8px;color:var(--text3)">收案日期</th><th style="padding:10px 8px;color:var(--text3)">代號</th><th style="padding:10px 8px;color:var(--text3)">姓名</th><th style="padding:10px 8px;color:var(--text3)">型態</th><th style="padding:10px 8px;color:var(--text3)">分期</th><th style="padding:10px 8px;color:var(--text3)">突變</th><th style="padding:10px 8px;color:var(--text3)">PD-L1</th><th style="padding:10px 8px;color:var(--text3)">檢查</th><th style="padding:10px 8px;color:var(--text3)">操作</th></tr></thead><tbody id="stat-tbody"></tbody></table></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL: BACKUP ═══ -->
+      <div class="panel" id="panel-backup"><div class="panel-inner">
+        <h3 style="font-size:18px;font-weight:900;margin-bottom:20px"><i class="fa-solid fa-hard-drive" style="color:var(--primary);margin-right:8px"></i>資料備份與還原</h3>
+        <div class="bk-card">
+          <h4 style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text2)"><i class="fa-solid fa-download" style="color:var(--primary);margin-right:6px"></i>匯出</h4>
+          <button class="bk-btn" onclick="APP.backupAll()"><i class="fa-solid fa-database" style="color:var(--primary)"></i><div><div>完整備份</div><div class="bk-desc">匯出所有紀錄、草稿、設定（.json）</div></div></button>
+          <button class="bk-btn" onclick="APP.exportCSV()"><i class="fa-solid fa-file-csv" style="color:var(--accent)"></i><div><div>CSV 匯出</div><div class="bk-desc">純紀錄表格，可用 Excel 開啟</div></div></button>
+          <button class="bk-btn" onclick="APP.exportJSON()"><i class="fa-solid fa-file-code" style="color:var(--indigo)"></i><div><div>JSON 匯出</div><div class="bk-desc">純紀錄資料，可供程式處理</div></div></button>
+        </div>
+        <div class="bk-card">
+          <h4 style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text2)"><i class="fa-solid fa-upload" style="color:var(--amber);margin-right:6px"></i>匯入</h4>
+          <button class="bk-btn" onclick="document.getElementById('imp-backup').click()"><i class="fa-solid fa-shield-halved" style="color:var(--amber)"></i><div><div>還原完整備份</div><div class="bk-desc">從備份檔還原（不會刪除現有資料，重複 ID 覆蓋）</div></div></button>
+          <button class="bk-btn" onclick="document.getElementById('imp-file').click()"><i class="fa-solid fa-file-import" style="color:var(--text2)"></i><div><div>匯入紀錄 JSON</div><div class="bk-desc">匯入純紀錄 JSON 檔（每筆分配新 ID）</div></div></button>
+        </div>
+        <div class="bk-card" id="bk-status" style="background:var(--surface2)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <i class="fa-solid fa-clock-rotate-left" style="font-size:20px;color:var(--text3)"></i>
+            <div>
+              <div style="font-size:13px;color:var(--text3)">上次備份</div>
+              <div style="font-size:15px;font-weight:600" id="bk-last-time">從未備份</div>
+            </div>
+          </div>
+        </div>
+        <div class="alert-box warn" id="backup-warn" style="display:none;margin-top:16px"><i class="fa-solid fa-triangle-exclamation"></i><div>超過 30 天未備份！建議立即進行「完整備份」。</div></div>
+      </div></div>
+
+    </div><!-- content -->
+
+    <div class="bottombar">
+      <div class="step-dots" id="dots"></div>
+      <div class="spacer"></div>
+      <button class="btn-nav back" id="btn-back" onclick="APP.back()" disabled><i class="fa-solid fa-chevron-left"></i> 上一步</button>
+      <button class="btn-nav next" id="btn-next" onclick="APP.next()">下一步 <i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>
+</div>
+<input type="file" id="imp-file" accept=".json" style="display:none" onchange="APP.handleImport(event)">
+<input type="file" id="imp-backup" accept=".json" style="display:none" onchange="APP.handleRestore(event)">
+
+<script>
+// ═══════════════════════════════════════════
+//  ALL APP LOGIC — single global object
+// ═══════════════════════════════════════════
+var APP = {};
+(function(A){
+
+// ╔═══════════════════════════════════════════╗
+// ║  👉 CONFIG — 換癌別改這裡               ║
+// ╚═══════════════════════════════════════════╝
+const CFG = {
+  id: 'lung',                          // 癌別代碼（影響 DB name）
+  name: '肺癌臨床路徑',                  // 顯示名稱
+  org: '彰濱秀傳癌症中心',               // 機構名
+  icon: 'fa-solid fa-lungs',            // FontAwesome icon
+  dbName: 'LCNav',                      // IndexedDB name（每癌別不同）
+  color: '#0d9b6a',                     // 主題色
+
+  // 病理型態
+  types: [
+    {v:'AD', l:'肺腺癌', desc:'佔台灣最大宗，標靶選擇多', icon:'fa-solid fa-lungs', color:'primary'},
+    {v:'SCC', l:'鱗狀上皮癌', desc:'多與吸菸相關', icon:'fa-solid fa-shield-halved', color:'amber'},
+    {v:'SCLC', l:'小細胞肺癌', desc:'生長快速，化放療敏感', icon:'fa-solid fa-bolt', color:'rose'},
+  ],
+  typeLabel: {AD:'腺癌',SCC:'鱗癌',SCLC:'小細胞'},
+
+  // 分期（依型態）
+  stages: {
+    AD:[{v:'I-II',l:'早期 I-II'},{v:'III',l:'局部晚期 III'},{v:'IV',l:'晚期 IV'}],
+    SCC:[{v:'I-II',l:'早期 I-II'},{v:'III',l:'局部晚期 III'},{v:'IV',l:'晚期 IV'}],
+    SCLC:[{v:'LS',l:'侷限期 Limited'},{v:'ES',l:'擴散期 Extensive'}],
+  },
+
+  // 決策樹額外步驟（突變 & PD-L1）— 若癌別不需要可設空
+  hasMutation: true,   // SCLC 會自動跳過
+  hasPdl1: true,
+
+  // 查檢表
+  checklist: [
+    {id:'c1',g:'01 — 檢查分期',l:'影像 (CT/PET) 完成'},
+    {id:'c2',g:'01 — 檢查分期',l:'腦部 MRI 完成'},
+    {id:'c3',g:'01 — 檢查分期',l:'切片病理報告確認'},
+    {id:'c4',g:'02 — 決策關鍵',l:'基因檢測 (NGS) 已送'},
+    {id:'c5',g:'02 — 決策關鍵',l:'PD-L1 表現分數確認'},
+    {id:'c6',g:'02 — 決策關鍵',l:'重大傷病卡已申請'},
+    {id:'c7',g:'03 — 準備開戰',l:'人工血管置入 (Port-A)'},
+    {id:'c8',g:'03 — 準備開戰',l:'營養與體力評估'},
+    {id:'c9',g:'03 — 準備開戰',l:'私人保險諮詢完成'},
+    {id:'c10',g:'04 — 提問紀錄',l:'治療預期目標確認'},
+    {id:'c11',g:'04 — 提問紀錄',l:'緊急聯繫窗口與電話'},
+    {id:'c12',g:'04 — 提問紀錄',l:'常見副作用應對清單'},
+  ],
+};
+
+// 方便引用
+const CK = CFG.checklist;
+const TYPE_LABEL = CFG.typeLabel;
+const STAGES = CFG.stages;
+
+const PANELS = ['patient','checklist','decision','pathway','summary','records','stats','backup'];
+
+let cur = 'patient';
+let db;
+
+// Session = current working patient
+A.S = {code:'',name:'',caseDate:'',gender:'',birthday:'',ecog:'',type:'',stage:'',mutation:'',pdl1:'',notes:'',ck:{},created:new Date().toISOString()};
+let editId = null;   // non-null = editing saved record
+let draftId = null;  // non-null = editing draft
+
+// ── IndexedDB ──
+function openDB(){
+  return new Promise((ok,fail)=>{
+    // delete & recreate if version conflict
+    const r = indexedDB.open(CFG.dbName,1);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains('records')) d.createObjectStore('records',{keyPath:'id',autoIncrement:true});
+      if(!d.objectStoreNames.contains('drafts')) d.createObjectStore('drafts',{keyPath:'id',autoIncrement:true});
+      if(!d.objectStoreNames.contains('settings')) d.createObjectStore('settings',{keyPath:'key'});
+    };
+    r.onsuccess = e => { db=e.target.result; ok(); };
+    r.onerror = e => fail(e);
+  });
+}
+function put(s,d){ return new Promise(r=>{ const t=db.transaction(s,'readwrite'); t.objectStore(s).put(d); t.oncomplete=()=>r(); }); }
+function get(s,k){ return new Promise(r=>{ const t=db.transaction(s); const q=t.objectStore(s).get(k); q.onsuccess=()=>r(q.result); }); }
+function getAll(s){ return new Promise(r=>{ const t=db.transaction(s); const q=t.objectStore(s).getAll(); q.onsuccess=()=>r(q.result); }); }
+function del(s,k){ return new Promise(r=>{ const t=db.transaction(s,'readwrite'); t.objectStore(s).delete(k); t.oncomplete=()=>r(); }); }
+
+// ── Navigation ──
+A.go = function(name){
+  try{
+    readForm();
+    saveDraft();
+    // Also auto-save checklist to record if editing a saved record
+    if(editId && (cur==='checklist'||cur==='decision'||cur==='pathway')){
+      autoUpdateRecord();
+    }
+  } catch(e){}
+  cur = name;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.panel===name));
+  updateBar();
+  if(name==='records') loadList();
+  if(name==='pathway'){ renderPW(); }
+  if(name==='summary'){ document.getElementById('sum-saved').style.display='none'; renderSummary(); }
+  if(name==='checklist') renderCK();
+  if(name==='stats') loadStats();
+  if(name==='backup') loadBackupStatus();
+};
+
+async function autoUpdateRecord(){
+  if(!editId) return;
+  try{
+    const existing = await get('records', editId);
+    if(!existing) return;
+    existing.ck = A.S.ck;
+    existing.notes = A.S.notes;
+    existing.code = A.S.code;
+    existing.name = A.S.name;
+    existing.caseDate = A.S.caseDate;
+    existing.gender = A.S.gender;
+    existing.birthday = A.S.birthday;
+    existing.ecog = A.S.ecog;
+    await put('records', existing);
+  }catch(e){}
+}
+A.back = function(){ const flow=['patient','checklist','decision','pathway','summary']; const i=flow.indexOf(cur); if(i>0) A.go(flow[i-1]); };
+A.next = function(){ const flow=['patient','checklist','decision','pathway','summary']; const i=flow.indexOf(cur); readForm(); if(i>=0&&i<flow.length-1) A.go(flow[i+1]); };
+
+function updateBar(){
+  const flowPanels = ['patient','checklist','decision','pathway','summary'];
+  const i = flowPanels.indexOf(cur);
+  const isFlow = i >= 0;
+  document.getElementById('btn-back').disabled = (i<=0);
+  document.getElementById('btn-back').style.display = isFlow && i>0 ? '' : 'none';
+  const btnN = document.getElementById('btn-next');
+  if(isFlow && cur!=='summary'){ btnN.style.display=''; btnN.innerHTML='下一步 <i class="fa-solid fa-chevron-right"></i>'; }
+  else { btnN.style.display='none'; }
+  document.getElementById('dots').innerHTML = flowPanels.map((_,j)=>`<div class="step-dot${j===i?' active':''}"></div>`).join('');
+}
+
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function readForm(){
+  A.S.code = document.getElementById('pt-code').value.trim();
+  A.S.name = document.getElementById('pt-name').value.trim();
+  A.S.caseDate = document.getElementById('pt-casedate').value || todayStr();
+  A.S.birthday = document.getElementById('pt-birthday').value;
+  A.S.notes = document.getElementById('pt-notes').value;
+}
+
+// ── Age calculation ──
+function calcAgeFromDates(birthday, refDate){
+  if(!birthday) return null;
+  const b = new Date(birthday), r = new Date(refDate || todayStr());
+  let age = r.getFullYear() - b.getFullYear();
+  const m = r.getMonth() - b.getMonth();
+  if(m < 0 || (m === 0 && r.getDate() < b.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+A.calcAge = function(){
+  A.S.birthday = document.getElementById('pt-birthday').value;
+  const ref = document.getElementById('pt-casedate').value || todayStr();
+  const age = calcAgeFromDates(A.S.birthday, ref);
+  document.getElementById('pt-age-display').textContent = age !== null ? `→ ${age} 歲` : '';
+};
+
+// ── Patient form helpers ──
+A.pickGender = function(v){ A.S.gender=v; document.querySelectorAll('.gender-btn').forEach(b=>b.classList.toggle('selected',b.dataset.val===v)); };
+A.pickECOG = function(v){ A.S.ecog=v; document.querySelectorAll('.ecog-btn').forEach(b=>b.classList.toggle('selected',b.dataset.val===v)); };
+
+// ── Draft auto-save ──
+async function saveDraft(){
+  if(!A.S.code && !A.S.type) return;
+  if(editId) return; // don't auto-draft when editing saved record
+  const d = {...A.S, updatedAt: new Date().toISOString()};
+  if(draftId) d.id = draftId;
+  else delete d.id;
+  await put('drafts', d);
+  if(!draftId){ const all = await getAll('drafts'); draftId = all[all.length-1]?.id; }
+}
+
+// ── Record list (records panel) ──
+let allRecordItems = []; // cache for filtering
+
+A.filterRecords = function(){ renderRecordList(); };
+
+async function loadList(){
+  const drafts = await getAll('drafts');
+  const records = await getAll('records');
+  allRecordItems = [];
+  drafts.forEach(d=>allRecordItems.push({...d,_k:'draft',_d:d.updatedAt||d.created}));
+  records.forEach(r=>allRecordItems.push({...r,_k:'saved',_d:r.caseDate||r.savedAt||r.created}));
+  allRecordItems.sort((a,b)=>new Date(b._d)-new Date(a._d));
+  renderRecordList();
+}
+
+function renderRecordList(){
+  const q = (document.getElementById('rec-search')?.value||'').trim().toLowerCase();
+  const sf = document.getElementById('rec-status')?.value||'all';
+  const tf = document.getElementById('rec-type')?.value||'';
+  const stf = document.getElementById('rec-stage')?.value||'';
+  let items = allRecordItems;
+  if(sf!=='all') items = items.filter(d=>d._k===sf);
+  if(tf) items = items.filter(d=>d.type===tf);
+  if(stf) items = items.filter(d=>d.stage===stf);
+  if(q) items = items.filter(d=>{
+    const haystack = [d.code||'',d.name||'',d.notes||'',TYPE_LABEL[d.type]||'',d.stage||''].join(' ').toLowerCase();
+    return haystack.includes(q);
+  });
+  const el = document.getElementById('record-list');
+  const countEl = document.getElementById('rec-count');
+  if(countEl) countEl.textContent = `${items.length} / ${allRecordItems.length} 筆`;
+  if(!items.length){ el.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:14px"><i class="fa-solid fa-inbox" style="font-size:28px;display:block;margin-bottom:10px;opacity:.4"></i>'+(q?'找不到符合的紀錄':'尚無紀錄')+'</div>'; return; }
+  el.innerHTML = items.map(d=>{
+    const dt = new Date(d._d);
+    const ds = dt.toLocaleDateString('zh-TW')+' '+dt.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    const saved = d._k==='saved';
+    const badge = saved ? '<span class="badge nhi" style="font-size:10px">已存檔</span>' : '<span class="badge warn" style="font-size:10px">草稿</span>';
+    const typeStr = d.type?TYPE_LABEL[d.type]:'';
+    const info = [typeStr,d.stage||''].filter(Boolean).join(' · ')||'尚未填寫';
+    const ckDone = d.ck ? Object.keys(d.ck).length : 0;
+    const ckInfo = ckDone > 0 ? ` · <span style="font-family:'JetBrains Mono',monospace">${ckDone}/${CK.length}</span>` : '';
+    let codeTxt = d.code||'（未命名）';
+    const nameTxt = d.name ? ` <span style="font-weight:400;color:var(--text2)">${d.name}</span>` : '';
+    if(q && d.code){ codeTxt = highlightMatch(codeTxt, q); }
+    return `<div class="rec-row" onclick="APP.load(${d.id},'${d._k}')">
+      <div class="rec-info"><div class="rec-title">${codeTxt}${nameTxt} ${badge}</div><div class="rec-meta">${info}${ckInfo}</div></div>
+      <div class="rec-date">${ds}</div>
+      <button class="rec-del" onclick="event.stopPropagation();APP.del(${d.id},'${d._k}')" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function highlightMatch(text, q){
+  const idx = text.toLowerCase().indexOf(q);
+  if(idx<0) return text;
+  return text.substring(0,idx)+'<mark>'+text.substring(idx,idx+q.length)+'</mark>'+text.substring(idx+q.length);
+}
+
+A.load = async function(id, kind){
+  const obj = kind==='saved' ? await get('records',id) : await get('drafts',id);
+  if(!obj) return;
+  A.S = {...obj};
+  editId = kind==='saved' ? id : null;
+  draftId = kind==='draft' ? id : null;
+  // fill form
+  document.getElementById('pt-code').value = A.S.code||'';
+  document.getElementById('pt-name').value = A.S.name||'';
+  document.getElementById('pt-casedate').value = A.S.caseDate||'';
+  document.getElementById('pt-birthday').value = A.S.birthday||'';
+  document.getElementById('pt-notes').value = A.S.notes||'';
+  document.querySelectorAll('.gender-btn').forEach(b=>b.classList.toggle('selected',b.dataset.val===A.S.gender));
+  document.querySelectorAll('.ecog-btn').forEach(b=>b.classList.toggle('selected',b.dataset.val===A.S.ecog));
+  A.calcAge();
+  restoreDT();
+  renderCK();
+  updateTitle();
+  // always start from patient page when loading
+  A.go('patient');
+};
+
+A.del = async function(id, kind){
+  if(!confirm('確定刪除？')) return;
+  await del(kind==='saved'?'records':'drafts', id);
+  if(editId===id) editId=null;
+  if(draftId===id) draftId=null;
+  loadList();
+};
+
+function updateTitle(){
+  const t = document.getElementById('topbar-title');
+  const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : CFG.name;
+  const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
+  t.innerHTML = `<i class="${CFG.icon}"></i> ${label}${tag}`;
+}
+
+A.newPatient = function(){
+  if(!confirm('開始新病人？')) return;
+  editId=null; draftId=null;
+  A.S={code:'',name:'',caseDate:todayStr(),gender:'',birthday:'',ecog:'',type:'',stage:'',mutation:'',pdl1:'',notes:'',ck:{},created:new Date().toISOString()};
+  document.getElementById('pt-code').value='';
+  document.getElementById('pt-name').value='';
+  document.getElementById('pt-casedate').value=todayStr();
+  document.getElementById('pt-birthday').value='';
+  document.getElementById('pt-age-display').textContent='';
+  document.getElementById('pt-notes').value='';
+  document.querySelectorAll('.gender-btn,.ecog-btn,.dt-btn').forEach(b=>b.classList.remove('selected'));
+  dtShowCard(1);
+  updateTitle();
+  renderCK();
+  A.go('patient');
+};
+
+// ── Decision Tree (card-based navigation) ──
+let dtStep = 1; // current card step
+
+function dtShowCard(n){
+  dtStep = n;
+  document.querySelectorAll('.dt-card').forEach(c=>c.classList.remove('active'));
+  const card = document.getElementById(n==='done'?'dt-card-done':'dt-card-'+n);
+  if(card) card.classList.add('active');
+  updateDtSteps();
+}
+
+function updateDtSteps(){
+  const maxDone = A.S.type==='SCLC'?2: A.S.pdl1?4: A.S.mutation?3: A.S.stage?2: A.S.type?1:0;
+  const dots = document.querySelectorAll('.dt-dot');
+  const lines = document.querySelectorAll('.dt-line');
+  const totalSteps = A.S.type==='SCLC'?2:4;
+  dots.forEach((d,i)=>{
+    const s = i+1;
+    d.style.display = s<=totalSteps?'flex':'none';
+    d.classList.remove('active','done');
+    if(dtStep==='done'||s<dtStep) d.classList.add('done');
+    else if(s==dtStep) d.classList.add('active');
+  });
+  lines.forEach((l,i)=>{
+    l.style.display = (i+1)<totalSteps?'block':'none';
+    l.classList.toggle('done', dtStep==='done'||(i+1)<dtStep);
+  });
+}
+
+A.dt = function(q,v){
+  A.S[q]=v;
+  document.querySelectorAll(`.dt-btn[data-q="${q}"]`).forEach(b=>b.classList.toggle('selected',b.dataset.val===v));
+  // Auto-advance after brief delay for visual feedback
+  setTimeout(()=>{
+    if(q==='type'){ showStage(v); }
+    else if(q==='stage'){ showMut(); }
+    else if(q==='mutation'){ showPDL1(); }
+    else if(q==='pdl1'){ showDone(); }
+  },150);
+};
+
+function showStage(type){
+  const opts=document.getElementById('q-stage-opts');
+  document.getElementById('q-stage-label').textContent = type==='SCLC'?'分期 (SCLC)':'臨床分期';
+  opts.innerHTML = STAGES[type].map(s=>`<button class="big-btn dt-btn" data-q="stage" data-val="${s.v}" onclick="APP.dt('stage','${s.v}')"><div><div class="btn-label">${s.l}</div></div></button>`).join('');
+  A.S.stage='';A.S.mutation='';A.S.pdl1='';
+  dtShowCard(2);
+}
+function showMut(){
+  if(A.S.type==='SCLC'){ A.S.mutation='N/A';A.S.pdl1='N/A'; showDone(); return; }
+  A.S.mutation='';A.S.pdl1='';
+  document.querySelectorAll('.dt-btn[data-q="mutation"]').forEach(b=>b.classList.remove('selected'));
+  dtShowCard(3);
+}
+function showPDL1(){
+  A.S.pdl1='';
+  document.querySelectorAll('.dt-btn[data-q="pdl1"]').forEach(b=>b.classList.remove('selected'));
+  dtShowCard(4);
+}
+function showDone(){
+  const t=TYPE_LABEL[A.S.type]||'';
+  const parts=[t,A.S.stage];
+  if(A.S.mutation&&A.S.mutation!=='N/A') parts.push('突變:'+A.S.mutation);
+  if(A.S.pdl1&&A.S.pdl1!=='N/A') parts.push('PD-L1:'+A.S.pdl1);
+  document.getElementById('dt-summary-text').textContent=parts.join(' · ');
+  dtShowCard('done');
+}
+
+A.dtBack = function(to){
+  if(to==='last'){
+    // go back to last applicable step
+    to = A.S.type==='SCLC'?2:(A.S.pdl1?4:A.S.mutation?3:A.S.stage?2:1);
+  }
+  dtShowCard(to);
+};
+
+function restoreDT(){
+  document.querySelectorAll('.dt-btn').forEach(b=>b.classList.remove('selected'));
+  if(!A.S.type){ dtShowCard(1); return; }
+  const savedType=A.S.type, savedStage=A.S.stage, savedMut=A.S.mutation, savedPdl1=A.S.pdl1;
+  // Highlight type
+  document.querySelectorAll('.dt-btn[data-q="type"]').forEach(b=>b.classList.toggle('selected',b.dataset.val===savedType));
+  // Build stage opts (without wiping values)
+  const opts=document.getElementById('q-stage-opts');
+  document.getElementById('q-stage-label').textContent = savedType==='SCLC'?'分期 (SCLC)':'臨床分期';
+  opts.innerHTML = STAGES[savedType].map(s=>`<button class="big-btn dt-btn" data-q="stage" data-val="${s.v}" onclick="APP.dt('stage','${s.v}')"><div><div class="btn-label">${s.l}</div></div></button>`).join('');
+  // Restore values
+  A.S.type=savedType; A.S.stage=savedStage; A.S.mutation=savedMut; A.S.pdl1=savedPdl1;
+  if(!savedStage){ dtShowCard(2); return; }
+  document.querySelectorAll('.dt-btn[data-q="stage"]').forEach(b=>b.classList.toggle('selected',b.dataset.val===savedStage));
+  if(savedType==='SCLC'){
+    // SCLC: done after stage
+    const t=TYPE_LABEL[savedType]||'';
+    document.getElementById('dt-summary-text').textContent=[t,savedStage].join(' · ');
+    dtShowCard('done');
+    return;
+  }
+  if(!savedMut){ dtShowCard(3); return; }
+  document.querySelectorAll('.dt-btn[data-q="mutation"]').forEach(b=>b.classList.toggle('selected',b.dataset.val===savedMut));
+  if(!savedPdl1){ dtShowCard(4); return; }
+  document.querySelectorAll('.dt-btn[data-q="pdl1"]').forEach(b=>b.classList.toggle('selected',b.dataset.val===savedPdl1));
+  // All done
+  const parts=[TYPE_LABEL[savedType],savedStage];
+  if(savedMut&&savedMut!=='N/A') parts.push('突變:'+savedMut);
+  if(savedPdl1&&savedPdl1!=='N/A') parts.push('PD-L1:'+savedPdl1);
+  document.getElementById('dt-summary-text').textContent=parts.join(' · ');
+  dtShowCard('done');
+}
+
+// ── Pathway ──
+function renderPW(){
+  if(!A.S.type||!A.S.stage){ document.getElementById('pw-empty').style.display=''; document.getElementById('pw-wrap').style.display='none'; return; }
+  document.getElementById('pw-empty').style.display='none';
+  document.getElementById('pw-wrap').style.display='flex';
+  const S=A.S;
+  // Left sidebar
+  let side = '<div class="pw-side-title"><i class="fa-solid fa-microscope" style="margin-right:4px"></i> 決策結果</div>';
+  side += `<div class="pw-side-row"><span class="l">型態</span><span class="v">${TYPE_LABEL[S.type]}</span></div>`;
+  side += `<div class="pw-side-row"><span class="l">分期</span><span class="v">${S.stage}</span></div>`;
+  if(S.type!=='SCLC'){
+    if(S.mutation&&S.mutation!=='N/A') side += `<div class="pw-side-row"><span class="l">突變</span><span class="v">${S.mutation}</span></div>`;
+    if(S.pdl1&&S.pdl1!=='N/A') side += `<div class="pw-side-row"><span class="l">PD-L1</span><span class="v">${S.pdl1}</span></div>`;
+  }
+  side += `<div style="flex:1"></div>`;
+  side += `<button class="btn-nav next" onclick="APP.go('summary')" style="padding:0 16px;width:100%;justify-content:center"><i class="fa-solid fa-id-card-clip"></i> 總覽</button>`;
+  document.getElementById('pw-side').innerHTML = side;
+  // Middle: treatment + Right: cost
+  const fn = PW[S.type]?.[S.stage];
+  if(fn){
+    const result = fn(S);
+    document.getElementById('pw-content').innerHTML = `<div class="card">${result.tx}</div>`;
+    let costH = '<div class="pw-cost-title"><i class="fa-solid fa-coins" style="color:var(--amber)"></i> 💰 費用概估</div>';
+    (result.cost||[]).forEach(c=>{ costH += `<div class="pw-cost-row"><span class="l">${c.l}</span><span class="v">${c.v}</span></div>`; });
+    document.getElementById('pw-cost').innerHTML = costH;
+  } else {
+    document.getElementById('pw-content').innerHTML = '<div class="card"><p>此組合尚無路徑資料，請與主治醫師確認。</p></div>';
+    document.getElementById('pw-cost').innerHTML = '';
+  }
+}
+
+// Pathway templates
+const PW = {
+  AD:{
+    'I-II': s => ({
+      tx:`<div class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> 早期腺癌 (I-II)</div>
+        <div class="tx-box green"><h4>🔹 手術切除</h4><p>健保給付 VATS 微創手術。</p></div>
+        <div class="tx-box gray"><h4>🔹 術後鞏固</h4><div class="row"><span>輔助化療 ×4</span><span class="badge nhi">健保</span></div>${s.mutation==='EGFR'?'<div class="row"><span>Osimertinib 3年</span><span class="badge self">自費/條件申請</span></div><p class="note">ADAURA 試驗：EGFR+ 術後口服可大幅降低復發。</p>':''}</div>
+        <div class="tx-box amber"><h4>⚡ 不能手術 → SBRT</h4><p>3-5次照射，局部控制率近似手術。</p><div class="row"><span></span><span class="badge nhi">健保</span></div></div>`,
+      cost:[{l:'VATS 手術',v:'健保全額'},{l:'達文西差額',v:'15-25萬'}].concat(s.mutation==='EGFR'?[{l:'Osimertinib 自費/月',v:'10-15萬'}]:[])
+    }),
+    'III': () => ({
+      tx:`<div class="card-title"><i class="fa-solid fa-code-branch"></i> 局部晚期腺癌 (III)</div>
+        <div class="grid-2"><div class="tx-box green" style="border:2px solid #a7f3d0"><h4>路徑A：可手術</h4><div class="tx-box dark" style="margin-top:8px"><b>術前化療±免疫 → 手術 → 鞏固</b><p class="note">Nivolumab neoadjuvant 目前需自費。</p></div></div>
+        <div class="tx-box amber" style="border:2px solid var(--amber-border)"><h4>路徑B：不可手術</h4><div class="tx-box dark" style="margin-top:8px"><b style="color:#fbbf24">CCRT → Durvalumab 1年</b><p class="note">PACIFIC 試驗五年存活顯著提升。已納健保。</p></div></div></div>`,
+      cost:[{l:'CCRT',v:'健保全額'},{l:'Durvalumab',v:'健保申請'},{l:'Nivolumab 自費',v:'每次 8-12萬'}]
+    }),
+    'IV': s=>{
+      let tx='';
+      if(s.mutation==='EGFR'||s.mutation==='ALK'||s.mutation==='OTHER'){
+        tx=`<div class="tx-box green"><h4>🎯 標靶治療</h4>${s.mutation==='EGFR'?'<p>EGFR — Osimertinib 一線健保給付。</p>':s.mutation==='ALK'?'<p>ALK — Alectinib / Lorlatinib 一線健保。</p>':'<p>ROS1/BRAF/MET/RET/KRAS G12C 等皆有對應藥物。</p>'}<div class="row"><span></span><span class="badge nhi">健保為主</span></div></div>`;
+      } else if(s.mutation==='PENDING'){
+        tx=`<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 急時可先化療起步，報告出爐再調整。</div></div>`;
+      } else {
+        tx=`<div class="tx-box blue"><h4>🛡️ 免疫 ± 化療</h4>${s.pdl1==='>=50'?'<p>PD-L1 ≥50%：Pembrolizumab 單藥，健保可申請。</p>':s.pdl1==='1-49'?'<p>PD-L1 1-49%：免疫+化療 (Pembrolizumab+Pemetrexed+Platinum)。</p>':s.pdl1==='<1'?'<p>PD-L1 <1%：化療合併免疫為主。</p>':'<p>建議補測 PD-L1，暫以化療起步。</p>'}<div class="row"><span></span><span class="badge nhi">條件申請</span></div></div>`;
+      }
+      return {
+        tx:`<div class="card-title"><i class="fa-solid fa-bullseye"></i> 晚期腺癌 (IV)</div>${tx}`,
+        cost:[{l:'化療',v:'健保全額'},{l:'Pembrolizumab (≥50%)',v:'健保申請'},{l:'免疫自費/月',v:'15-20萬'},{l:'標靶(有健保)',v:'健保全額'}]
+      };
+    }
+  },
+  SCC:{
+    'I-II':()=>({
+      tx:`<div class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> 鱗癌早期 (I-II)</div><div class="tx-box green"><h4>手術切除</h4><p>肺葉切除+淋巴結廓清。</p></div><div class="tx-box gray"><h4>術後化療 ×4</h4><p>鉑類化療。</p><div class="row"><span></span><span class="badge nhi">健保</span></div></div><div class="tx-box amber"><h4>⚡ 不能手術 → SBRT</h4><div class="row"><span></span><span class="badge nhi">健保</span></div></div>`,
+      cost:[{l:'手術',v:'健保全額'},{l:'化療',v:'健保全額'},{l:'SBRT',v:'健保全額'}]
+    }),
+    'III':()=>({
+      tx:`<div class="card-title"><i class="fa-solid fa-radiation"></i> 鱗癌 III 期</div><div class="tx-box amber"><h4>CCRT</h4><p>化療+放療 6-7週。</p></div><div class="tx-box dark"><h4>PACIFIC：Durvalumab 1年</h4><p>已納健保(需申請)。</p></div>`,
+      cost:[{l:'CCRT',v:'健保全額'},{l:'Durvalumab',v:'健保申請'}]
+    }),
+    'IV':s=>({
+      tx:`<div class="card-title"><i class="fa-solid fa-shield-halved"></i> 鱗癌 IV 期</div><div class="tx-box blue"><h4>🛡️ 免疫±化療</h4>${s.pdl1==='>=50'?'<p>Pembrolizumab 單藥，健保可申請。</p>':'<p>Pembrolizumab + Carboplatin + nab-Paclitaxel。</p>'}</div><div class="tx-box gray"><h4>化療方案</h4><p>Gemcitabine + Cisplatin 健保全額。</p></div>`,
+      cost:[{l:'化療',v:'健保全額'},{l:'Pembrolizumab',v:'健保申請'},{l:'免疫自費/月',v:'15-20萬'}]
+    })
+  },
+  SCLC:{
+    'LS':()=>({
+      tx:`<div class="card-title" style="color:var(--rose)"><i class="fa-solid fa-bolt"></i> 小細胞 侷限期</div><div class="tx-box rose"><h4>CCRT</h4><p>EP 化療 ×4 + 胸部放療。</p><div class="row"><span></span><span class="badge nhi">健保</span></div></div><div class="tx-box dark"><h4>預防性全腦照射 (PCI)</h4><p style="font-style:italic">即使 MRI 未見轉移仍建議施作。健保給付。</p></div>`,
+      cost:[{l:'EP + 放療',v:'健保全額'},{l:'PCI',v:'健保全額'}]
+    }),
+    'ES':()=>({
+      tx:`<div class="card-title"><i class="fa-solid fa-bolt"></i> 小細胞 擴散期</div><div class="tx-box blue"><h4>⭐ 化療+免疫 (國際首選)</h4><p>Atezolizumab/Durvalumab + EP。</p><div class="row"><span></span><span class="badge self">免疫自費</span></div></div><div class="tx-box gray"><h4>化療</h4><p>EP ×4-6，健保全額。</p></div><div class="tx-box dark"><h4>腦轉移</h4><p>WBRT / PCI。</p></div>`,
+      cost:[{l:'EP 化療',v:'健保全額'},{l:'Atezolizumab 自費/次',v:'10-15萬'},{l:'WBRT',v:'健保全額'}]
+    })
+  }
+};
+
+// ── Save record ──
+A.save = async function(){
+  if(!A.S.type||!A.S.stage){ alert('請先完成決策問答'); return; }
+  readForm();
+  const now = new Date().toISOString();
+  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,stage:A.S.stage,mutation:A.S.mutation,pdl1:A.S.pdl1,notes:A.S.notes,ck:A.S.ck,created:A.S.created,savedAt:now};
+  let isNew = !editId;
+  if(editId){
+    rec.id = editId;
+    await put('records', rec);
+  } else {
+    await put('records', rec);
+    if(draftId){ await del('drafts',draftId); draftId=null; }
+    const all = await getAll('records');
+    editId = all[all.length-1]?.id;
+  }
+  await put('settings',{key:'lastSave',value:now});
+  updateTitle();
+  // Show post-save in summary panel
+  document.getElementById('sum-content').style.display='none';
+  document.getElementById('sum-empty').style.display='none';
+  document.getElementById('sum-saved').style.display='';
+  document.getElementById('sum-saved-info').textContent = `${A.S.code||'病人'} · ${TYPE_LABEL[A.S.type]||''} · ${A.S.stage} — ${isNew?'已新增':'已更新'}`;
+};
+
+A.continueSummary = function(){
+  document.getElementById('sum-saved').style.display='none';
+  document.getElementById('sum-content').style.display='';
+};
+A.printSummary = function(){
+  window.print();
+};
+
+// ── Summary panel ──
+const PW_SUMMARY = {
+  AD:{
+    'I-II': s => s.mutation==='EGFR' ? '手術切除 + Osimertinib 輔助（ADAURA）' : '手術切除 ± 輔助化療',
+    'III': () => '路徑A 可手術：術前化療±免疫 → 手術 / 路徑B 不可手術：CCRT → Durvalumab',
+    'IV': s => {
+      if(s.mutation==='EGFR') return 'EGFR 標靶：Osimertinib 一線（健保）';
+      if(s.mutation==='ALK') return 'ALK 標靶：Alectinib / Lorlatinib（健保）';
+      if(s.mutation==='OTHER') return '對應標靶治療（ROS1/BRAF/MET/RET/KRAS）';
+      if(s.mutation==='PENDING') return '等報告中 — 可先化療起步';
+      if(s.pdl1==='>=50') return 'Pembrolizumab 單藥（健保可申請）';
+      return '免疫 + 化療合併';
+    }
+  },
+  SCC:{
+    'I-II': () => '手術切除 + 術後化療 / 不能手術 → SBRT',
+    'III': () => 'CCRT → Durvalumab 1年（PACIFIC，健保）',
+    'IV': s => s.pdl1==='>=50' ? 'Pembrolizumab 單藥（健保申請）' : 'Pembrolizumab + Carboplatin + nab-Paclitaxel'
+  },
+  SCLC:{
+    'LS': () => 'CCRT (EP×4 + 胸部放療) → PCI',
+    'ES': () => '化療 (EP) + 免疫 (Atezolizumab/Durvalumab)'
+  }
+};
+
+function renderSummary(){
+  const S = A.S;
+  if(!S.code && !S.type){ document.getElementById('sum-empty').style.display=''; document.getElementById('sum-content').style.display='none'; return; }
+  document.getElementById('sum-empty').style.display='none';
+  document.getElementById('sum-content').style.display='';
+  document.getElementById('sum-save-label').textContent = editId ? '更新紀錄' : '儲存紀錄';
+
+  // Patient row
+  const age = calcAgeFromDates(S.birthday, S.caseDate||todayStr());
+  const cells = [
+    {l:'代號',v:S.code||'—'},{l:'姓名',v:S.name||'—'},
+    {l:'性別',v:S.gender==='M'?'男':S.gender==='F'?'女':'—'},
+    {l:'年齡',v:age!==null?age+'歲':'—'},
+    {l:'ECOG',v:S.ecog||'—'},{l:'收案',v:S.caseDate||'—'},
+  ];
+  document.getElementById('sum-patient').innerHTML = cells.map(c=>`<div class="sp"><span class="l">${c.l}</span><span class="v">${c.v}</span></div>`).join('');
+
+  // Left-top: Diagnosis (compact inline)
+  const dTags = [{l:'型態',v:TYPE_LABEL[S.type]||'—'},{l:'分期',v:S.stage||'—'}];
+  if(S.type!=='SCLC'){ dTags.push({l:'突變',v:S.mutation||'—'}); dTags.push({l:'PD-L1',v:S.pdl1||'—'}); }
+  document.getElementById('sum-diagnosis').innerHTML =
+    `<div class="st"><i class="fa-solid fa-microscope"></i> 診斷</div>` +
+    `<div class="diag-row">${dTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v">${d.v}</span></span>`).join('')}</div>`;
+
+  // Left-bottom: Checklist (incomplete only)
+  const ckDone=Object.keys(S.ck||{}).length, ckTotal=CK.length, ckRemain=ckTotal-ckDone, ckPct=Math.round(ckDone/ckTotal*100);
+  const ckC = ckPct===100?'var(--primary)':'var(--amber)';
+  let ckH = `<div class="st"><i class="fa-solid fa-clipboard-check"></i> 檢查 <span style="font-family:'JetBrains Mono',monospace;color:${ckC};font-size:16px;font-weight:900;margin-left:4px">${ckDone}/${ckTotal}</span></div>`;
+  ckH += `<div class="sbar"><div style="background:${ckC};width:${ckPct}%"></div></div>`;
+  if(ckRemain===0){ ckH += '<div class="sck-ok"><i class="fa-solid fa-circle-check"></i>全部完成</div>'; }
+  else {
+    ckH += `<div style="font-size:13px;color:var(--rose);font-weight:600;margin-bottom:8px">⚠ 尚有 ${ckRemain} 項未完成</div><div class="sck">`;
+    CK.forEach(c=>{ if(!S.ck?.[c.id]) ckH += `<div class="sci"><i class="fa-solid fa-circle-xmark"></i>${c.l}</div>`; });
+    ckH += '</div>';
+  }
+  document.getElementById('sum-checklist').innerHTML = ckH;
+
+  // Right-top: Treatment
+  let txH = '<div class="st"><i class="fa-solid fa-stethoscope"></i> 治療路徑</div>';
+  if(S.type && S.stage){
+    const fn=PW_SUMMARY[S.type]?.[S.stage]; const txt=fn?fn(S):'尚無對應路徑摘要';
+    const self=(S.type==='SCLC'&&S.stage==='ES')||(S.mutation==='NONE'&&S.pdl1!=='>=50')||S.mutation==='OTHER';
+    txH += `<div class="stx"><div class="tl">🎯 建議方案</div><div class="tv">${txt}</div></div>`;
+    txH += `<div class="stx"><div class="tl">💰 費用概估</div><div class="tv">${self?'部分自費項目，建議確認保險':'以健保給付為主'}</div></div>`;
+  } else { txH += '<div style="padding:8px 0;color:var(--text3);font-size:15px">尚未完成決策</div>'; }
+  document.getElementById('sum-treatment').innerHTML = txH;
+
+  // Right-bottom: Notes
+  let nH = '<div class="st"><i class="fa-solid fa-pen-to-square"></i> 備註</div>';
+  nH += S.notes ? `<div class="snote">${S.notes.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>` : '<div class="snote-empty">無備註</div>';
+  document.getElementById('sum-notes-box').innerHTML = nH;
+
+  // Alerts
+  const al=['發燒 >38.5°C 或寒顫','劇烈胸痛或咳血增多','喘不過氣或意識模糊','嚴重皮膚水泡或紅疹'];
+  document.getElementById('sum-alerts').innerHTML = `<span class="at">⚠ 緊急警訊</span>` + al.map(a=>`<span class="ai"><i class="fa-solid fa-circle-exclamation"></i>${a}</span>`).join('<span class="as">│</span>');
+}
+
+// ── Checklist ──
+function renderCK(){
+  const el = document.getElementById('ck-list');
+  // Group items by group name
+  const groups = []; let lastG='';
+  CK.forEach(item=>{
+    if(item.g!==lastG){ groups.push({title:item.g, items:[]}); lastG=item.g; }
+    groups[groups.length-1].items.push(item);
+  });
+  const mid = Math.ceil(groups.length/2);
+  const cols = [groups.slice(0,mid), groups.slice(mid)];
+  let html='';
+  cols.forEach(colGroups=>{
+    html+='<div class="ck-col">';
+    colGroups.forEach(g=>{
+      html+=`<div class="ck-grp"><div class="ck-grp-title">${g.title}</div><div class="ck-grp-items">`;
+      g.items.forEach(item=>{
+        const done = A.S.ck[item.id];
+        html+=`<div class="ck-item${done?' done':''}" onclick="APP.toggleCK('${item.id}',this)"><div class="ck-box"><i class="fa-solid fa-check"></i></div><span class="ck-label">${item.l}</span></div>`;
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+  });
+  el.innerHTML = html;
+  updateCKBar();
+}
+A.toggleCK = function(id,el){
+  if(A.S.ck[id]){ delete A.S.ck[id]; el.classList.remove('done'); }
+  else{ const n=new Date(); A.S.ck[id]=`${n.getMonth()+1}/${n.getDate()} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; el.classList.add('done'); }
+  updateCKBar();
+};
+function updateCKBar(){
+  const done=Object.keys(A.S.ck).length, total=CK.length, pct=Math.round(done/total*100);
+  document.getElementById('ck-bar').style.width=pct+'%';
+  document.getElementById('ck-pct').textContent=pct+'%';
+  const b=document.getElementById('ck-badge'); const rem=total-done;
+  if(rem>0){b.style.display='';b.textContent=rem;}else b.style.display='none';
+}
+
+// ── Stats filter ──
+let statRangeMode = 'all';
+let curStatTab = 'overview';
+A.statTab = function(tab){
+  curStatTab = tab;
+  document.querySelectorAll('.stat-tab').forEach(b=>b.classList.toggle('on',b.dataset.st===tab));
+  document.querySelectorAll('.stat-pane').forEach(p=>p.classList.toggle('active',p.id==='sp-'+tab));
+};
+A.statRange = function(mode){
+  statRangeMode = mode;
+  document.querySelectorAll('[data-sf]').forEach(b=>b.classList.toggle('on',b.dataset.sf===mode));
+  A.statRefresh();
+};
+A.statRefresh = function(){ loadStats(); };
+
+function getFilteredRecords(recs){
+  let filtered = recs;
+  const now = new Date();
+  // Date range
+  if(statRangeMode==='month'){
+    filtered = filtered.filter(r=>{ const d=new Date(r.caseDate||r.savedAt||r.created); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); });
+  } else if(statRangeMode==='3m'){
+    const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth()-3);
+    filtered = filtered.filter(r=>new Date(r.caseDate||r.savedAt||r.created)>=cutoff);
+  } else if(statRangeMode==='6m'){
+    const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth()-6);
+    filtered = filtered.filter(r=>new Date(r.caseDate||r.savedAt||r.created)>=cutoff);
+  } else if(statRangeMode==='year'){
+    filtered = filtered.filter(r=>new Date(r.caseDate||r.savedAt||r.created).getFullYear()===now.getFullYear());
+  } else if(statRangeMode==='custom'){
+    const from = document.getElementById('sf-from').value;
+    const to = document.getElementById('sf-to').value;
+    if(from) filtered = filtered.filter(r=>(r.caseDate||r.savedAt||r.created)>=from);
+    if(to) filtered = filtered.filter(r=>(r.caseDate||r.savedAt||r.created)<=to+'T23:59:59');
+  }
+  // Type
+  const tf = document.getElementById('sf-type').value;
+  if(tf) filtered = filtered.filter(r=>r.type===tf);
+  // Stage
+  const sf = document.getElementById('sf-stage').value;
+  if(sf) filtered = filtered.filter(r=>r.stage===sf);
+  return filtered;
+}
+
+// ── Stats render ──
+let charts={};
+async function loadStats(){
+  const allRecs = await getAll('records');
+  const recs = getFilteredRecords(allRecs);
+  const n = recs.length;
+  const now=new Date();
+  const thisM=recs.filter(r=>{const d=new Date(r.caseDate||r.savedAt||r.created);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">篩選結果</div></div>
+    <div class="stat-card"><div class="stat-num">${allRecs.length}</div><div class="stat-label">總收案</div></div>
+    <div class="stat-card"><div class="stat-num">${recs.filter(r=>r.type==='AD').length}</div><div class="stat-label">腺癌</div></div>
+    <div class="stat-card"><div class="stat-num">${recs.filter(r=>r.stage==='IV'||r.stage==='ES').length}</div><div class="stat-label">晚期</div></div>`;
+  mkChart('ch-type','doughnut',['腺癌','鱗癌','小細胞'],[recs.filter(r=>r.type==='AD').length,recs.filter(r=>r.type==='SCC').length,recs.filter(r=>r.type==='SCLC').length],['#10b981','#f59e0b','#ef4444']);
+  const stageKeys=['I-II','III','IV','LS','ES'];
+  mkChart('ch-stage','bar',stageKeys,stageKeys.map(s=>recs.filter(r=>r.stage===s).length),['#10b981','#f59e0b','#4f46e5','#ef4444','#dc2626']);
+  const mv=['EGFR','ALK','OTHER','NONE','PENDING','N/A'];
+  mkChart('ch-mut','doughnut',mv,mv.map(m=>recs.filter(r=>r.mutation===m).length),['#10b981','#2563eb','#8b5cf6','#94a3b8','#fbbf24','#d1d5db']);
+  const mo={}; recs.forEach(r=>{const d=r.caseDate||r.savedAt||r.created; const k=d.substring(0,7); mo[k]=(mo[k]||0)+1;});
+  const mk=Object.keys(mo).sort();
+  mkChart('ch-trend','line',mk,mk.map(k=>mo[k]),['#2563eb']);
+
+  // ── Checklist completion stats ──
+  if(n > 0){
+    const ckRates = CK.map(item => {
+      const done = recs.filter(r => r.ck && r.ck[item.id]).length;
+      return { id:item.id, label:item.l, done, pct: Math.round(done/n*100) };
+    }).sort((a,b) => a.pct - b.pct);
+    const allComplete = recs.filter(r => r.ck && Object.keys(r.ck).length === CK.length).length;
+    const avgItems = Math.round(recs.reduce((s,r) => s + (r.ck ? Object.keys(r.ck).length : 0), 0) / n * 10) / 10;
+    const worst = ckRates[0];
+    document.getElementById('ck-stat-cards').innerHTML = `
+      <div class="stat-card"><div class="stat-num">${Math.round(allComplete/n*100)}%</div><div class="stat-label">全數完成率</div></div>
+      <div class="stat-card"><div class="stat-num">${allComplete}/${n}</div><div class="stat-label">12項全完成</div></div>
+      <div class="stat-card"><div class="stat-num">${avgItems}</div><div class="stat-label">平均完成項數</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:18px;color:var(--rose)">${worst.pct}%</div><div class="stat-label">瓶頸：${worst.label}</div></div>`;
+    document.getElementById('ck-stat-bars').innerHTML = ckRates.map(item => {
+      const cls = item.pct>=70?'high':item.pct>=40?'mid':'low';
+      const clr = item.pct>=70?'var(--primary)':item.pct>=40?'var(--amber)':'var(--rose)';
+      return `<div class="ck-stat-row"><div class="ck-stat-label">${item.label}</div><div class="ck-stat-bar-wrap"><div class="ck-stat-bar-fill ${cls}" style="width:${item.pct}%"></div></div><div class="ck-stat-pct" style="color:${clr}">${item.pct}%</div></div>`;
+    }).join('');
+  } else {
+    document.getElementById('ck-stat-cards').innerHTML='';
+    document.getElementById('ck-stat-bars').innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">無資料</div>';
+  }
+
+  // ── Cross table: type × stage ──
+  const types=['AD','SCC','SCLC'];
+  const stages=['I-II','III','IV','LS','ES'];
+  let maxVal=0;
+  const grid={};
+  types.forEach(t=>{ grid[t]={}; stages.forEach(s=>{ grid[t][s]=recs.filter(r=>r.type===t&&r.stage===s).length; if(grid[t][s]>maxVal)maxVal=grid[t][s]; }); });
+  let ctHtml='<table class="cross-tbl"><thead><tr><th></th>';
+  stages.forEach(s=>ctHtml+=`<th>${s}</th>`);
+  ctHtml+='<th>合計</th></tr></thead><tbody>';
+  types.forEach(t=>{
+    const rowTotal=stages.reduce((s,st)=>s+grid[t][st],0);
+    ctHtml+=`<tr><th>${TYPE_LABEL[t]}</th>`;
+    stages.forEach(s=>{ const v=grid[t][s]; ctHtml+=`<td${v===maxVal&&v>0?' class="hi"':''}>${v}</td>`; });
+    ctHtml+=`<td>${rowTotal}</td></tr>`;
+  });
+  const colTotals=stages.map(s=>types.reduce((sum,t)=>sum+grid[t][s],0));
+  ctHtml+=`<tr><th>合計</th>${colTotals.map(v=>`<td>${v}</td>`).join('')}<td>${colTotals.reduce((a,b)=>a+b,0)}</td></tr>`;
+  ctHtml+='</tbody></table>';
+  document.getElementById('cross-table').innerHTML=ctHtml;
+
+  // ── Record table ──
+  document.getElementById('stat-tbody').innerHTML=recs.sort((a,b)=>(b.caseDate||b.savedAt||b.created).localeCompare(a.caseDate||a.savedAt||a.created)).map(r=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;font-family:'JetBrains Mono',monospace;font-size:12px">${r.caseDate||new Date(r.savedAt||r.created).toLocaleDateString('zh-TW')}</td><td style="padding:8px;font-weight:600">${r.code||'—'}</td><td style="padding:8px">${r.name||'—'}</td><td style="padding:8px">${TYPE_LABEL[r.type]||'—'}</td><td style="padding:8px">${r.stage||'—'}</td><td style="padding:8px">${r.mutation||'—'}</td><td style="padding:8px">${r.pdl1||'—'}</td><td style="padding:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;${r.ck&&Object.keys(r.ck).length===12?'color:var(--primary);font-weight:700':''}">${r.ck?Object.keys(r.ck).length:0}/12</span></td><td style="padding:8px"><button onclick="APP.del(${r.id},'saved')" style="color:var(--rose);font-size:12px;text-decoration:underline">刪除</button> <button onclick="APP.load(${r.id},'saved')" style="color:var(--accent);font-size:12px;text-decoration:underline;margin-left:4px">編輯</button></td></tr>`).join('');
+}
+function mkChart(id,type,labels,data,colors){
+  if(charts[id])charts[id].destroy();
+  const ctx=document.getElementById(id); if(!ctx)return;
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:type==='line'?'transparent':colors,borderColor:type==='line'?colors[0]:colors,borderWidth:type==='line'?3:1,tension:.4,pointRadius:type==='line'?4:0,pointBackgroundColor:type==='line'?colors[0]:undefined}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{font:{size:11,family:'Noto Sans TC'}}}},scales:(type==='bar'||type==='line')?{y:{beginAtZero:true,ticks:{stepSize:1}}}:undefined}});
+}
+
+// ── Export / Import ──
+A.exportCSV = async function(){
+  const r=await getAll('records'); if(!r.length){alert('無紀錄');return;}
+  const h=['收案日期','代號','姓名','性別','出生日期','年齡','ECOG','型態','分期','突變','PD-L1','檢查完成數','備註'];
+  const rows=r.map(x=>{const age=calcAgeFromDates(x.birthday,x.caseDate); return [x.caseDate||new Date(x.savedAt||x.created).toLocaleDateString('zh-TW'),x.code,x.name||'',x.gender,x.birthday||'',age!==null?age:'',x.ecog,x.type,x.stage,x.mutation,x.pdl1,x.ck?Object.keys(x.ck).length:0,(x.notes||'').replace(/\n/g,' ')];});
+  dl('\uFEFF'+[h,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'),CFG.id+'_records.csv','text/csv');
+  await put('settings',{key:'lastExport',value:new Date().toISOString()});
+};
+A.exportJSON = async function(){
+  const r=await getAll('records');
+  dl(JSON.stringify(r,null,2),CFG.id+'_records.json','application/json');
+  await put('settings',{key:'lastExport',value:new Date().toISOString()});
+};
+A.backupAll = async function(){
+  const records=await getAll('records');
+  const drafts=await getAll('drafts');
+  const settings=await getAll('settings');
+  const backup={version:2,exportedAt:new Date().toISOString(),records,drafts,settings};
+  dl(JSON.stringify(backup,null,2),CFG.id+'_backup_'+todayStr()+'.json','application/json');
+  await put('settings',{key:'lastExport',value:new Date().toISOString()});
+  alert('✅ 完整備份已下載（含紀錄、草稿、設定）');
+  loadBackupStatus();
+};
+A.handleRestore = async function(e){
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    if(!data.records||!Array.isArray(data.records)) throw 0;
+    if(!confirm(`確定還原？將匯入 ${data.records.length} 筆紀錄、${(data.drafts||[]).length} 筆草稿。\n（不會刪除現有資料，重複 ID 會覆蓋）`)) return;
+    for(const r of data.records){ await put('records',r); }
+    for(const d of (data.drafts||[])){ await put('drafts',d); }
+    for(const s of (data.settings||[])){ await put('settings',s); }
+    alert(`✅ 還原完成`);
+    loadStats();
+    loadBackupStatus();
+  } catch{ alert('❌ 備份檔格式錯誤'); }
+  e.target.value='';
+};
+A.handleImport = async function(e){
+  const f=e.target.files[0]; if(!f)return;
+  try{ const d=JSON.parse(await f.text()); if(!Array.isArray(d))throw 0; for(const r of d){delete r.id; await put('records',r);} alert(`✅ 匯入 ${d.length} 筆`); loadStats(); loadBackupStatus(); }
+  catch{alert('❌ 格式錯誤');}
+  e.target.value='';
+};
+function dl(c,n,t){ const b=new Blob([c],{type:t}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=n;a.click(); URL.revokeObjectURL(u); }
+
+// ── Backup status ──
+async function loadBackupStatus(){
+  try{
+    const lastExp = await get('settings','lastExport');
+    const el = document.getElementById('bk-last-time');
+    if(lastExp){
+      const d = new Date(lastExp.value);
+      el.textContent = d.toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'}) + ' ' + d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+      const days = (Date.now() - d.getTime()) / 86400000;
+      if(days > 30) document.getElementById('backup-warn').style.display='';
+      else document.getElementById('backup-warn').style.display='none';
+    } else {
+      el.textContent = '從未備份';
+      const recs = await getAll('records');
+      if(recs.length > 0) document.getElementById('backup-warn').style.display='';
+    }
+    // Also show record/draft counts
+    const recs = await getAll('records');
+    const drafts = await getAll('drafts');
+    const statusEl = document.getElementById('bk-status');
+    const existingCount = statusEl.querySelector('.bk-counts');
+    if(existingCount) existingCount.remove();
+    const countDiv = document.createElement('div');
+    countDiv.className = 'bk-counts';
+    countDiv.style.cssText = 'margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:20px;font-size:13px;color:var(--text2)';
+    countDiv.innerHTML = `<span><b style="color:var(--primary)">${recs.length}</b> 筆紀錄</span><span><b style="color:var(--amber)">${drafts.length}</b> 筆草稿</span>`;
+    statusEl.appendChild(countDiv);
+  }catch(e){}
+}
+
+// ── Touch swipe ──
+let tx=0,ty=0;
+document.querySelector('.content').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.querySelector('.content').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>80&&Math.abs(dx)>Math.abs(dy)*1.5){const i=PANELS.indexOf(cur);if(dx>0&&i>0)A.go(PANELS[i-1]);if(dx<0&&i<PANELS.length-1)A.go(PANELS[i+1]);}},{passive:true});
+
+// ── Init ──
+async function boot(){
+  await openDB();
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'});
+  document.getElementById('pt-casedate').value = todayStr();
+  A.S.caseDate = todayStr();
+  renderCK();
+  updateBar();
+  loadList();
+  updateTitle();
+}
+boot();
+
+})(APP);
+</script>
+</body>
+</html>
