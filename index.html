@@ -458,6 +458,27 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 .tx-exec-label{font-weight:600;font-size:14px}
 .tx-exec-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fafafa}
 
+/* ── Consultation / Team routing ── */
+.team-section{margin-top:16px}
+.team-title{font-size:15px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.team-card{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:8px;transition:.15s;flex-wrap:wrap}
+.team-card.seen{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 5%,var(--surface))}
+.team-card .t-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0}
+.team-card .t-info{flex:1;min-width:0}
+.team-card .t-dept{font-size:14px;font-weight:700;color:var(--text)}
+.team-card .t-hint{font-size:11px;color:var(--text3);margin-top:1px}
+.team-card .t-check{width:28px;height:28px;border-radius:7px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.15s;font-size:13px;color:transparent}
+.team-card .t-check.done{background:var(--primary);border-color:var(--primary);color:#fff}
+.team-card .t-doctor-wrap{width:100%;padding-left:50px;margin-top:6px;display:none}
+.team-card.seen .t-doctor-wrap{display:flex;gap:6px;flex-wrap:wrap}
+.t-doc-btn{padding:5px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;transition:.15s;color:var(--text2)}
+.t-doc-btn:hover{border-color:var(--primary);color:var(--primary)}
+.t-doc-btn.selected{background:var(--primary);border-color:var(--primary);color:#fff}
+.team-cm{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);background:color-mix(in srgb,#0891b2 6%,var(--surface));margin-bottom:8px;border-left:4px solid #0891b2}
+.team-cm .t-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0}
+.team-cm .t-dept{font-size:14px;font-weight:700;color:var(--text)}
+.team-cm .t-name{font-size:13px;color:#0891b2;font-weight:600;margin-top:1px}
+
 /* ── Biomarker Panel ── */
 .bio-panel{margin-top:12px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
 .bio-toggle{width:100%;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:none;cursor:pointer;font-size:15px;font-weight:700;color:var(--text);font-family:inherit}
@@ -809,6 +830,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
             <div id="pw-goal"></div>
             <div id="pw-content"></div>
             <div id="pw-tx-exec" class="tx-exec" style="margin-top:16px"></div>
+            <div id="pw-consult" style="margin-top:16px"></div>
           </div>
           <div class="pw-cost" id="pw-cost"></div>
         </div>
@@ -1033,6 +1055,15 @@ const CFG = {
     {v:'SCLC', l:'SCLC', desc:'小細胞肺癌（約15%）', icon:'fa-solid fa-bolt', color:'rose'},
   ],
   typeLabel: {NSCLC_NS:'非鱗NSCLC',NSCLC_SQ:'鱗狀NSCLC',SCLC:'SCLC'},
+  // ── 照護團隊（三大科 + 個管） ──
+  team: {
+    depts: [
+      {id:'surgery',  dept:'外科', fullDept:'胸腔外科', doctors:['李佳穎','黃榆涵'], icon:'fa-solid fa-lungs', color:'#059669'},
+      {id:'medicine', dept:'內科', fullDept:'胸腔內科／血液腫瘤科', doctors:['張竣期','張正雄','吳敬炫','劉大智'], icon:'fa-solid fa-stethoscope', color:'#2563eb'},
+      {id:'radonc',   dept:'放腫', fullDept:'放射腫瘤科', doctors:['熊敬業','劉育昌','林伯儒'], icon:'fa-solid fa-radiation', color:'#dc2626'},
+    ],
+    caseManager: {name:'郭美伶', title:'個案管理師', icon:'fa-solid fa-user-nurse', color:'#0891b2'},
+  },
   stages: {
     NSCLC_NS:[{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
     NSCLC_SQ:[{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
@@ -1116,7 +1147,7 @@ let cur = 'patient';
 let db;
 
 // Session = current working patient (added tstage, nstage, mstage)
-A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},bio:{},created:new Date().toISOString()};
+A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
 let editId = null;
 let draftId = null;
 
@@ -1202,7 +1233,7 @@ async function autoUpdateRecord(){
   try{
     const existing = await get('records', editId);
     if(!existing) return;
-    Object.assign(existing, {ck:A.S.ck, notes:A.S.notes, code:A.S.code, name:A.S.name, caseDate:A.S.caseDate, dateDiag:A.S.dateDiag, dateTx:A.S.dateTx, dateMdm:A.S.dateMdm, gender:A.S.gender, birthday:A.S.birthday, ecog:A.S.ecog, actualTx:A.S.actualTx||{}, mutSite:A.S.mutSite, bio:A.S.bio||{}});
+    Object.assign(existing, {ck:A.S.ck, notes:A.S.notes, code:A.S.code, name:A.S.name, caseDate:A.S.caseDate, dateDiag:A.S.dateDiag, dateTx:A.S.dateTx, dateMdm:A.S.dateMdm, gender:A.S.gender, birthday:A.S.birthday, ecog:A.S.ecog, actualTx:A.S.actualTx||{}, mutSite:A.S.mutSite, bio:A.S.bio||{},consult:A.S.consult||{}});
     await put('records', existing);
   }catch(e){}
 }
@@ -1325,6 +1356,7 @@ A.load = async function(id, kind){
   if(!A.S.bio) A.S.bio = {};
   if(!A.S.actualTx) A.S.actualTx = {};
   if(!A.S.ck) A.S.ck = {};
+  if(!A.S.consult) A.S.consult = {};
   editId = kind==='saved' ? id : null;
   draftId = kind==='draft' ? id : null;
   document.getElementById('pt-code').value = A.S.code||'';
@@ -1362,7 +1394,7 @@ function updateTitle(){
 A.newPatient = function(){
   if(!confirm('開始新病人？')) return;
   editId=null; draftId=null;
-  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},bio:{},created:new Date().toISOString()};
+  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
   document.getElementById('pt-code').value='';
   document.getElementById('pt-name').value='';
   document.getElementById('pt-casedate').value=todayStr();
@@ -1557,6 +1589,8 @@ function renderPW(){
   }
   // Render treatment execution checklist
   renderTxExec();
+  // Render consultation routing
+  renderConsult();
 }
 
 const PW = {
@@ -1909,6 +1943,66 @@ function renderTxExec(){
   el.innerHTML = h;
 }
 
+// ── Consultation / Team Routing ──
+function renderConsult(){
+  const el = document.getElementById('pw-consult');
+  if(!el) return;
+  if(!A.S.type||!A.S.stage){ el.innerHTML=''; return; }
+  if(!A.S.consult) A.S.consult = {};
+  const tm = CFG.team;
+  let h = '<div class="team-title"><i class="fa-solid fa-users-between-lines" style="color:var(--primary)"></i> 照護團隊（三大科會診）</div>';
+  // 3 departments
+  tm.depts.forEach(d=>{
+    const rec = A.S.consult[d.id]; // {doctor:'...'} or undefined
+    const seen = !!rec;
+    h += `<div class="team-card${seen?' seen':''}">`;
+    h += `<div class="t-icon" style="background:${d.color}"><i class="${d.icon}"></i></div>`;
+    h += `<div class="t-info"><div class="t-dept">${d.dept}</div>`;
+    h += `<div class="t-hint">${seen ? '主治：'+rec.doctor : '點右側 ✓ 標記已看診'}</div></div>`;
+    h += `<div class="t-check${seen?' done':''}" onclick="APP.toggleTeamDept('${d.id}')" title="標記已看診"><i class="fa-solid fa-check"></i></div>`;
+    // Doctor selector row (visible only when seen)
+    h += `<div class="t-doctor-wrap">`;
+    d.doctors.forEach(doc=>{
+      const sel = rec && rec.doctor===doc;
+      h += `<div class="t-doc-btn${sel?' selected':''}" onclick="APP.pickTeamDoc('${d.id}','${doc}')">${doc}</div>`;
+    });
+    h += `</div></div>`;
+  });
+  // Case manager — always shown, fixed
+  const cm = tm.caseManager;
+  h += `<div class="team-cm">`;
+  h += `<div class="t-icon" style="background:${cm.color}"><i class="${cm.icon}"></i></div>`;
+  h += `<div><div class="t-dept">${cm.title}</div><div class="t-name">${cm.name}（固定配置）</div></div>`;
+  h += `</div>`;
+  // Progress
+  const total = tm.depts.length;
+  const done = tm.depts.filter(d=>A.S.consult[d.id]).length;
+  const allDone = done===total;
+  h += `<div style="font-size:12px;font-weight:700;color:${allDone?'var(--primary)':'var(--amber)'};margin-top:4px;text-align:right">${done}/${total} 科已看診${allDone?' ✓':''}</div>`;
+  el.innerHTML = h;
+}
+
+A.toggleTeamDept = function(deptId){
+  if(!A.S.consult) A.S.consult = {};
+  if(A.S.consult[deptId]){
+    delete A.S.consult[deptId];
+  } else {
+    // Default to first doctor
+    const dept = CFG.team.depts.find(d=>d.id===deptId);
+    A.S.consult[deptId] = {doctor: dept ? dept.doctors[0] : ''};
+  }
+  renderConsult();
+};
+
+A.pickTeamDoc = function(deptId, docName){
+  if(!A.S.consult) A.S.consult = {};
+  if(!A.S.consult[deptId]){
+    A.S.consult[deptId] = {};
+  }
+  A.S.consult[deptId].doctor = docName;
+  renderConsult();
+};
+
 // ── Mutation site input handler ──
 A.setMutSite = function(v){ A.S.mutSite = v; };
 
@@ -2067,6 +2161,10 @@ function checkKPI(){
   const ckTotal = reqItems.length;
   const ckLabel = S.stage ? `必要檢查完整 (${S.stage})` : '檢查完整性';
   items.push({label:ckLabel, ok: ckDone===ckTotal, detail: ckDone+'/'+ckTotal});
+  // Consultation: 3 depts all seen
+  const teamDepts = CFG.team.depts;
+  const consultDone = teamDepts.filter(d=>S.consult?.[d.id]).length;
+  items.push({label:'三大科會診完成', ok: consultDone===teamDepts.length, detail: consultDone+'/'+teamDepts.length});
   // Strategy compliance: validate actual treatment against stage
   let stratOk = true, stratDetail = '符合';
   const tx = S.actualTx || {};
@@ -2134,6 +2232,19 @@ function renderEduHandout(){
   h += `<div><b>診斷：</b>${typeLabel}</div>`;
   h += `<div><b>分期：</b>Stage ${S.stage||'尚未分期'}</div>`;
   h += '</div>';
+  // ── 您的照護團隊 ──
+  h += '<div class="edu-section"><h4><i class="fa-solid fa-user-doctor"></i> 您的照護團隊</h4>';
+  h += '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:6px">';
+  const tm = CFG.team;
+  tm.depts.forEach(d=>{
+    const rec = S.consult?.[d.id];
+    const docName = rec ? rec.doctor : '（待安排）';
+    const style = rec ? 'font-weight:700;color:#166534' : 'color:#999;font-style:italic';
+    h += `<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px 8px;font-weight:600;white-space:nowrap">${d.fullDept}</td><td style="padding:6px 8px;${style}">${rec ? docName+' 醫師' : docName}</td></tr>`;
+  });
+  h += `<tr style="border-bottom:1px solid #e5e7eb;background:#f0fdfa"><td style="padding:6px 8px;font-weight:600">${tm.caseManager.title}</td><td style="padding:6px 8px;font-weight:700;color:#0891b2">${tm.caseManager.name}</td></tr>`;
+  h += '</table>';
+  h += '<p style="margin-top:8px;font-size:12px;color:var(--text3)">如有任何疑問，請隨時聯繫您的個案管理師。</p></div>';
   h += '<div class="edu-section"><h4><i class="fa-solid fa-bullseye"></i> 治療目標</h4>';
   h += `<p>${goals.goal}</p></div>`;
   h += '<div class="edu-section"><h4><i class="fa-solid fa-flask"></i> 建議治療方案</h4>';
@@ -2148,7 +2259,7 @@ function renderEduHandout(){
   h += '<li><i class="fa-solid fa-circle-exclamation"></i> 嚴重皮疹/腹瀉/黃疸（免疫副作用）</li>';
   h += '</ul></div>';
   h += `<div style="margin-top:16px;padding:12px 16px;background:var(--surface2);border-radius:10px;font-size:12px;color:var(--text3)">`;
-  h += `<b>個管師聯繫方式：</b>__________________ &nbsp;&nbsp; <b>看診日期：</b>__________________`;
+  h += `<b>個案管理師：</b>${tm.caseManager.name} &nbsp;&nbsp; <b>聯繫電話：</b>__________________ &nbsp;&nbsp; <b>看診日期：</b>__________________`;
   h += '</div></div></div>';
   el.innerHTML = h;
 }
@@ -2168,7 +2279,7 @@ A.save = async function(){
   }
   readForm();
   const now = new Date().toISOString();
-  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},created:A.S.created,savedAt:now};
+  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},consult:A.S.consult||{},created:A.S.created,savedAt:now};
   let isNew = !editId;
   if(editId){ rec.id = editId; await put('records', rec); }
   else { await put('records', rec); if(draftId){ await del('drafts',draftId); draftId=null; } const all = await getAll('records'); editId = all[all.length-1]?.id; }
@@ -2285,6 +2396,20 @@ function renderSummary(){
       const txLabels = TX_EXEC_OPTIONS.filter(t=>txExecDone.includes(t.id)).map(t=>t.label);
       txH += `<div class="stx"><div class="tl">✅ 已執行治療</div><div class="tv">${txLabels.join('、')}</div></div>`;
     }
+    // Care team summary
+    const tm = CFG.team;
+    const teamDone = tm.depts.filter(d=>S.consult?.[d.id]);
+    const teamRemain = tm.depts.filter(d=>!S.consult?.[d.id]);
+    txH += '<div class="stx"><div class="tl">🏥 照護團隊</div><div class="tv">';
+    if(teamDone.length){
+      txH += teamDone.map(d=>`<span style="font-weight:700">${d.dept}</span>：${S.consult[d.id].doctor} ✓`).join('<br>');
+    }
+    if(teamRemain.length){
+      if(teamDone.length) txH += '<br>';
+      txH += '<span style="color:var(--rose)">待看診：</span>' + teamRemain.map(d=>d.dept).join('、');
+    }
+    txH += `<br><span style="font-weight:700">${tm.caseManager.title}</span>：${tm.caseManager.name}`;
+    txH += `</div></div>`;
   } else { txH += '<div style="padding:8px 0;color:var(--text3);font-size:15px">尚未完成決策</div>'; }
   document.getElementById('sum-treatment').innerHTML = txH;
 
@@ -2352,9 +2477,23 @@ function renderCK(){
     let h = `<div class="ck-grp-pane${i===ckCurTab?' active':''}" data-ckpane="${i}">`;
     h += `<div class="ck-grp-title"><i class="${icon}"></i> ${g.title}</div>`;
     h += '<div class="ck-grp-items">';
-    g.items.forEach(item=>{
+    // Sort: required items first, optional items last
+    const sorted = [...g.items].sort((a,b)=>{
+      const aReq = isItemRequired(a, type, stage);
+      const bReq = isItemRequired(b, type, stage);
+      if(aReq && !bReq) return -1;
+      if(!aReq && bReq) return 1;
+      return 0;
+    });
+    let shownOptHeader = false;
+    sorted.forEach(item=>{
       const done = A.S.ck[item.id];
       const isReq = isItemRequired(item, type, stage);
+      // Insert divider before first optional item
+      if(hasStage && !isReq && !shownOptHeader){
+        shownOptHeader = true;
+        h += '<div style="padding:6px 0 4px;margin-top:6px;border-top:1px dashed var(--border);font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">▾ 選擇性項目</div>';
+      }
       const timeStr = done ? `<div class="ck-label-time">✓ ${done}</div>` : '';
       const reqBadge = hasStage ? (isReq
         ? '<span style="font-size:10px;font-weight:700;color:var(--rose);margin-left:6px;padding:1px 6px;border:1px solid var(--rose-border);border-radius:4px;background:var(--rose-light)">必要</span>'
@@ -2527,10 +2666,14 @@ async function loadStats(){
       const reqCk = r.stage ? getRequiredCK(r.type, r.stage) : CK;
       const reqDone = reqCk.filter(it=>r.ck?.[it.id]).length;
       const ckComplete = reqDone === reqCk.length;
+      // Consultation
+      const teamDepts = CFG.team.depts;
+      const consultDone = teamDepts.filter(d=>r.consult?.[d.id]).length;
+      const consultOk = consultDone===teamDepts.length;
       const diagOk = dtDiag !== null ? dtDiag <= 14 : null;
       const txOk = dtTx !== null ? dtTx <= 42 : null;
-      const allPass = diagOk===true && txOk===true && mdtOk && ckComplete;
-      return {code:r.code||'—', name:r.name||'', stage:r.stage||'', dtDiag, dtTx, hasMdt, mdtOk, mdtBeforeTx, dateMdm:r.dateMdm||'', ckComplete, reqDone, reqTotal:reqCk.length, diagOk, txOk, allPass};
+      const allPass = diagOk===true && txOk===true && mdtOk && ckComplete && consultOk;
+      return {code:r.code||'—', name:r.name||'', stage:r.stage||'', dtDiag, dtTx, hasMdt, mdtOk, mdtBeforeTx, dateMdm:r.dateMdm||'', ckComplete, consultOk, consultDone, consultTotal:teamDepts.length, reqDone, reqTotal:reqCk.length, diagOk, txOk, allPass};
     });
 
     // Aggregate
@@ -2540,6 +2683,7 @@ async function loadStats(){
     const txPassN = withTx.filter(k=>k.txOk).length;
     const mdtN = kpiResults.filter(k=>k.mdtOk).length;
     const ckPassN = kpiResults.filter(k=>k.ckComplete).length;
+    const consultPassN = kpiResults.filter(k=>k.consultOk).length;
     const allPassN = kpiResults.filter(k=>k.allPass).length;
 
     const medianDiag = withDiag.length ? withDiag.map(k=>k.dtDiag).sort((a,b)=>a-b)[Math.floor(withDiag.length/2)] : '—';
@@ -2550,6 +2694,7 @@ async function loadStats(){
     const pctTx = withTx.length ? Math.round(txPassN/withTx.length*100) : 0;
     const pctMdt = Math.round(mdtN/n*100);
     const pctCk = Math.round(ckPassN/n*100);
+    const pctConsult = Math.round(consultPassN/n*100);
 
     document.getElementById('kpi-stat-cards').innerHTML = `
       <div class="stat-card"><div class="stat-num" style="color:${pctAll>=80?'var(--primary)':pctAll>=50?'var(--amber)':'var(--rose)'}">${pctAll}%</div><div class="stat-label">KPI 全達標</div></div>
@@ -2558,8 +2703,8 @@ async function loadStats(){
       <div class="stat-card"><div class="stat-num">${allPassN}/${n}</div><div class="stat-label">全達標人數</div></div>`;
 
     // KPI bar chart
-    const kpiLabels = ['收案→確診≤14天','收案→首治≤42天','治療前MDT','必要檢查完成','全部達標'];
-    const kpiPcts = [pctDiag, pctTx, pctMdt, pctCk, pctAll];
+    const kpiLabels = ['收案→確診≤14天','收案→首治≤42天','治療前MDT','必要檢查完成','三大科會診','全部達標'];
+    const kpiPcts = [pctDiag, pctTx, pctMdt, pctCk, pctConsult, pctAll];
     const kpiColors = kpiPcts.map(p=>p>=80?'#10b981':p>=50?'#f59e0b':'#ef4444');
     mkChart('ch-kpi-bar','bar',kpiLabels,kpiPcts,kpiColors);
     if(charts['ch-kpi-bar']){
@@ -2588,7 +2733,7 @@ async function loadStats(){
     let dtH = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid var(--border)">';
     dtH += '<th style="padding:8px;text-align:left">代號</th><th style="padding:8px">期別</th>';
     dtH += '<th style="padding:8px">確診天數</th><th style="padding:8px">首治天數</th>';
-    dtH += '<th style="padding:8px">治療前MDT</th><th style="padding:8px">必要檢查</th><th style="padding:8px">達標</th></tr></thead><tbody>';
+    dtH += '<th style="padding:8px">治療前MDT</th><th style="padding:8px">必要檢查</th><th style="padding:8px">會診</th><th style="padding:8px">達標</th></tr></thead><tbody>';
     kpiResults.forEach(k => {
       const tagStyle = ok => ok===true ? 'color:#166534;background:#dcfce7' : ok===false ? 'color:#991b1b;background:#fee2e2' : 'color:var(--text3);background:var(--surface2)';
       const tag = (ok,txt) => `<span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;${tagStyle(ok)}">${txt}</span>`;
@@ -2599,6 +2744,7 @@ async function loadStats(){
       dtH += `<td style="padding:6px 8px;text-align:center">${k.dtTx!==null?tag(k.txOk,k.dtTx+'天'):tag(null,'未填')}</td>`;
       dtH += `<td style="padding:6px 8px;text-align:center">${k.hasMdt ? tag(k.mdtOk, k.mdtOk?'✓治療前':'✗治療後') : tag(null,'未填')}</td>`;
       dtH += `<td style="padding:6px 8px;text-align:center">${tag(k.ckComplete,k.reqDone+'/'+k.reqTotal)}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${tag(k.consultOk,k.consultDone+'/'+k.consultTotal)}</td>`;
       dtH += `<td style="padding:6px 8px;text-align:center">${tag(k.allPass,k.allPass?'全達標':'未達')}</td>`;
       dtH += `</tr>`;
     });
@@ -2646,8 +2792,9 @@ function mkChart(id,type,labels,data,colors){
 A.exportCSV = async function(){
   const r=await getAll('records'); if(!r.length){alert('無紀錄');return;}
   const bioHeaders = BIO_MARKERS.map(m => m.name);
-  const h=['收案日期','確診日期','首治日期','MDT日期','代號','姓名','性別','出生日期','年齡','ECOG','組織學','T','N','M','AJCC Stage','驅動基因/PD-L1','位點/表現',...bioHeaders,'必要檢查完成','全部檢查完成','實際治療','備註'];
-  const rows=r.map(x=>{const age=calcAgeFromDates(x.birthday,x.caseDate); const txExec=x.actualTx?Object.keys(x.actualTx).join(';'):''; const reqCk=x.stage?getRequiredCK(x.type,x.stage):CK; const reqDone=reqCk.filter(it=>x.ck?.[it.id]).length; const bio=x.bio||{}; const bioCols=BIO_MARKERS.map(m=>{const b=bio[m.id]; if(!b||!b.s) return ''; let t=b.s==='+' ?'(+)':'(-)'; if(b.v) t+=' '+b.v+(m.unit||'%'); if(b.d) t+=' '+b.d; return t;}); return [x.caseDate||new Date(x.savedAt||x.created).toLocaleDateString('zh-TW'),x.dateDiag||'',x.dateTx||'',x.dateMdm||'',x.code,x.name||'',x.gender,x.birthday||'',age!==null?age:'',x.ecog,x.type,x.tstage||'',x.nstage||'',x.mstage||'',x.stage,x.mutation||'',x.mutSite||'',...bioCols,reqDone+'/'+reqCk.length,(x.ck?Object.keys(x.ck).length:0)+'/'+CK.length,txExec,(x.notes||'').replace(/\n/g,' ')];});
+  const consultHeaders = CFG.team.depts.map(d=>d.dept+'主治');
+  const h=['收案日期','確診日期','首治日期','MDT日期','代號','姓名','性別','出生日期','年齡','ECOG','組織學','T','N','M','AJCC Stage','驅動基因/PD-L1','位點/表現',...bioHeaders,'必要檢查完成','全部檢查完成','實際治療',...consultHeaders,'個管師','備註'];
+  const rows=r.map(x=>{const age=calcAgeFromDates(x.birthday,x.caseDate); const txExec=x.actualTx?Object.keys(x.actualTx).join(';'):''; const reqCk=x.stage?getRequiredCK(x.type,x.stage):CK; const reqDone=reqCk.filter(it=>x.ck?.[it.id]).length; const bio=x.bio||{}; const bioCols=BIO_MARKERS.map(m=>{const b=bio[m.id]; if(!b||!b.s) return ''; let t=b.s==='+' ?'(+)':'(-)'; if(b.v) t+=' '+b.v+(m.unit||'%'); if(b.d) t+=' '+b.d; return t;}); const consultCols=CFG.team.depts.map(d=>x.consult?.[d.id]?.doctor||''); return [x.caseDate||new Date(x.savedAt||x.created).toLocaleDateString('zh-TW'),x.dateDiag||'',x.dateTx||'',x.dateMdm||'',x.code,x.name||'',x.gender,x.birthday||'',age!==null?age:'',x.ecog,x.type,x.tstage||'',x.nstage||'',x.mstage||'',x.stage,x.mutation||'',x.mutSite||'',...bioCols,reqDone+'/'+reqCk.length,(x.ck?Object.keys(x.ck).length:0)+'/'+CK.length,txExec,...consultCols,CFG.team.caseManager.name,(x.notes||'').replace(/\n/g,' ')];});
   dl('\uFEFF'+[h,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'),CFG.id+'_records.csv','text/csv');
   await put('settings',{key:'lastExport',value:new Date().toISOString()});
 };
