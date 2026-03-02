@@ -458,6 +458,36 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 .tx-exec-label{font-weight:600;font-size:14px}
 .tx-exec-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fafafa}
 
+/* ── Biomarker Panel ── */
+.bio-panel{margin-top:12px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
+.bio-toggle{width:100%;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:none;cursor:pointer;font-size:15px;font-weight:700;color:var(--text);font-family:inherit}
+.bio-toggle i.fa-chevron-down{transition:transform .2s}
+.bio-toggle.open i.fa-chevron-down{transform:rotate(180deg)}
+#ck-bio-wrap .bio-body{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.bio-body{display:none;padding:16px 20px}
+.bio-body.show{display:block}
+.bio-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}
+.bio-row:last-child{border-bottom:none}
+.bio-name{width:110px;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0}
+.bio-btns{display:flex;gap:4px;flex-shrink:0}
+.bio-btn{padding:4px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:var(--text3);transition:.15s}
+.bio-btn:hover{border-color:var(--primary)}
+.bio-btn.pos{background:#dcfce7;color:#166534;border-color:#86efac}
+.bio-btn.neg{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.bio-btn.na{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+.bio-detail{flex:1;min-width:0}
+.bio-detail input{width:100%;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);outline:none;transition:.2s}
+.bio-detail input:focus{border-color:var(--primary)}
+.bio-pct{width:80px;flex-shrink:0}
+.bio-pct input{width:100%;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:700;text-align:center;background:var(--surface);outline:none}
+.bio-pct input:focus{border-color:var(--primary)}
+.bio-summary{padding:10px 0;font-size:12px;color:var(--text3);border-top:1px dashed var(--border);margin-top:4px}
+@media(max-width:768px){
+  .bio-row{flex-wrap:wrap;gap:6px}
+  .bio-name{width:90px;font-size:12px}
+  .bio-detail{min-width:100%;order:4}
+}
+
 /* ── Mutation site input ── */
 .mut-site-input{margin-top:6px;width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);transition:border-color .2s}
 .mut-site-input:focus{border-color:var(--primary);outline:none;background:var(--primary-light)}
@@ -808,6 +838,13 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           </div>
           <div class="ck-tabs" id="ck-tabs"></div>
           <div class="ck-body" id="ck-list"></div>
+          <!-- Biomarker panel: shown when c10/c11 checked -->
+          <div id="ck-bio-wrap" style="display:none;flex-shrink:0;border-top:2px solid var(--primary);padding:0">
+            <div class="bio-panel" style="border:none;border-radius:0">
+              <button class="bio-toggle open" onclick="APP.toggleBioPanel(this)"><span><i class="fa-solid fa-dna" style="color:var(--primary);margin-right:8px"></i>基因檢測結果 (NGS/IHC) <span style="font-size:12px;font-weight:400;color:var(--rose)">— 勾選基因檢測後必填</span></span><i class="fa-solid fa-chevron-down"></i></button>
+              <div class="bio-body show" id="bio-body"></div>
+            </div>
+          </div>
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="ck-prev" onclick="APP.ckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
             <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
@@ -850,6 +887,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <!-- Tab row -->
           <div class="stat-tabs" id="stat-tabs">
             <button class="stat-tab on" data-st="overview" onclick="APP.statTab('overview')"><i class="fa-solid fa-chart-simple"></i> 概覽</button>
+            <button class="stat-tab" data-st="kpi" onclick="APP.statTab('kpi')"><i class="fa-solid fa-gauge-high"></i> KPI</button>
             <button class="stat-tab" data-st="muttrend" onclick="APP.statTab('muttrend')"><i class="fa-solid fa-dna"></i> 分子標記</button>
             <button class="stat-tab" data-st="checklist" onclick="APP.statTab('checklist')"><i class="fa-solid fa-clipboard-check"></i> 檢查分析</button>
             <button class="stat-tab" data-st="cross" onclick="APP.statTab('cross')"><i class="fa-solid fa-table-cells"></i> 交叉表</button>
@@ -863,6 +901,14 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
                 <div class="chart-wrap"><h4><i class="fa-solid fa-chart-pie" style="color:var(--primary);margin-right:4px"></i>型態分布</h4><canvas id="ch-type"></canvas></div>
                 <div class="chart-wrap"><h4><i class="fa-solid fa-chart-bar" style="color:var(--accent);margin-right:4px"></i>分期分布</h4><canvas id="ch-stage"></canvas></div>
               </div>
+            </div>
+            <div class="stat-pane" id="sp-kpi">
+              <div class="grid-4" id="kpi-stat-cards" style="margin-bottom:16px"></div>
+              <div class="grid-2" style="margin-bottom:16px">
+                <div class="chart-wrap"><h4><i class="fa-solid fa-gauge-high" style="color:var(--primary);margin-right:4px"></i>KPI 達成率</h4><canvas id="ch-kpi-bar"></canvas></div>
+                <div class="chart-wrap"><h4><i class="fa-solid fa-clock" style="color:var(--amber);margin-right:4px"></i>時效分布</h4><canvas id="ch-kpi-time"></canvas></div>
+              </div>
+              <div class="card" style="margin-bottom:16px"><div id="kpi-detail-table" style="overflow-x:auto"></div></div>
             </div>
             <div class="stat-pane" id="sp-muttrend">
               <div class="grid-2">
@@ -1029,7 +1075,7 @@ let cur = 'patient';
 let db;
 
 // Session = current working patient (added tstage, nstage, mstage)
-A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},created:new Date().toISOString()};
+A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},bio:{},created:new Date().toISOString()};
 let editId = null;
 let draftId = null;
 
@@ -1115,7 +1161,7 @@ async function autoUpdateRecord(){
   try{
     const existing = await get('records', editId);
     if(!existing) return;
-    Object.assign(existing, {ck:A.S.ck, notes:A.S.notes, code:A.S.code, name:A.S.name, caseDate:A.S.caseDate, dateDiag:A.S.dateDiag, dateTx:A.S.dateTx, dateMdm:A.S.dateMdm, gender:A.S.gender, birthday:A.S.birthday, ecog:A.S.ecog, actualTx:A.S.actualTx||{}, mutSite:A.S.mutSite});
+    Object.assign(existing, {ck:A.S.ck, notes:A.S.notes, code:A.S.code, name:A.S.name, caseDate:A.S.caseDate, dateDiag:A.S.dateDiag, dateTx:A.S.dateTx, dateMdm:A.S.dateMdm, gender:A.S.gender, birthday:A.S.birthday, ecog:A.S.ecog, actualTx:A.S.actualTx||{}, mutSite:A.S.mutSite, bio:A.S.bio||{}});
     await put('records', existing);
   }catch(e){}
 }
@@ -1235,6 +1281,9 @@ A.load = async function(id, kind){
   const obj = kind==='saved' ? await get('records',id) : await get('drafts',id);
   if(!obj) return;
   A.S = {...obj};
+  if(!A.S.bio) A.S.bio = {};
+  if(!A.S.actualTx) A.S.actualTx = {};
+  if(!A.S.ck) A.S.ck = {};
   editId = kind==='saved' ? id : null;
   draftId = kind==='draft' ? id : null;
   document.getElementById('pt-code').value = A.S.code||'';
@@ -1249,6 +1298,7 @@ A.load = async function(id, kind){
   document.querySelectorAll('.ecog-btn').forEach(b=>b.classList.toggle('selected',b.dataset.val===A.S.ecog));
   A.calcAge();
   restoreDT();
+  restoreBioPanel();
   renderCK();
   updateTitle();
   A.go('patient');
@@ -1271,7 +1321,7 @@ function updateTitle(){
 A.newPatient = function(){
   if(!confirm('開始新病人？')) return;
   editId=null; draftId=null;
-  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},created:new Date().toISOString()};
+  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',notes:'',ck:{},actualTx:{},bio:{},created:new Date().toISOString()};
   document.getElementById('pt-code').value='';
   document.getElementById('pt-name').value='';
   document.getElementById('pt-casedate').value=todayStr();
@@ -1284,6 +1334,7 @@ A.newPatient = function(){
   document.querySelectorAll('.gender-btn,.ecog-btn,.dt-btn').forEach(b=>b.classList.remove('selected'));
   dtShowCard(1);
   updateTitle();
+  restoreBioPanel();
   renderCK();
   A.go('patient');
 };
@@ -1756,19 +1807,32 @@ const STAGE_GOALS = {
 
 // ── Treatment Execution Options ──
 const TX_EXEC_OPTIONS = [
-  {id:'surgery',label:'外科根除手術'},
-  {id:'neoadj_io_chemo',label:'術前前導治療 (IO+化療)'},
-  {id:'adj_chemo',label:'術後輔助化療 (Adjuvant)'},
-  {id:'adj_target',label:'術後標靶鞏固 (如 Osimertinib)'},
-  {id:'adj_io',label:'術後免疫鞏固'},
-  {id:'ccrt',label:'同步化放療 (CCRT)'},
-  {id:'io_consolidation',label:'免疫鞏固治療 (Durvalumab)'},
-  {id:'target_1l',label:'一線標靶藥物 (TKI)'},
-  {id:'io_chemo_combo',label:'晚期免疫+化療'},
-  {id:'io_mono',label:'免疫單藥治療'},
-  {id:'pci',label:'預防性全腦照射 (PCI)'},
-  {id:'sabr',label:'SABR/SBRT 放射治療'},
-  {id:'palliative',label:'支持性/姑息治療'}
+  // ── 手術相關 ──
+  {id:'surgery',      label:'外科根除手術',               cat:'手術'},
+  {id:'neoadj_chemo', label:'術前前導化療 (Neoadjuvant)',  cat:'手術'},
+  {id:'neoadj_io_chemo',label:'術前前導 IO+化療 (如 CM816)',cat:'手術'},
+  {id:'adj_chemo',    label:'術後輔助化療 (Adjuvant)',     cat:'手術'},
+  {id:'adj_target',   label:'術後標靶鞏固 (如 Osimertinib)',cat:'手術'},
+  {id:'adj_io',       label:'術後免疫鞏固',                cat:'手術'},
+  // ── 放射治療 ──
+  {id:'ccrt',         label:'同步化放療 (CCRT)',           cat:'放療'},
+  {id:'seq_crt',      label:'序貫化療→放療',              cat:'放療'},
+  {id:'io_consolidation',label:'放療後免疫鞏固 (Durvalumab)',cat:'放療'},
+  {id:'sabr',         label:'SABR/SBRT 立體定位放射',     cat:'放療'},
+  {id:'pci',          label:'預防性全腦照射 (PCI)',        cat:'放療'},
+  {id:'palliative_rt',label:'姑息性放療 (骨/腦/症狀)',     cat:'放療'},
+  // ── 全身治療 ──
+  {id:'chemo_alone',  label:'單用化療 (鉑類雙藥)',         cat:'全身'},
+  {id:'target_1l',    label:'一線標靶 TKI',               cat:'全身'},
+  {id:'io_chemo_combo',label:'免疫+化療合併',              cat:'全身'},
+  {id:'io_mono',      label:'免疫單藥 (如 PD-L1≥50%)',    cat:'全身'},
+  {id:'maintenance',  label:'維持治療 (Peme/IO)',          cat:'全身'},
+  // ── 後線/其他 ──
+  {id:'chemo_2l',     label:'二線化療 (Docetaxel 等)',     cat:'後線'},
+  {id:'target_2l',    label:'後線標靶 (T790M→Osi 等)',    cat:'後線'},
+  {id:'io_2l',        label:'後線免疫治療',                cat:'後線'},
+  {id:'clinical_trial',label:'臨床試驗',                   cat:'後線'},
+  {id:'palliative',   label:'最佳支持照護 (BSC)',          cat:'後線'},
 ];
 
 A.toggleTxExec = function(id){
@@ -1783,13 +1847,22 @@ function renderTxExec(){
   if(!el) return;
   if(!A.S.type||!A.S.stage){ el.innerHTML=''; return; }
   let h = '<div class="tx-exec-title"><i class="fa-solid fa-square-check" style="color:var(--primary)"></i> 實際執行治療策略</div>';
-  h += '<div class="tx-exec-wrap">';
+  // Group by category
+  const cats = []; const catMap = {};
   TX_EXEC_OPTIONS.forEach(tx => {
-    const done = A.S.actualTx?.[tx.id];
-    h += `<div class="tx-exec-item${done?' done':''}" onclick="APP.toggleTxExec('${tx.id}')">
-      <div class="tx-exec-check"><i class="fa-solid fa-check"></i></div>
-      <span class="tx-exec-label">${tx.label}</span>
-    </div>`;
+    if(!catMap[tx.cat]){ catMap[tx.cat] = []; cats.push(tx.cat); }
+    catMap[tx.cat].push(tx);
+  });
+  h += '<div class="tx-exec-wrap">';
+  cats.forEach(cat => {
+    h += `<div style="font-size:11px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-top:1px solid var(--border);margin-top:4px;text-transform:uppercase;letter-spacing:.5px">${cat}</div>`;
+    catMap[cat].forEach(tx => {
+      const done = A.S.actualTx?.[tx.id];
+      h += `<div class="tx-exec-item${done?' done':''}" onclick="APP.toggleTxExec('${tx.id}')">
+        <div class="tx-exec-check"><i class="fa-solid fa-check"></i></div>
+        <span class="tx-exec-label">${tx.label}</span>
+      </div>`;
+    });
   });
   h += '</div>';
   el.innerHTML = h;
@@ -1797,6 +1870,129 @@ function renderTxExec(){
 
 // ── Mutation site input handler ──
 A.setMutSite = function(v){ A.S.mutSite = v; };
+
+// ── Biomarker Panel ──
+const BIO_MARKERS = [
+  {id:'egfr',  name:'EGFR',     hint:'Exon 19del / L858R / T790M / Exon 20ins / 其他'},
+  {id:'alk',   name:'ALK',      hint:'FISH / IHC / NGS 方法及結果'},
+  {id:'ros1',  name:'ROS1',     hint:'融合基因型'},
+  {id:'braf',  name:'BRAF',     hint:'V600E / 其他突變'},
+  {id:'met',   name:'MET ex14', hint:'MET exon 14 skipping'},
+  {id:'ret',   name:'RET',      hint:'融合伴侶基因'},
+  {id:'ntrk',  name:'NTRK',     hint:'NTRK1/2/3 融合'},
+  {id:'her2',  name:'HER2',     hint:'突變類型'},
+  {id:'kras',  name:'KRAS',     hint:'G12C / 其他'},
+  {id:'pdl1',  name:'PD-L1 TPS',hint:'TPS %（22C3/SP263）', pct:true},
+  {id:'tmb',   name:'TMB',      hint:'mut/Mb', pct:true, unit:'mut/Mb'},
+];
+
+A.toggleBioPanel = function(btn){
+  btn.classList.toggle('open');
+  const body = document.getElementById('bio-body');
+  body.classList.toggle('show');
+  if(body.classList.contains('show') && !body.dataset.built){
+    renderBioPanel();
+    body.dataset.built='1';
+  }
+};
+
+function updateBioPanelVisibility(){
+  const wrap = document.getElementById('ck-bio-wrap');
+  if(!wrap) return;
+  const bioTriggered = !!(A.S.ck.c10 || A.S.ck.c11);
+  wrap.style.display = bioTriggered ? '' : 'none';
+  if(bioTriggered){
+    const body = document.getElementById('bio-body');
+    if(body && !body.dataset.built){
+      renderBioPanel();
+      body.dataset.built='1';
+    }
+  }
+}
+
+function restoreBioPanel(){
+  const body = document.getElementById('bio-body');
+  if(!body) return;
+  const bioTriggered = !!(A.S.ck?.c10 || A.S.ck?.c11);
+  const hasData = A.S.bio && Object.keys(A.S.bio).some(k => A.S.bio[k]?.s);
+  const wrap = document.getElementById('ck-bio-wrap');
+  if(wrap) wrap.style.display = (bioTriggered || hasData) ? '' : 'none';
+  if(bioTriggered || hasData){
+    body.dataset.built = '1';
+    body.classList.add('show');
+    const toggle = body.previousElementSibling;
+    if(toggle) toggle.classList.add('open');
+    renderBioPanel();
+  } else {
+    body.dataset.built = '';
+    body.classList.remove('show');
+    body.innerHTML = '';
+  }
+}
+
+function renderBioPanel(){
+  const body = document.getElementById('bio-body');
+  if(!body) return;
+  if(!A.S.bio) A.S.bio = {};
+  let h = '';
+  BIO_MARKERS.forEach(m => {
+    const b = A.S.bio[m.id] || {};
+    const status = b.s || ''; // '': untested, '+': positive, '-': negative
+    h += `<div class="bio-row" data-bio="${m.id}">`;
+    h += `<div class="bio-name">${m.name}</div>`;
+    h += `<div class="bio-btns">`;
+    h += `<button class="bio-btn${status===''?' na':''}" onclick="APP.setBio('${m.id}','s','')" title="未測">未測</button>`;
+    h += `<button class="bio-btn${status==='+'?' pos':''}" onclick="APP.setBio('${m.id}','s','+')" title="陽性">陽性</button>`;
+    h += `<button class="bio-btn${status==='-'?' neg':''}" onclick="APP.setBio('${m.id}','s','-')" title="陰性">陰性</button>`;
+    h += `</div>`;
+    if(m.pct){
+      h += `<div class="bio-pct"><input type="text" placeholder="${m.unit||'%'}" value="${b.v||''}" oninput="APP.setBio('${m.id}','v',this.value)"></div>`;
+    }
+    h += `<div class="bio-detail"><input type="text" placeholder="${m.hint}" value="${b.d||''}" oninput="APP.setBio('${m.id}','d',this.value)"></div>`;
+    h += `</div>`;
+  });
+  h += '<div class="bio-summary" id="bio-summary-txt"></div>';
+  body.innerHTML = h;
+  updateBioSummary();
+}
+
+A.setBio = function(marker, field, val){
+  if(!A.S.bio) A.S.bio = {};
+  if(!A.S.bio[marker]) A.S.bio[marker] = {};
+  A.S.bio[marker][field] = val;
+  // Update button highlights
+  if(field === 's'){
+    const row = document.querySelector(`.bio-row[data-bio="${marker}"]`);
+    if(row){
+      row.querySelectorAll('.bio-btn').forEach(b => b.classList.remove('pos','neg','na'));
+      const btns = row.querySelectorAll('.bio-btn');
+      if(val==='' && btns[0]) btns[0].classList.add('na');
+      if(val==='+' && btns[1]) btns[1].classList.add('pos');
+      if(val==='-' && btns[2]) btns[2].classList.add('neg');
+    }
+  }
+  updateBioSummary();
+};
+
+function updateBioSummary(){
+  const el = document.getElementById('bio-summary-txt');
+  if(!el) return;
+  const b = A.S.bio || {};
+  const positives = BIO_MARKERS.filter(m => b[m.id]?.s === '+').map(m => {
+    let txt = m.name;
+    if(b[m.id]?.d) txt += ' (' + b[m.id].d + ')';
+    if(b[m.id]?.v) txt += ' ' + b[m.id].v + (m.unit||'%');
+    return txt;
+  });
+  const negatives = BIO_MARKERS.filter(m => b[m.id]?.s === '-').map(m => m.name);
+  const untested = BIO_MARKERS.filter(m => !b[m.id]?.s).length;
+  let txt = '';
+  if(positives.length) txt += '<b style="color:#166534">⊕ 陽性：</b>' + positives.join('、') + '　';
+  if(negatives.length) txt += '<b style="color:#991b1b">⊖ 陰性：</b>' + negatives.join('、') + '　';
+  if(untested > 0) txt += `<span style="color:var(--text3)">未測 ${untested} 項</span>`;
+  if(!txt) txt = '尚未輸入檢測結果';
+  el.innerHTML = txt;
+}
 
 // ── KPI Compliance Check ──
 function calcDayDiff(d1, d2){
@@ -1811,17 +2007,47 @@ function checkKPI(){
   const dtTx = calcDayDiff(S.caseDate, S.dateTx);
   items.push({label:'收案→確診 ≤14天', ok: dtDiag!==null ? dtDiag<=14 : null, detail: dtDiag!==null ? dtDiag+'天' : '未填'});
   items.push({label:'收案→首治 ≤42天', ok: dtTx!==null ? dtTx<=42 : null, detail: dtTx!==null ? dtTx+'天' : '未填'});
-  items.push({label:'治療前 MDT 會議', ok: S.dateMdm ? true : null, detail: S.dateMdm||'未填'});
+  // MDT: must exist AND be before first treatment
+  let mdtOk = null, mdtDetail = '未填';
+  if(S.dateMdm){
+    if(S.dateTx){
+      const mdtBeforeTx = new Date(S.dateMdm) <= new Date(S.dateTx);
+      mdtOk = mdtBeforeTx;
+      mdtDetail = mdtBeforeTx ? S.dateMdm+' ✓治療前' : S.dateMdm+' ✗晚於首治';
+    } else {
+      mdtOk = true; // MDT done, no Tx yet → pass
+      mdtDetail = S.dateMdm+' (首治未填)';
+    }
+  }
+  items.push({label:'治療前 MDT 會議', ok: mdtOk, detail: mdtDetail});
   // Checklist: only count required items for this type+stage
   const reqItems = S.stage ? getRequiredCK(S.type, S.stage) : CK;
   const ckDone = reqItems.filter(it=>S.ck?.[it.id]).length;
   const ckTotal = reqItems.length;
   const ckLabel = S.stage ? `必要檢查完整 (${S.stage})` : '檢查完整性';
   items.push({label:ckLabel, ok: ckDone===ckTotal, detail: ckDone+'/'+ckTotal});
-  // Strategy compliance: check if stage requires surgery and it was done
-  let stratOk = true;
-  if(S.stage && (S.stage==='IIB'||S.stage==='IIIA') && S.actualTx && !S.actualTx.surgery && !S.actualTx.neoadj_io_chemo) stratOk = false;
-  items.push({label:'策略符合指引', ok: S.actualTx && Object.keys(S.actualTx).length>0 ? stratOk : null, detail: S.actualTx && Object.keys(S.actualTx).length>0 ? (stratOk?'符合':'需確認') : '未勾選'});
+  // Strategy compliance: validate actual treatment against stage
+  let stratOk = true, stratDetail = '符合';
+  const tx = S.actualTx || {};
+  const txCount = Object.keys(tx).length;
+  if(txCount > 0 && S.stage){
+    const grp = txGroup(S.stage);
+    const isSCLC = S.type === 'SCLC';
+    if(grp === 'early'){
+      // Early: should have surgery (± neoadj/adj) or SABR
+      if(!tx.surgery && !tx.sabr){ stratOk=false; stratDetail='早期建議手術或SABR'; }
+    } else if(grp === 'local'){
+      // Local: surgery with neoadj, or CCRT/seq-CRT
+      if(!tx.surgery && !tx.ccrt && !tx.seq_crt && !tx.neoadj_io_chemo && !tx.neoadj_chemo){ stratOk=false; stratDetail='局部晚期建議手術或化放療'; }
+      if(isSCLC && !tx.ccrt && !tx.seq_crt){ stratOk=false; stratDetail='SCLC 局限期建議化放療'; }
+    } else if(grp === 'IV'){
+      // IV: should have systemic therapy
+      if(!tx.chemo_alone && !tx.target_1l && !tx.io_chemo_combo && !tx.io_mono && !tx.palliative && !tx.clinical_trial){
+        stratOk=false; stratDetail='晚期建議全身治療';
+      }
+    }
+  }
+  items.push({label:'策略符合指引', ok: txCount>0 ? stratOk : null, detail: txCount>0 ? stratDetail : '未勾選'});
   return items;
 }
 
@@ -1895,9 +2121,19 @@ function renderEduHandout(){
 // ── Save record ──
 A.save = async function(){
   if(!A.S.type||!A.S.stage){ alert('請先完成決策問答'); return; }
+  // Warn if molecular tests checked but no bio data
+  const bioTriggered = !!(A.S.ck.c10 || A.S.ck.c11);
+  const bioFilled = A.S.bio && Object.keys(A.S.bio).some(k => A.S.bio[k]?.s);
+  if(bioTriggered && !bioFilled){
+    if(!confirm('您已勾選基因/PD-L1 檢測完成，但尚未填寫檢測結果。\n\n要前往填寫嗎？\n\n按「確定」前往檢查頁填寫，按「取消」直接儲存。')){
+      // User chose to save anyway — continue
+    } else {
+      A.go('checklist'); return;
+    }
+  }
   readForm();
   const now = new Date().toISOString();
-  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},created:A.S.created,savedAt:now};
+  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},created:A.S.created,savedAt:now};
   let isNew = !editId;
   if(editId){ rec.id = editId; await put('records', rec); }
   else { await put('records', rec); if(draftId){ await del('drafts',draftId); draftId=null; } const all = await getAll('records'); editId = all[all.length-1]?.id; }
@@ -1926,10 +2162,35 @@ function renderSummary(){
   // Diagnosis
   const tnm = [S.tstage,S.nstage,S.mstage].filter(Boolean).join('');
   const dTags = [{l:'組織',v:TYPE_LABEL[S.type]||'—'},{l:'TNM',v:tnm||'—'},{l:'AJCC',v:S.stage?'Stage '+S.stage:'—'}];
-  if(S.mutation&&S.mutation!=='N/A') dTags.push({l:'分子',v:S.mutation + (S.mutSite?' ('+S.mutSite+')':'')});
-  document.getElementById('sum-diagnosis').innerHTML =
-    `<div class="st"><i class="fa-solid fa-microscope"></i> 診斷</div>` +
+  if(S.mutation&&S.mutation!=='N/A') dTags.push({l:'決策分子',v:S.mutation + (S.mutSite?' ('+S.mutSite+')':'')});
+  let diagH = `<div class="st"><i class="fa-solid fa-microscope"></i> 診斷</div>` +
     `<div class="diag-row">${dTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v">${d.v}</span></span>`).join('')}</div>`;
+  // Biomarker summary
+  const bio = S.bio || {};
+  const bioKeys = Object.keys(bio).filter(k => bio[k]?.s);
+  if(bioKeys.length > 0){
+    diagH += '<div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:13px;line-height:1.8">';
+    diagH += '<div style="font-weight:700;color:var(--primary-dark);margin-bottom:4px"><i class="fa-solid fa-dna" style="margin-right:4px"></i>基因檢測</div>';
+    const posMarkers = BIO_MARKERS.filter(m => bio[m.id]?.s === '+');
+    const negMarkers = BIO_MARKERS.filter(m => bio[m.id]?.s === '-');
+    if(posMarkers.length){
+      diagH += '<div><span style="color:#166534;font-weight:700">⊕</span> ';
+      diagH += posMarkers.map(m => {
+        let t = `<b>${m.name}</b>`;
+        if(bio[m.id].v) t += ' ' + bio[m.id].v + (m.unit||'%');
+        if(bio[m.id].d) t += ' <span style="color:var(--text2)">(' + bio[m.id].d + ')</span>';
+        return t;
+      }).join('、');
+      diagH += '</div>';
+    }
+    if(negMarkers.length){
+      diagH += '<div><span style="color:#991b1b;font-weight:700">⊖</span> ';
+      diagH += negMarkers.map(m => m.name).join('、');
+      diagH += '</div>';
+    }
+    diagH += '</div>';
+  }
+  document.getElementById('sum-diagnosis').innerHTML = diagH;
 
   // Checklist — stage-aware required items
   const hasStage = !!S.stage;
@@ -2055,6 +2316,7 @@ function renderCK(){
   }).join('');
   updateCKBar();
   updateCKNav();
+  updateBioPanelVisibility();
 }
 
 A.ckTab = function(i){
@@ -2087,6 +2349,7 @@ A.toggleCK = function(id,el){
     }
   }
   updateCKBar();
+  updateBioPanelVisibility();
   // Update tab count
   if(ckGroups.length){
     const g = ckGroups[ckCurTab];
@@ -2197,6 +2460,100 @@ async function loadStats(){
     }).join('');
   } else { document.getElementById('ck-stat-cards').innerHTML=''; document.getElementById('ck-stat-bars').innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">無資料</div>'; }
 
+  // ── KPI Statistics ──
+  if(n > 0){
+    // Calculate KPI for each record
+    const kpiResults = recs.map(r => {
+      const dtDiag = (r.caseDate && r.dateDiag) ? Math.round((new Date(r.dateDiag)-new Date(r.caseDate))/86400000) : null;
+      const dtTx = (r.caseDate && r.dateTx) ? Math.round((new Date(r.dateTx)-new Date(r.caseDate))/86400000) : null;
+      const hasMdt = !!r.dateMdm;
+      const mdtBeforeTx = (r.dateMdm && r.dateTx) ? new Date(r.dateMdm) <= new Date(r.dateTx) : (r.dateMdm ? true : false);
+      const mdtOk = r.dateMdm ? mdtBeforeTx : false;
+      const reqCk = r.stage ? getRequiredCK(r.type, r.stage) : CK;
+      const reqDone = reqCk.filter(it=>r.ck?.[it.id]).length;
+      const ckComplete = reqDone === reqCk.length;
+      const diagOk = dtDiag !== null ? dtDiag <= 14 : null;
+      const txOk = dtTx !== null ? dtTx <= 42 : null;
+      const allPass = diagOk===true && txOk===true && mdtOk && ckComplete;
+      return {code:r.code||'—', name:r.name||'', stage:r.stage||'', dtDiag, dtTx, hasMdt, mdtOk, mdtBeforeTx, dateMdm:r.dateMdm||'', ckComplete, reqDone, reqTotal:reqCk.length, diagOk, txOk, allPass};
+    });
+
+    // Aggregate
+    const withDiag = kpiResults.filter(k=>k.dtDiag!==null);
+    const withTx = kpiResults.filter(k=>k.dtTx!==null);
+    const diagPassN = withDiag.filter(k=>k.diagOk).length;
+    const txPassN = withTx.filter(k=>k.txOk).length;
+    const mdtN = kpiResults.filter(k=>k.mdtOk).length;
+    const ckPassN = kpiResults.filter(k=>k.ckComplete).length;
+    const allPassN = kpiResults.filter(k=>k.allPass).length;
+
+    const medianDiag = withDiag.length ? withDiag.map(k=>k.dtDiag).sort((a,b)=>a-b)[Math.floor(withDiag.length/2)] : '—';
+    const medianTx = withTx.length ? withTx.map(k=>k.dtTx).sort((a,b)=>a-b)[Math.floor(withTx.length/2)] : '—';
+
+    const pctAll = Math.round(allPassN/n*100);
+    const pctDiag = withDiag.length ? Math.round(diagPassN/withDiag.length*100) : 0;
+    const pctTx = withTx.length ? Math.round(txPassN/withTx.length*100) : 0;
+    const pctMdt = Math.round(mdtN/n*100);
+    const pctCk = Math.round(ckPassN/n*100);
+
+    document.getElementById('kpi-stat-cards').innerHTML = `
+      <div class="stat-card"><div class="stat-num" style="color:${pctAll>=80?'var(--primary)':pctAll>=50?'var(--amber)':'var(--rose)'}">${pctAll}%</div><div class="stat-label">KPI 全達標</div></div>
+      <div class="stat-card"><div class="stat-num">${medianDiag}${typeof medianDiag==='number'?'天':''}</div><div class="stat-label">確診中位天數</div></div>
+      <div class="stat-card"><div class="stat-num">${medianTx}${typeof medianTx==='number'?'天':''}</div><div class="stat-label">首治中位天數</div></div>
+      <div class="stat-card"><div class="stat-num">${allPassN}/${n}</div><div class="stat-label">全達標人數</div></div>`;
+
+    // KPI bar chart
+    const kpiLabels = ['收案→確診≤14天','收案→首治≤42天','治療前MDT','必要檢查完成','全部達標'];
+    const kpiPcts = [pctDiag, pctTx, pctMdt, pctCk, pctAll];
+    const kpiColors = kpiPcts.map(p=>p>=80?'#10b981':p>=50?'#f59e0b':'#ef4444');
+    mkChart('ch-kpi-bar','bar',kpiLabels,kpiPcts,kpiColors);
+    if(charts['ch-kpi-bar']){
+      charts['ch-kpi-bar'].options.scales.y.max = 100;
+      charts['ch-kpi-bar'].options.scales.y.ticks.callback = v=>v+'%';
+      charts['ch-kpi-bar'].update();
+    }
+
+    // Time distribution: bucket by 7-day intervals
+    const timeBuckets = ['0-7','8-14','15-21','22-28','29-35','36-42','43-49','50+'];
+    function toBucket(d){ if(d<=7) return 0; if(d<=14) return 1; if(d<=21) return 2; if(d<=28) return 3; if(d<=35) return 4; if(d<=42) return 5; if(d<=49) return 6; return 7; }
+    const diagBuckets = new Array(8).fill(0);
+    const txBuckets = new Array(8).fill(0);
+    withDiag.forEach(k=>diagBuckets[toBucket(k.dtDiag)]++);
+    withTx.forEach(k=>txBuckets[toBucket(k.dtTx)]++);
+    if(charts['ch-kpi-time']) charts['ch-kpi-time'].destroy();
+    const ctxTime = document.getElementById('ch-kpi-time');
+    if(ctxTime){
+      charts['ch-kpi-time'] = new Chart(ctxTime,{type:'bar',data:{labels:timeBuckets.map(b=>b+'天'),datasets:[
+        {label:'收案→確診',data:diagBuckets,backgroundColor:'#10b981',borderRadius:4},
+        {label:'收案→首治',data:txBuckets,backgroundColor:'#2563eb',borderRadius:4}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:'Noto Sans TC'}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+    }
+
+    // Detail table
+    let dtH = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid var(--border)">';
+    dtH += '<th style="padding:8px;text-align:left">代號</th><th style="padding:8px">期別</th>';
+    dtH += '<th style="padding:8px">確診天數</th><th style="padding:8px">首治天數</th>';
+    dtH += '<th style="padding:8px">治療前MDT</th><th style="padding:8px">必要檢查</th><th style="padding:8px">達標</th></tr></thead><tbody>';
+    kpiResults.forEach(k => {
+      const tagStyle = ok => ok===true ? 'color:#166534;background:#dcfce7' : ok===false ? 'color:#991b1b;background:#fee2e2' : 'color:var(--text3);background:var(--surface2)';
+      const tag = (ok,txt) => `<span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;${tagStyle(ok)}">${txt}</span>`;
+      dtH += `<tr style="border-bottom:1px solid var(--border)">`;
+      dtH += `<td style="padding:6px 8px;font-weight:600">${k.code}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${k.stage||'—'}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${k.dtDiag!==null?tag(k.diagOk,k.dtDiag+'天'):tag(null,'未填')}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${k.dtTx!==null?tag(k.txOk,k.dtTx+'天'):tag(null,'未填')}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${k.hasMdt ? tag(k.mdtOk, k.mdtOk?'✓治療前':'✗治療後') : tag(null,'未填')}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${tag(k.ckComplete,k.reqDone+'/'+k.reqTotal)}</td>`;
+      dtH += `<td style="padding:6px 8px;text-align:center">${tag(k.allPass,k.allPass?'全達標':'未達')}</td>`;
+      dtH += `</tr>`;
+    });
+    dtH += '</tbody></table>';
+    document.getElementById('kpi-detail-table').innerHTML = dtH;
+  } else {
+    document.getElementById('kpi-stat-cards').innerHTML='';
+    document.getElementById('kpi-detail-table').innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">無資料</div>';
+  }
+
   // Cross table: type × stage group
   const types=['NSCLC_NS','NSCLC_SQ','SCLC'];
   const sGroups=['I','II','III','IV'];
@@ -2233,8 +2590,9 @@ function mkChart(id,type,labels,data,colors){
 // ── Export / Import ──
 A.exportCSV = async function(){
   const r=await getAll('records'); if(!r.length){alert('無紀錄');return;}
-  const h=['收案日期','確診日期','首治日期','MDT日期','代號','姓名','性別','出生日期','年齡','ECOG','組織學','T','N','M','AJCC Stage','驅動基因/PD-L1','位點/表現','必要檢查完成','全部檢查完成','實際治療','備註'];
-  const rows=r.map(x=>{const age=calcAgeFromDates(x.birthday,x.caseDate); const txExec=x.actualTx?Object.keys(x.actualTx).join(';'):''; const reqCk=x.stage?getRequiredCK(x.type,x.stage):CK; const reqDone=reqCk.filter(it=>x.ck?.[it.id]).length; return [x.caseDate||new Date(x.savedAt||x.created).toLocaleDateString('zh-TW'),x.dateDiag||'',x.dateTx||'',x.dateMdm||'',x.code,x.name||'',x.gender,x.birthday||'',age!==null?age:'',x.ecog,x.type,x.tstage||'',x.nstage||'',x.mstage||'',x.stage,x.mutation||'',x.mutSite||'',reqDone+'/'+reqCk.length,(x.ck?Object.keys(x.ck).length:0)+'/'+CK.length,txExec,(x.notes||'').replace(/\n/g,' ')];});
+  const bioHeaders = BIO_MARKERS.map(m => m.name);
+  const h=['收案日期','確診日期','首治日期','MDT日期','代號','姓名','性別','出生日期','年齡','ECOG','組織學','T','N','M','AJCC Stage','驅動基因/PD-L1','位點/表現',...bioHeaders,'必要檢查完成','全部檢查完成','實際治療','備註'];
+  const rows=r.map(x=>{const age=calcAgeFromDates(x.birthday,x.caseDate); const txExec=x.actualTx?Object.keys(x.actualTx).join(';'):''; const reqCk=x.stage?getRequiredCK(x.type,x.stage):CK; const reqDone=reqCk.filter(it=>x.ck?.[it.id]).length; const bio=x.bio||{}; const bioCols=BIO_MARKERS.map(m=>{const b=bio[m.id]; if(!b||!b.s) return ''; let t=b.s==='+' ?'(+)':'(-)'; if(b.v) t+=' '+b.v+(m.unit||'%'); if(b.d) t+=' '+b.d; return t;}); return [x.caseDate||new Date(x.savedAt||x.created).toLocaleDateString('zh-TW'),x.dateDiag||'',x.dateTx||'',x.dateMdm||'',x.code,x.name||'',x.gender,x.birthday||'',age!==null?age:'',x.ecog,x.type,x.tstage||'',x.nstage||'',x.mstage||'',x.stage,x.mutation||'',x.mutSite||'',...bioCols,reqDone+'/'+reqCk.length,(x.ck?Object.keys(x.ck).length:0)+'/'+CK.length,txExec,(x.notes||'').replace(/\n/g,' ')];});
   dl('\uFEFF'+[h,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'),CFG.id+'_records.csv','text/csv');
   await put('settings',{key:'lastExport',value:new Date().toISOString()});
 };
