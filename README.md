@@ -62,3 +62,8 @@
 - 本地儲存：IndexedDB
 - 部署：GitHub Pages（靜態，無後端）
 - 隱私：QR 資料以 URL fragment 傳遞（不經 server），姓名自動遮罩
+
+### v14 更新補充 (2026-03-24 #2)
+- 修正 `updateTitle()` 覆蓋 topbar 問題：醫院名稱+版本號現在永久顯示，病人代號/姓名附加在後方
+- edu.html 配色從藍色 (#1a5276) 改為綠色 (#0d9b6a)，與主程式一致
+- EDU_BASE_URL 已設定為 https://sela1227.github.io/Lung-ca-nevigation/edu.html

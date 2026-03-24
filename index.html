@@ -1479,9 +1479,12 @@ A.del = async function(id, kind){
 
 function updateTitle(){
   const t = document.getElementById('topbar-title');
-  const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : CFG.name;
+  const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
-  t.innerHTML = `<i class="${CFG.icon}"></i> ${label}${tag}`;
+  const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v14</span>';
+  const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
+  t.innerHTML = base + ver + pt + tag;
 }
 
 A.newPatient = function(){
