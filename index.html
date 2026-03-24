@@ -545,8 +545,8 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 /* ── QR code card ── */
 .edu-qr-wrap{display:flex;align-items:flex-start;gap:24px}
 .edu-qr-wrap .edu-2col{flex:1;min-width:0}
-.edu-qr-card{flex-shrink:0;width:160px;text-align:center;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px}
-.edu-qr-card canvas,.edu-qr-card img{display:block;margin:0 auto 8px;border-radius:6px}
+.edu-qr-card{flex-shrink:0;width:190px;text-align:center;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px}
+.edu-qr-card canvas,.edu-qr-card img{display:block;margin:0 auto 8px;border-radius:0!important;background:#fff;padding:6px}
 .edu-qr-label{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px}
 .edu-qr-hint{font-size:10px;color:var(--text3);line-height:1.4}
 
@@ -557,7 +557,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
   .edu-2col{grid-template-columns:1fr}
   .edu-qr-wrap{flex-direction:column-reverse}
   .edu-qr-card{width:100%;flex-direction:row;display:flex;align-items:center;gap:12px;padding:10px 14px}
-  .edu-qr-card canvas,.edu-qr-card img{margin:0}
+  .edu-qr-card canvas,.edu-qr-card img{margin:0;border-radius:0!important}
   .edu-qr-card>div{text-align:left}
 }
 
@@ -630,7 +630,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
   body.print-edu .edu-footer{font-size:13px;padding:12px 16px;margin-top:20px;border-top:1px solid #ccc}
   body.print-edu .edu-qr-wrap{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:20px}
   body.print-edu .edu-qr-wrap .edu-2col{flex:1}
-  body.print-edu .edu-qr-card{width:140px;flex-shrink:0;padding:10px;border:1px solid #ccc;border-radius:8px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#f9fafb!important}
+  body.print-edu .edu-qr-card{width:170px;flex-shrink:0;padding:10px;border:1px solid #ccc;border-radius:8px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#f9fafb!important}
   body.print-edu .edu-qr-label{font-size:10px;font-weight:700;color:#333;margin-bottom:4px}
   body.print-edu .edu-qr-hint{font-size:9px;color:#666}
   /* Print footer for edu */
@@ -656,7 +656,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> 肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v12</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v12</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -1629,7 +1629,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — based on NCCN v4.2025
+//  PATHWAY TEMPLATES — 彰濱秀傳 v12 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -2370,11 +2370,11 @@ function renderEduQR(){
     const url = buildEduURL();
     new QRCode(container, {
       text: url,
-      width: 120,
-      height: 120,
-      colorDark: '#1a365d',
+      width: 150,
+      height: 150,
+      colorDark: '#000000',
       colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
+      correctLevel: QRCode.CorrectLevel.L
     });
   } catch(e){ container.innerHTML = '<span style="font-size:11px;color:var(--text3)">QR 產生失敗</span>'; }
 }
@@ -2423,7 +2423,7 @@ function renderEduHandout(){
   h += '<div class="edu-col">';
   h += `<h4 class="edu-sh"><i class="fa-solid fa-bullseye"></i> 治療目標</h4><p class="edu-p">${goals.goal}</p>`;
   h += `<h4 class="edu-sh"><i class="fa-solid fa-flask"></i> 建議治療方案</h4><p class="edu-p">${txSummary}</p>`;
-  h += '<p class="edu-note">＊依 NCCN 指引標準建議，實際方案由主治醫師依您的狀況調整。</p>';
+  h += '<p class="edu-note">＊依本院診療指引標準建議，實際方案由主治醫師依您的狀況調整。</p>';
   h += `<h4 class="edu-sh"><i class="fa-solid fa-shield-heart"></i> 副作用管理</h4>`;
   h += '<p class="edu-p">持續發燒、皮膚紅腫或皮疹、腹瀉不止、呼吸急促、嚴重疲倦無法進食 → 請聯繫個管師。</p>';
   h += '</div></div>';
@@ -2439,7 +2439,7 @@ function renderEduHandout(){
   h += '</div></div>';
   el.innerHTML = h;
   // Generate QR after DOM is ready
-  setTimeout(renderEduQR, 50);
+  setTimeout(renderEduQR, 200);
 }
 
 // ── Save record ──
