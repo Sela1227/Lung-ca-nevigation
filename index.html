@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -541,12 +542,23 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 .edu-team td:first-child{font-weight:600;white-space:nowrap}
 .edu-emg{background:#fef2f2;border:2px solid var(--rose);border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.6;margin-top:12px}
 .edu-footer{margin-top:16px;padding:12px 16px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text3)}
+/* ── QR code card ── */
+.edu-qr-wrap{display:flex;align-items:flex-start;gap:24px}
+.edu-qr-wrap .edu-2col{flex:1;min-width:0}
+.edu-qr-card{flex-shrink:0;width:160px;text-align:center;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px}
+.edu-qr-card canvas,.edu-qr-card img{display:block;margin:0 auto 8px;border-radius:6px}
+.edu-qr-label{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px}
+.edu-qr-hint{font-size:10px;color:var(--text3);line-height:1.4}
 
 @media(max-width:768px){
   .gl-split{grid-template-columns:1fr}
   .kpi-grid{grid-template-columns:1fr}
   .edu-info{grid-template-columns:1fr 1fr}
   .edu-2col{grid-template-columns:1fr}
+  .edu-qr-wrap{flex-direction:column-reverse}
+  .edu-qr-card{width:100%;flex-direction:row;display:flex;align-items:center;gap:12px;padding:10px 14px}
+  .edu-qr-card canvas,.edu-qr-card img{margin:0}
+  .edu-qr-card>div{text-align:left}
 }
 
 @media print{
@@ -616,6 +628,11 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
   body.print-edu .edu-team td{padding:8px 12px}
   body.print-edu .edu-emg{background:#fff5f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border:2px solid #666;padding:12px 16px;font-size:14px;border-radius:8px;line-height:1.7;margin-top:16px}
   body.print-edu .edu-footer{font-size:13px;padding:12px 16px;margin-top:20px;border-top:1px solid #ccc}
+  body.print-edu .edu-qr-wrap{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:20px}
+  body.print-edu .edu-qr-wrap .edu-2col{flex:1}
+  body.print-edu .edu-qr-card{width:140px;flex-shrink:0;padding:10px;border:1px solid #ccc;border-radius:8px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#f9fafb!important}
+  body.print-edu .edu-qr-label{font-size:10px;font-weight:700;color:#333;margin-bottom:4px}
+  body.print-edu .edu-qr-hint{font-size:9px;color:#666}
   /* Print footer for edu */
   body.print-edu .edu-handout::after{content:'列印日期：' attr(data-print-date) ' ｜ 此衛教單張為個人化內容，請勿分享他人';display:block;text-align:center;font-size:10px;color:#999;padding:12px 20px 8px;border-top:1px solid #ccc;margin-top:12px}
 }
@@ -1243,11 +1260,29 @@ function computeAJCC(t,n,m){
 }
 
 // Treatment group from stage
-function txGroup(stage){
-  if(!stage) return '';
-  if(stage==='IA'||stage==='IB'||stage==='IIA') return 'early';
-  if(stage==='IIB'||stage.startsWith('III')) return 'local';
-  if(stage.startsWith('IV')) return 'IV';
+// ═══ Pathway Routing — 本院指引 version 12 (2026) ═══
+function txGroup(S){
+  if(!S || !S.stage) return '';
+  const type=S.type, T=S.tstage||'', N=S.nstage||'', M=S.mstage||'';
+  if(type==='SCLC'){
+    if(M!=='M0') return 'extensive';
+    if(/^T[12]/.test(T)&&N==='N0') return 'ls_surg';
+    return 'ls_chemoRT';
+  }
+  if(M==='M1a') return 'M1a';
+  if(M==='M1b') return 'M1b';
+  if(M.startsWith('M1c')) return 'M1c';
+  if(N==='N3') return T==='T4'?'T4N2N3':'N3';
+  if(N==='N2') return T==='T4'?'T4N2N3':'N2';
+  if(T==='T4') return 'resect_adv';
+  if(T==='T3'&&N==='N1') return 'resect_adv';
+  if(N==='N0'&&/^T1/.test(T)) return 'I_periph';
+  return 'surgical';
+}
+function txBroad(grp){
+  if(['I_periph','surgical','resect_adv','ls_surg'].includes(grp)) return 'surgical';
+  if(['N2','N3','T4N2N3','ls_chemoRT'].includes(grp)) return 'chemoRT';
+  if(['M1a','M1b','M1c','extensive'].includes(grp)) return 'systemic';
   return '';
 }
 
@@ -1601,7 +1636,7 @@ function renderPW(){
   if(!S.type||!S.stage){ document.getElementById('pw-empty').style.display=''; document.getElementById('pw-wrap').style.display='none'; return; }
   document.getElementById('pw-empty').style.display='none';
   document.getElementById('pw-wrap').style.display='flex';
-  const grp = txGroup(S.stage);
+  const grp = txGroup(S);
   // Left sidebar — clickable step rows
   let side = '<div class="pw-side-title"><i class="fa-solid fa-microscope" style="margin-right:4px"></i> 決策結果 <span style="font-size:10px;font-weight:400;text-transform:none">（點擊可修改）</span></div>';
   side += `<div class="pw-edit-row" onclick="APP.dtJump(1);APP.go('decision')"><div><div class="l">① 組織學</div><div class="v">${TYPE_LABEL[S.type]}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
@@ -1672,276 +1707,293 @@ A.pwTab = function(tabId){
   });
 };
 
+// ═══ 臨床路徑模板 — 彰濱秀傳 version 12 (2026) ═══
+const _N2 = '高風險因子 (IB)：vascular invasion、wedge resection、visceral pleural involvement、tumor ≧4cm → 建議 adjuvant chemo';
+const _N3 = 'SBRT 健保給付：原發性早期肺癌，病灶最大徑 ≦5cm，ECOG ≦2';
+const _N4 = '年齡 >70 歲 or PS >1：CCRT 可改 Sequential Chemoradiotherapy（先化療後接放療）';
+const _N5 = '基因檢測：先 EGFR/PD-L1 → EGFR 陰性可加驗 ALK 或健保部分給付 NGS，或自費 NGS';
+function _alert(icon,text){ return `<div class="alert-box info" style="margin-top:8px"><i class="fa-solid ${icon}"></i><div>${text}</div></div>`; }
+function _warn(text){ return `<div class="alert-box warn" style="margin-top:8px"><i class="fa-solid fa-triangle-exclamation"></i><div>${text}</div></div>`; }
+function _hdr(s,icon){ return `<div class="card-title"><i class="fa-solid ${icon}"></i> ${TYPE_LABEL[s.type]||'NSCLC'} — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>`; }
+
+const _NSCLC = {
+  'I_periph': s => ({
+    tx: _hdr(s,'fa-hand-holding-medical') +
+      `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 外科切除 — 首選</h4>
+        <p>肺葉切除術 + 系統性縱膈腔淋巴結取樣／廓清</p>
+        <p>周邊 ≤2cm 可考慮肺段切除；微創 (VATS/RATS) 優先</p>
+        <div class="row"><span></span><span class="badge nhi">健保</span></div></div>` +
+      `<div class="tx-box amber"><h4>🔹 術後依病理分期決定輔助治療</h4>
+        <p><b>pStage 0 / IA：</b>邊緣(−) → 觀察；邊緣(+) → 再手術或放療</p>
+        <p><b>pStage IB (T2aN0) / IIA：</b>邊緣(−) → 觀察或化療（高風險）；邊緣(+) → 再手術±化療 or 放療±化療</p>
+        <p><b>pStage IIB (T1-2aN1, T3N0, T2bN1)：</b>邊緣(−) → 化療；邊緣(+) → 再手術+化療 or 合併化放療</p>
+        <p><b>pStage IIIA (T1-2,N2 ; T3N1)：</b>邊緣(−) → 化療；邊緣(+) → 合併化放療</p>
+        <p><b>Upstage IIIB+ / IV：</b>評估 ECOG 及基因檢測後決定方向</p></div>` +
+      `<div class="tx-box blue"><h4>🔹 不適合手術 / 拒絕手術 — SBRT</h4>
+        <p>立體定位放射治療（SBRT）</p>
+        <div class="row"><span></span><span class="badge nhi">健保（條件見下方）</span></div></div>` +
+      _warn('📋 ' + _N2) + _alert('fa-circle-info','📋 ' + _N3) + _alert('fa-circle-info','📋 ' + _N4),
+    cost:[{l:'肺葉切除 (VATS)',v:'健保全額'},{l:'達文西 (RATS) 差額',v:'15-25萬'},{l:'SBRT',v:'健保（條件）'},{l:'輔助化療',v:'健保全額'}]
+  }),
+
+  'surgical': s => ({
+    tx: _hdr(s,'fa-lungs') +
+      `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 手術探查</h4>
+        <p>手術切除 → 依術後病理分期決定輔助治療（同 Stage I 輔助治療原則）</p>
+        <div class="row"><span></span><span class="badge nhi">健保</span></div></div>` +
+      `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 臨床評估不適合手術 / 拒絕手術</h4>
+        <p><b>N0：</b>放射治療；針對高風險 IB～IIB 考慮加化療</p>
+        <p><b>N1：</b>合併化放療（CCRT）</p></div>` +
+      _alert('fa-circle-info','📋 ' + _N4) + _warn('📋 ' + _N2),
+    cost:[{l:'手術 (VATS)',v:'健保全額'},{l:'化療',v:'健保全額'},{l:'放療',v:'健保全額'},{l:'CCRT',v:'健保全額'}]
+  }),
+
+  'resect_adv': s => {
+    let tx = _hdr(s,'fa-radiation');
+    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 可手術者 — 三種策略</h4>
+      <p><b>① 直接手術：</b>切除 → 依術後病理分期決定輔助治療</p>
+      <p><b>② 前導性同步化放療：</b>化放療後再次評估 → 手術 → 輔助治療</p>
+      <p><b>③ 前導性化療：</b>化療後再次評估 → 手術 → 輔助治療</p>
+      <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+    tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 T4 N0-1 無法手術 (Unresectable)</h4>
+      <p>合併化放療（CCRT）</p></div>`;
+    tx += _alert('fa-circle-info','📋 ' + _N4);
+    return { tx, cost:[{l:'手術',v:'健保'},{l:'前導化療',v:'健保'},{l:'CCRT',v:'健保'}] };
+  },
+
+  'N2': s => {
+    const isT3N2 = s.tstage==='T3';
+    let tx = _hdr(s,'fa-radiation');
+    if(!isT3N2){
+      tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ Stage IIIA (T1-2, N2)</h4>
+        <p><b>路線 A：</b>合併化放療（CCRT）或化療 或免疫治療（自費）</p>
+        <p><b>路線 B：</b>引導化療 ± 放療 或免疫治療（自費）</p></div>`;
+      tx += `<div class="tx-box amber"><h4>🔹 引導治療後評估反應</h4>
+        <p><b>無惡化：</b>手術 ± 放療（若未接受過）</p>
+        <p><b>惡化（局部）：</b>放療（若未接受過）± 化療</p>
+        <p><b>惡化（系統性）：</b>依轉移性疾病治療</p></div>`;
+    }
+    if(isT3N2){
+      tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ Stage IIIB (T3, N2) — 新輔助治療</h4>
+        <p><b>新輔助：</b>① 免疫 + 化療 ② 化療或同步化療 + 放療</p>
+        <p>→ 再次手術評估後進行手術 → 依病理分期輔助治療</p></div>`;
+      tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 基因檢測後系統治療</h4>
+        <p>合併化放療 或標靶治療 或免疫治療（自費）</p></div>`;
+    }
+    tx += _alert('fa-circle-info','📋 ' + _N4) + _alert('fa-dna','📋 ' + _N5);
+    return { tx, cost:[{l:'CCRT',v:'健保'},{l:'免疫治療',v:'自費/健保申請'},{l:'化療',v:'健保'},{l:'手術',v:'健保'}] };
+  },
+
+  'N3': s => ({
+    tx: _hdr(s,'fa-radiation') +
+      `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 同步化放療 / 標靶 / 免疫治療</h4>
+        <p>同步化放療（CCRT）或標靶治療 或免疫治療（依健保規範）</p>
+        <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">標靶/免疫依規範</span></div></div>` +
+      `<div class="tx-box gray"><h4>🔹 若發現遠端轉移</h4><p>依轉移性疾病 (M1c) 路徑治療</p></div>` +
+      _alert('fa-circle-info','📋 ' + _N4) + _alert('fa-dna','📋 ' + _N5),
+    cost:[{l:'CCRT',v:'健保'},{l:'標靶治療',v:'健保申請/自費'},{l:'免疫治療',v:'依健保規範'}]
+  }),
+
+  'T4N2N3': s => ({
+    tx: _hdr(s,'fa-radiation') +
+      `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 合併化放療 / 標靶 / 免疫治療</h4>
+        <p>合併化放療（CCRT）或標靶治療 或免疫治療（依健保規範）</p>
+        <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">標靶/免疫依規範</span></div></div>` +
+      _alert('fa-circle-info','📋 ' + _N4) + _alert('fa-dna','📋 ' + _N5),
+    cost:[{l:'CCRT',v:'健保'},{l:'標靶治療',v:'健保申請/自費'},{l:'免疫治療',v:'依健保規範'}]
+  }),
+
+  'M1a': s => ({
+    tx: _hdr(s,'fa-droplet') +
+      `<div class="tx-box amber"><h4>🔹 肋膜/心包膜積水 — 先判斷惡性</h4>
+        <p><b>非惡性：</b>依原腫瘤分期處理（回到對應期別路徑）</p>
+        <p><b>惡性：</b>先局部治療 → 再全身治療</p></div>` +
+      `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 惡性積水 — 局部控制後全身治療</h4>
+        <p>① 肋膜放液術 + 肋膜沾粘術</p>
+        <p>② 心包膜剝離術（心包膜積水時）</p>
+        <p>→ 局部控制後依轉移性疾病路徑進行全身治療</p></div>` +
+      _alert('fa-dna','📋 ' + _N5),
+    cost:[{l:'肋膜沾粘術',v:'健保'},{l:'全身治療',v:'依方案'}]
+  }),
+
+  'M1b': s => ({
+    tx: _hdr(s,'fa-bullseye') +
+      `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ PS 0-2：積極治療</h4>
+        <p><b>局部晚期 — 腦部轉移：</b>切除腦部病灶 / 全腦放射 / 伽瑪刀 → 化療或標靶或免疫（依健保規範）</p>
+        <p><b>局部晚期 — 其他部位：</b>依轉移性疾病路徑治療</p>
+        <p><b>多處轉移：</b>依轉移性疾病路徑治療</p></div>` +
+      `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 PS 3-4</h4>
+        <p><b>PS 3：</b>如符合標靶或免疫治療者仍可使用</p>
+        <p><b>PS 4：</b>最佳支持性治療（心理治療或臨終關懷）</p></div>` +
+      _alert('fa-dna','📋 ' + _N5),
+    cost:[{l:'腦部放射/伽瑪刀',v:'健保'},{l:'化療/標靶/免疫',v:'依方案'},{l:'支持性治療',v:'健保'}]
+  }),
+};
+
+function _M1c_NS(s){
+  let tx = _hdr(s,'fa-bullseye');
+  const mut = s.mutation||'PENDING';
+  if(mut==='EGFR'){
+    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ EGFR 突變陽性 — 標靶藥物</h4>
+      <p>依 EGFR 突變類型選擇對應標靶藥物</p>
+      <div class="row"><span></span><span class="badge nhi">健保一線</span></div></div>`;
+  } else if(mut==='ALK'){
+    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ ALK 融合陽性 — 標靶藥物</h4>
+      <p>依 ALK 融合選擇對應 ALK 標靶藥物</p>
+      <div class="row"><span></span><span class="badge nhi">健保一線</span></div></div>`;
+  } else if(mut==='OTHER_TKI'){
+    tx += `<div class="tx-box blue"><h4>🎯 其他可標靶驅動基因</h4>
+      <p><b>ROS1(+)：</b>對應標靶藥物</p>
+      <p><b>BRAF(+)：</b>雙標靶藥物</p>
+      <p><b>KRAS G12C：</b>對應標靶藥物</p>
+      <p><b>MET EXON-14：</b>對應標靶藥物</p>
+      <div class="row"><span></span><span class="badge self">健保申請/自費</span></div></div>`;
+  } else if(mut==='PDL1_HIGH'||mut==='PDL1_LOW'||mut==='PDL1_NEG'){
+    tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 無驅動基因突變 — 免疫 ± 化療</h4>
+      <p>免疫治療（依健保規範）± 化學治療</p>
+      <div class="row"><span></span><span class="badge nhi">依健保規範</span></div></div>`;
+  } else {
+    tx += `<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 建議等待基因檢測結果。PS 良好可先以化療起步。</div></div>`;
+  }
+  tx += _alert('fa-dna','📋 ' + _N5);
+  return { tx, cost:[{l:'標靶藥物',v:'健保一線/申請'},{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'}] };
+}
+
+function _M1c_SQ(s){
+  let tx = _hdr(s,'fa-bullseye');
+  const mut = s.mutation||'PENDING';
+  if(mut==='EGFR'||mut==='ALK'||mut==='OTHER_TKI'){
+    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 驅動基因陽性 — 標靶治療</h4>
+      <p>鱗狀細胞癌中驅動基因陽性較罕見但應依結果治療</p>
+      <div class="row"><span></span><span class="badge nhi">健保申請</span></div></div>`;
+  } else if(mut==='PDL1_HIGH'){
+    tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ EGFR(−) ALK(−) PD-L1 ≥50% — 免疫 ± 化療</h4>
+      <p>免疫治療（依健保規範）± 化學治療</p>
+      <div class="row"><span></span><span class="badge nhi">依健保規範</span></div></div>`;
+  } else if(mut==='PDL1_LOW'||mut==='PDL1_NEG'){
+    tx += `<div class="tx-box amber"><h4>🔹 PD-L1 <50%</h4>
+      <p><b>PS 0-1：</b>免疫治療（依健保規範）+ 化學治療</p>
+      <p><b>PS 2：</b>化學治療</p>
+      <p><b>PS 3-4：</b>最佳支持性治療</p>
+      <div class="row"><span></span><span class="badge nhi">依健保規範</span></div></div>`;
+  } else {
+    tx += `<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 可先以化療起步。</div></div>`;
+  }
+  tx += `<div class="alert-box warn" style="margin-top:8px"><i class="fa-solid fa-triangle-exclamation"></i><div>⚠ 鱗狀細胞癌不使用 Pemetrexed 及 Bevacizumab</div></div>`;
+  tx += _alert('fa-dna','📋 ' + _N5);
+  return { tx, cost:[{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'},{l:'標靶(如適用)',v:'健保申請'}] };
+}
+
 const PW = {
-  NSCLC_NS:{
-    'early': s => ({
-      tx:`<div class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> 非鱗NSCLC — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>
-        <div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 手術切除 — 首選</h4>
-          <p><b>首選：</b>肺葉切除術 (Lobectomy) + 系統性縱膈腔淋巴結取樣/廓清</p>
-          <p><b>替代：</b>周邊 ≤2cm 可考慮肺段切除 (Segmentectomy)；楔形切除較不建議</p>
-          <p>微創手術 (VATS/RATS) 為優先選擇</p>
-          <div class="row"><span></span><span class="badge nhi">健保</span></div></div>
-        ${s.stage==='IA'?`<div class="tx-box gray"><h4>🔹 Stage IA — 術後觀察</h4>
-          <p>pT1N0：術後觀察，不需輔助化療。</p>
-          <p>⚠ 高風險特徵（LVI、低分化、臟層肋膜侵犯）→ 可考慮輔助化療。</p></div>`:''}
-        ${s.stage==='IB'?`<div class="tx-box amber"><h4>🔹 Stage IB — 術後輔助治療</h4>
-          <p>高風險 pT2aN0：考慮 鉑類輔助化療 4 cycles</p>
-          <p><b>EGFR+ (IB ≥4cm)：</b>標靶藥物輔助 3 年</p>
-          <div class="row"><span></span><span class="badge nhi">化療健保</span></div></div>`:''}
-        ${s.stage==='IIA'?`<div class="tx-box amber"><h4>🔹 Stage IIA — 術後輔助化療</h4>
-          <p>鉑類雙藥化療 4 cycles</p>
-          <p><b>EGFR+：</b>標靶藥物輔助 3 年</p>
-          <p><b>PD-L1 ≥1% & EGFR/ALK(-)：</b>考慮免疫藥物輔助 1 年</p>
-          <div class="row"><span></span><span class="badge nhi">化療健保</span></div></div>`:''}
-        <div class="tx-box blue"><h4>🔹 不適合手術者 — SABR/SBRT</h4>
-          <p>周邊腫瘤：54Gy/3fx 或 48Gy/4fx</p>
-          <p>中央型腫瘤：50Gy/5fx（RTOG 0813）</p>
-          <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`,
-      cost:[{l:'肺葉切除 (VATS)',v:'健保全額'},{l:'達文西 (RATS) 差額',v:'15-25萬'},{l:'SABR/SBRT',v:'健保全額'},{l:'標靶藥物(輔助)',v:'健保申請/自費'},{l:'鉑類化療',v:'健保全額'}]
+  NSCLC_NS: { ..._NSCLC, 'M1c': _M1c_NS },
+  NSCLC_SQ: { ..._NSCLC, 'M1c': _M1c_SQ },
+  SCLC: {
+    'ls_surg': s => ({
+      tx: `<div class="card-title"><i class="fa-solid fa-bolt"></i> SCLC — ${s.stage} (${s.tstage}${s.nstage}${s.mstage}) — 侷限期可手術</div>` +
+        `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ Lobectomy + 淋巴結廓清</h4>
+          <p><b>LN(−)：</b>輔助化療</p>
+          <p><b>LN(+) N1：</b>化療 ± 放療（針對淋巴區域）</p>
+          <p><b>LN(+) N2：</b>化療 + 放療（針對淋巴區域）</p></div>` +
+        `<div class="tx-box blue"><h4>🔹 無法手術</h4>
+          <p>SBRT 後化療 或 化療 + 放療</p></div>` +
+        _warn('SCLC 為高度惡性腫瘤，即使早期也建議全身化療，不建議僅手術觀察。'),
+      cost:[{l:'手術+化療',v:'健保全額'},{l:'放療',v:'健保全額'},{l:'SBRT',v:'健保（條件）'}]
     }),
-    'local': s => {
-      const resectable = s.stage==='IIB'||s.stage==='IIIA';
-      const unresectable = s.stage==='IIIB'||s.stage==='IIIC';
-      let tx = `<div class="card-title"><i class="fa-solid fa-radiation"></i> 非鱗NSCLC — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>`;
-      if(resectable){
-        tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 新輔助免疫+化療 → 手術 — 首選</h4>
-          <p><b>新輔助：</b>免疫藥物 + 鉑類化療 × 3-4 cycles → 手術</p>
-          <p><b>術後：</b>輔助化療完成 4 cycles ± 免疫鞏固 1 年</p>
-          <div class="row"><span></span><span class="badge nhi">化療健保</span><span class="badge self">IO 部分自費</span></div></div>`;
-        tx += `<div class="tx-box amber"><h4>🔹 替代：直接手術 → 術後輔助</h4>
-          <p>鉑類雙藥化療 4 cycles</p>
-          <p><b>EGFR+ (IB-IIIA)：</b>標靶藥物輔助 3 年</p>
-          <p><b>PD-L1 ≥1% & EGFR/ALK(-)：</b>免疫藥物輔助 1 年</p></div>`;
-      }
-      if(unresectable){
-        tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 同步化放療 → 免疫鞏固 — 首選</h4>
-          <p><b>化放療：</b>鉑類化療 + RT 60Gy/30fx</p>
-          <p><b>鞏固：</b>免疫藥物 q2w × 12 個月（放療後 1-42 天內開始）</p>
-          <p>⚠ EGFR/ALK(+)：免疫鞏固效益不明確</p>
-          <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">免疫鞏固 健保申請</span></div></div>`;
-        tx += `<div class="tx-box gray"><h4>🔹 PS 不佳 / 放療禁忌</h4>
-          <p>序貫化療 → 放療 或 單獨化療</p></div>`;
-      }
-      tx += `<div class="alert-box info" style="margin-top:8px"><i class="fa-solid fa-circle-info"></i><div>RT 劑量限制：Lung V20 &lt;30-35%, Mean Lung Dose &lt;20Gy, Heart V50 &lt;25%。建議 IMRT/VMAT。</div></div>`;
-      return { tx, cost:[{l:'鉑類化療',v:'健保全額'},{l:'同步放療 60Gy',v:'健保全額'},{l:'免疫藥物(新輔助)',v:'健保申請/自費'},{l:'免疫藥物(鞏固)',v:'健保申請'},{l:'標靶藥物(輔助)',v:'健保申請/自費'},{l:'手術 VATS/RATS',v:'健保（RATS 差額15-25萬）'}] };
-    },
-    'IV': s => {
-      let tx = `<div class="card-title"><i class="fa-solid fa-bullseye"></i> 非鱗NSCLC — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>`;
-      const mut = s.mutation||'PENDING';
-      if(mut==='EGFR'){
-        tx+=`<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ EGFR 突變 — 標靶藥物首選</h4>
-          <p><b>常見突變（Exon 19del / L858R）：</b>第三代 EGFR 標靶藥物（首選）</p>
-          <p><b>非典型突變（G719X/L861Q/S768I）：</b>第二或第三代標靶藥物</p>
-          <p><b>Exon 20 插入：</b>特殊標靶藥物</p>
-          <p>進展後：依抗藥機轉調整標靶或合併化療 ± 局部RT</p>
-          <div class="row"><span></span><span class="badge nhi">標靶健保一線</span></div></div>`;
-      } else if(mut==='ALK'){
-        tx+=`<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ ALK 融合 — ALK 標靶藥物首選</h4>
-          <p><b>首選：</b>第二/三代 ALK 標靶藥物</p>
-          <p>進展後：依抗藥性突變選擇次線 ALK 標靶或化療</p>
-          <div class="row"><span></span><span class="badge nhi">ALK 標靶健保一線</span></div></div>`;
-      } else if(mut==='OTHER_TKI'){
-        tx+=`<div class="tx-box blue"><h4>🎯 其他可標靶驅動基因</h4>
-          <p><b>ROS1+：</b>對應標靶藥物</p>
-          <p><b>BRAF V600E：</b>BRAF + MEK 雙標靶</p>
-          <p><b>MET ex14 skip：</b>MET 標靶藥物</p>
-          <p><b>RET 融合：</b>RET 標靶藥物</p>
-          <p><b>NTRK 融合：</b>TRK 標靶藥物</p>
-          <p><b>HER2 突變：</b>抗體藥物複合體 (ADC)</p>
-          <p><b>KRAS G12C：</b>KRAS 標靶藥物</p>
-          <div class="row"><span></span><span class="badge self">多為自費/健保申請</span></div></div>`;
-      } else if(mut==='PDL1_HIGH'){
-        tx+=`<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ PD-L1 ≥50% — 免疫治療首選</h4>
-          <p><b>首選：</b>免疫藥物單藥 或 免疫藥物 + 化療</p>
-          <div class="row"><span></span><span class="badge nhi">免疫藥物健保一線</span></div></div>`;
-      } else if(mut==='PDL1_LOW'){
-        tx+=`<div class="tx-box amber"><h4>🔹 PD-L1 1-49% — 化療 + 免疫治療</h4>
-          <p><b>首選：</b>免疫藥物 + 鉑類化療 → 免疫 + 化療維持</p>
-          <div class="row"><span></span><span class="badge nhi">免疫+化療 健保一線</span></div></div>`;
-      } else if(mut==='PDL1_NEG'){
-        tx+=`<div class="tx-box amber"><h4>🔹 PD-L1 <1% — 化療 ± 免疫治療</h4>
-          <p><b>首選：</b>免疫藥物 + 鉑類化療 → 維持</p>
-          <p><b>替代：</b>單用鉑類化療 → 化療維持</p>
-          <div class="row"><span></span><span class="badge nhi">化療+免疫 健保申請</span></div></div>`;
-      } else {
-        tx+=`<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 建議等待 NGS/PD-L1 結果。PS 良好可先以化療起步。<br>鉑類化療起步不影響後續加入免疫或換標靶。</div></div>`;
-      }
-      const isOligo = s.mstage==='M1b';
-      if(isOligo) tx+=`<div class="tx-box green" style="margin-top:8px"><h4>🔹 寡轉移 (Oligometastatic) — 局部治療</h4><p>${s.mstage} 寡轉移：考慮局部鞏固治療 (SABR/手術) 至所有可見病灶</p><p>腦轉移 ≤4 顆：SRS 立體定位放射手術（首選）</p></div>`;
-      tx+=`<div class="tx-box gray" style="margin-top:8px"><h4>🔹 後線治療</h4>
-        <p>二線：化療 ± 免疫藥物（未用過者）</p>
-        <p>腦轉移：SRS（≤4顆優先）/ WBRT / 繼續標靶（EGFR/ALK）</p></div>`;
-      return { tx, cost:[{l:'標靶藥物 (EGFR)',v:'健保一線'},{l:'標靶藥物 (ALK)',v:'健保一線'},{l:'免疫藥物',v:'健保一線'},{l:'鉑類化療',v:'健保全額'},{l:'SRS 立體定位',v:'健保/部分自費'},{l:'其他標靶',v:'健保申請/自費'}] };
-    }
-  },
-  NSCLC_SQ:{
-    'early': s => ({
-      tx:`<div class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> 鱗狀NSCLC — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>
-        <div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 手術切除 — 首選</h4>
-          <p>肺葉切除術 + 系統性縱膈腔淋巴結取樣/廓清</p>
-          <p>周邊 ≤2cm 可考慮肺段切除</p>
-          <div class="row"><span></span><span class="badge nhi">健保</span></div></div>
-        ${s.stage!=='IA'?`<div class="tx-box amber"><h4>🔹 術後輔助化療</h4>
-          <p>IB 高風險 / IIA：鉑類雙藥化療 4 cycles</p>
-          <p>⚠ 鱗狀細胞癌不使用 Pemetrexed</p>
-          <p><b>PD-L1 ≥1% & EGFR/ALK(-)：</b>免疫藥物輔助</p>
-          <div class="row"><span></span><span class="badge nhi">化療健保</span></div></div>`:''}
-        <div class="tx-box blue"><h4>🔹 不適合手術者 — SABR/SBRT</h4>
-          <p>周邊：54Gy/3fx 或 48Gy/4fx ｜ 中央型：50Gy/5fx</p>
-          <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`,
-      cost:[{l:'肺葉切除 (VATS)',v:'健保全額'},{l:'SABR/SBRT',v:'健保全額'},{l:'鉑類化療',v:'健保全額'},{l:'免疫藥物(輔助)',v:'健保申請'}]
+    'ls_chemoRT': s => ({
+      tx: `<div class="card-title"><i class="fa-solid fa-bolt"></i> SCLC — ${s.stage} (${s.tstage}${s.nstage}${s.mstage}) — 侷限期</div>` +
+        `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ PS 0-2：化療 + 放療</h4>
+          <p>Cisplatin/Etoposide (EP) + 同步放療</p>
+          <p>CCRT: 每次 2Gy，total 50-70Gy</p>
+          <p>CR 或 PR → 預防性全腦照射 (PCI)：30Gy/15fx or 25Gy/10fx</p>
+          <div class="row"><span></span><span class="badge nhi">健保全額</span></div></div>` +
+        `<div class="tx-box amber"><h4>🔹 PS 3-4（因癌症）</h4><p>化療 ± 放療</p></div>` +
+        `<div class="tx-box gray"><h4>🔹 PS 3-4（非癌症引起）</h4><p>最佳支持性治療</p></div>`,
+      cost:[{l:'Cisplatin/Etoposide',v:'健保全額'},{l:'放療',v:'健保全額'},{l:'PCI',v:'健保全額'}]
     }),
-    'local': s => {
-      const resectable = s.stage==='IIB'||s.stage==='IIIA';
-      let tx = `<div class="card-title"><i class="fa-solid fa-radiation"></i> 鱗狀NSCLC — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>`;
-      if(resectable){
-        tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 新輔助免疫+化療 → 手術</h4>
-          <p>免疫藥物 + 鉑類化療 × 3 cycles → 手術</p>
-          <p>術後：完成化療 4 cycles ± 免疫鞏固</p>
-          <div class="row"><span></span><span class="badge nhi">化療健保</span><span class="badge self">IO 部分自費</span></div></div>`;
-      }
-      if(s.stage==='IIIB'||s.stage==='IIIC'){
-        tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 同步化放療 → 免疫鞏固</h4>
-          <p>鉑類化療 + RT 60Gy</p>
-          <p>→ 免疫藥物鞏固 12 個月</p>
-          <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">免疫鞏固 健保申請</span></div></div>`;
-      }
-      return { tx, cost:[{l:'鉑類化療',v:'健保全額'},{l:'同步放療',v:'健保全額'},{l:'免疫藥物(鞏固)',v:'健保申請'},{l:'手術',v:'健保'}] };
-    },
-    'IV': s => {
-      let tx = `<div class="card-title"><i class="fa-solid fa-bullseye"></i> 鱗狀NSCLC — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>`;
-      const mut = s.mutation||'PENDING';
-      if(mut==='EGFR'||mut==='ALK'||mut==='OTHER_TKI'){
-        tx+=`<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 驅動基因陽性 — 標靶治療</h4>
-          <p>鱗狀細胞癌中驅動基因陽性較罕見但應依結果治療：</p>
-          ${mut==='EGFR'?'<p><b>EGFR+：</b>標靶藥物（首選）</p>':''}
-          ${mut==='ALK'?'<p><b>ALK+：</b>ALK 標靶藥物（首選）</p>':''}
-          ${mut==='OTHER_TKI'?'<p>依具體驅動基因選擇對應 TKI</p>':''}
-          <div class="row"><span></span><span class="badge nhi">健保申請</span></div></div>`;
-      } else if(mut==='PDL1_HIGH'){
-        tx+=`<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ PD-L1 ≥50% — 免疫治療首選</h4>
-          <p><b>首選：</b>免疫藥物單藥 或 免疫藥物 + 化療</p>
-          <div class="row"><span></span><span class="badge nhi">免疫藥物健保一線</span></div></div>`;
-      } else if(mut==='PDL1_LOW'){
-        tx+=`<div class="tx-box amber"><h4>🔹 PD-L1 1-49% — 化療 + 免疫治療</h4>
-          <p><b>首選：</b>免疫藥物 + 鉑類化療</p>
-          <div class="row"><span></span><span class="badge nhi">免疫+化療 健保申請</span></div></div>`;
-      } else if(mut==='PDL1_NEG'){
-        tx+=`<div class="tx-box amber"><h4>🔹 PD-L1 <1% — 化療 ± 免疫治療</h4>
-          <p><b>首選：</b>免疫藥物 + 鉑類化療</p>
-          <p><b>替代：</b>單用鉑類化療</p>
-          <div class="row"><span></span><span class="badge nhi">健保申請</span></div></div>`;
-      } else {
-        tx+=`<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 可先以鉑類化療起步。</div></div>`;
-      }
-      tx+=`<div class="tx-box gray" style="margin-top:8px"><h4>🔹 後線治療</h4>
-        <p>二線：化療 ± 免疫藥物</p>
-        <p>⚠ 鱗狀不使用 Pemetrexed 及 Bevacizumab</p></div>`;
-      return { tx, cost:[{l:'免疫藥物+化療',v:'健保申請'},{l:'鉑類化療',v:'健保全額'},{l:'化療(二線)',v:'健保全額'},{l:'標靶(如適用)',v:'健保申請/自費'}] };
-    }
-  },
-  SCLC:{
-    'early': s => ({
-      tx:`<div class="card-title"><i class="fa-solid fa-bolt"></i> SCLC 小細胞 — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>
-        ${(s.tstage==='T1'||s.tstage==='T2')&&s.nstage==='N0'?`<div class="tx-box green"><h4>🔹 T1-2N0 — 可考慮手術</h4>
-          <p>肺葉切除 + 縱膈腔淋巴結廓清 → 輔助化療 (Cisplatin/Etoposide × 4)</p>
-          <p>術後 pN0：考慮預防性全腦照射 (PCI)</p>
-          <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`:''}
-        <div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 同步化放療 — 標準治療 (Limited Stage)</h4>
-          <p><b>化療：</b>Cisplatin/Etoposide (EP) 或 Carboplatin/Etoposide 4-6 cycles</p>
-          <p><b>放療：</b>45Gy/30fx BID（首選）或 60-70Gy QD · 第 1-2 cycle 開始</p>
-          <p>⚠ BID 方案需放療設施配合；QD 為替代選項</p>
-          <div class="row"><span></span><span class="badge nhi">健保全額</span></div></div>
-        <div class="tx-box blue"><h4>🔹 化放療後完全或部分緩解</h4>
-          <p><b>PCI 預防性全腦照射：</b>25Gy/10fx — 降低腦轉移風險</p>
-          <p><b>替代：</b>腦部 MRI 密切追蹤（q3月 × 2年）</p></div>
-        <div class="alert-box warn" style="margin-top:8px"><i class="fa-solid fa-triangle-exclamation"></i><div>SCLC 為高度惡性腫瘤，即使早期也建議全身化療。不建議僅手術觀察。</div></div>`,
-      cost:[{l:'Cisplatin/Etoposide',v:'健保全額'},{l:'胸腔放療',v:'健保全額'},{l:'PCI 全腦照射',v:'健保全額'},{l:'手術 (T1-2N0)',v:'健保全額'}]
-    }),
-    'local': s => ({
-      tx:`<div class="card-title"><i class="fa-solid fa-bolt"></i> SCLC 小細胞 — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>
-        <div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 同步化放療 — 標準治療 (Limited Stage)</h4>
-          <p><b>化療：</b>Cisplatin/Etoposide × 4-6 cycles</p>
-          <p><b>放療：</b>45Gy/30fx BID（首選）或 60-70Gy QD · 第 1-2 cycle 同步開始</p>
-          <div class="row"><span></span><span class="badge nhi">健保全額</span></div></div>
-        <div class="tx-box blue"><h4>🔹 化放療後緩解 → PCI</h4>
-          <p>25Gy/10fx 預防性全腦照射 — 改善存活</p></div>
-        <div class="tx-box gray"><h4>🔹 PS 不佳 / 無法同步治療</h4>
-          <p>序貫化療 → 放療 或 化療 + 免疫藥物（參考擴散期方案）</p></div>`,
-      cost:[{l:'Cisplatin/Etoposide',v:'健保全額'},{l:'胸腔放療',v:'健保全額'},{l:'PCI',v:'健保全額'}]
-    }),
-    'IV': s => ({
-      tx:`<div class="card-title"><i class="fa-solid fa-bolt"></i> SCLC 小細胞 — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage}) — Extensive Stage</div>
-        <div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 化療 + 免疫治療 — 首選一線</h4>
-          <p><b>首選：</b>鉑類/Etoposide + 免疫藥物 × 4 cycles → 免疫藥物維持</p>
-          <div class="row"><span></span><span class="badge nhi">化療+免疫 健保申請</span></div></div>
-        <div class="tx-box blue"><h4>🔹 化療後緩解 → 鞏固</h4>
-          <p><b>胸腔鞏固放療：</b>30Gy/10fx（緩解後可考慮）</p>
-          <p><b>PCI：</b>25Gy/10fx 或 腦部 MRI 密切追蹤（q3月）</p></div>
-        <div class="tx-box gray"><h4>🔹 復發/後線治療</h4>
-          <p><b>敏感性復發（≥6月）：</b>再次使用原方案</p>
-          <p><b>抗藥性復發（<6月）：</b>二線化療</p></div>
-        <div class="alert-box info" style="margin-top:8px"><i class="fa-solid fa-circle-info"></i><div>SCLC 腦轉移：SRS（≤4顆）或 WBRT + Memantine。無症狀腦轉移先全身治療。</div></div>`,
-      cost:[{l:'鉑類/Etoposide',v:'健保全額'},{l:'免疫藥物',v:'健保申請'},{l:'鞏固胸腔 RT',v:'健保全額'},{l:'PCI',v:'健保全額'},{l:'二線化療',v:'健保申請'}]
+    'extensive': s => ({
+      tx: `<div class="card-title"><i class="fa-solid fa-bolt"></i> SCLC — ${s.stage} (${s.tstage}${s.nstage}${s.mstage}) — 擴散期</div>` +
+        `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 無局部症狀/腦轉移 — PS 0-4（因癌症）</h4>
+          <p>化療 + 支持性療法 + 免疫治療（健保事審）</p>
+          <p>PR/CR → PCI 25Gy/10fx ± 胸腔鞏固 RT 30Gy</p>
+          <div class="row"><span></span><span class="badge nhi">化療健保</span><span class="badge self">免疫健保事審</span></div></div>` +
+        `<div class="tx-box amber"><h4>🔹 有局部症狀</h4>
+          <p><b>SVC / obstruction / bone：</b>化療 + 放療（有症狀區域）+ 免疫治療（健保事審）</p>
+          <p><b>Spine：</b>先放療再化療</p></div>` +
+        `<div class="tx-box blue"><h4>🔹 腦轉移</h4>
+          <p><b>有症狀：</b>先放療全腦或伽瑪刀 → 化療</p>
+          <p><b>無症狀：</b>先化療 → 再放療腦部或伽瑪刀</p></div>` +
+        `<div class="tx-box gray"><h4>🔹 PS 3-4（非癌症引起）</h4><p>最佳支持性治療</p></div>`,
+      cost:[{l:'Cisplatin/Etoposide',v:'健保全額'},{l:'免疫治療',v:'健保事審'},{l:'PCI',v:'健保全額'},{l:'鞏固 RT',v:'健保全額'}]
     })
   }
 };
 
+const _NSCLC_SUM = {
+  'I_periph': s => '手術切除 → 依病理分期決定輔助治療',
+  'surgical': s => '手術探查 → 輔助治療；不適合手術者放療±化療',
+  'resect_adv': s => '手術 / 前導化放療 / 前導化療 → 再次手術評估',
+  'N2': s => s.tstage==='T3'?'新輔助(IO+化療)→手術 or CCRT±標靶/免疫':'CCRT or 引導化療→評估手術',
+  'N3': s => '同步化放療 or 標靶 or 免疫治療',
+  'T4N2N3': s => '合併化放療 or 標靶 or 免疫治療',
+  'M1a': s => '先判斷積水惡性 → 局部控制 → 全身治療',
+  'M1b': s => 'PS 0-2: 積極治療; PS 3-4: 支持性治療',
+  'M1c': s => { const m=s.mutation||'PENDING'; if(m==='EGFR') return 'EGFR 標靶藥物'; if(m==='ALK') return 'ALK 標靶藥物'; if(m==='OTHER_TKI') return '對應標靶藥物'; if(m==='PDL1_HIGH'||m==='PDL1_LOW'||m==='PDL1_NEG') return '免疫治療±化療（依健保規範）'; return '等報告中—先化療起步'; }
+};
 const PW_SUMMARY = {
-  NSCLC_NS:{
-    'early': s => s.stage==='IA'?'手術切除 ± 觀察':'手術 + 輔助化療 ± 標靶/免疫鞏固',
-    'local': s => (s.stage==='IIB'||s.stage==='IIIA')?'新輔助免疫+化療 → 手術 → 輔助':'同步化放療 → 免疫藥物鞏固 12 月',
-    'IV': s => { const m=s.mutation||'PENDING'; if(m==='EGFR') return 'EGFR 標靶藥物'; if(m==='ALK') return 'ALK 標靶藥物'; if(m==='OTHER_TKI') return '對應標靶藥物'; if(m==='PDL1_HIGH') return '免疫藥物 ± 化療'; if(m==='PDL1_LOW') return '免疫藥物 + 化療'; if(m==='PDL1_NEG') return '化療 + 免疫藥物'; return '等報告中 — 先化療起步'; }
-  },
-  NSCLC_SQ:{
-    'early': s => '手術 + 鉑類化療輔助',
-    'local': s => (s.stage==='IIB'||s.stage==='IIIA')?'新輔助免疫+化療 → 手術':'同步化放療 → 免疫藥物鞏固',
-    'IV': s => { const m=s.mutation||'PENDING'; if(m==='EGFR'||m==='ALK'||m==='OTHER_TKI') return '標靶藥物'; if(m==='PDL1_HIGH') return '免疫藥物 ± 化療'; if(m==='PDL1_LOW'||m==='PDL1_NEG') return '免疫藥物 + 化療'; return '等報告中 — 先化療'; }
-  },
-  SCLC:{
-    'early': s => (s.tstage==='T1'||s.tstage==='T2')&&s.nstage==='N0'?'手術 + 化療 + PCI':'同步化放療 → PCI',
-    'local': s => '同步化放療 (化療 + RT) → PCI',
-    'IV': s => '化療 + 免疫藥物 → 免疫維持 ± 鞏固 RT',
-  }
-};
-
-
-// ── Stage-specific Goals & Mechanism (plain language) ──
-const STAGE_GOALS = {
-  NSCLC_NS: {
-    early: {goal:'【根除病灶】早期肺癌以治癒為目標，清除所有可見與潛在癌細胞。', mechanism:'解剖性肺葉切除 + 淋巴廓清 ➜ 鉑類雙藥輔助化療（視風險而定）。',
-      boxes:[{title:'手術標準處置',color:'blue',badge:'標準指引',list:['Stage IA：手術後定期追蹤，通常不需化療','Stage IB ≥4cm / IIA：術後 4 次輔助化療降低復發率']},{title:'高風險因子評估',color:'orange',badge:'評估關鍵',list:['腫瘤 ≥4cm、侵犯肋膜、血管浸潤','具高風險因子時建議加做化療','EGFR+ 者可加 標靶鞏固 3 年']}],
-      footer:'術前須完成肺功能評估(PFT)，確認可耐受手術。'},
-    local: {goal:'【降階與根除】利用前導治療縮小腫瘤，再手術清除；無法手術者以化放療＋免疫鞏固。', mechanism:'前導免疫+化療 ➜ 手術 ➜ 鞏固 / 或 同步化放療 ➜ 免疫鞏固 12 個月。',
-      boxes:[{title:'可手術 (IIB-IIIA)',color:'blue',badge:'最新趨勢',list:['術前免疫+化療可活化全身免疫系統','目標達成病理完全緩解 (pCR)','MDM 團隊確認 N2 淋巴結是否可切除']},{title:'不可手術 (IIIB-C)',color:'orange',badge:'化放免疫',list:['同步化放療後儘速啟動免疫鞏固','五年存活率可提升至 43%','CCRT 後需於 42 天內啟動免疫']}],
-      footer:'放療劑量限制：Lung V20 <30-35%, Mean Lung Dose <20Gy。'},
-    IV: {goal:'【精準抗癌】針對癌細胞驅動基因弱點實施長效控制，維持生活品質。', mechanism:'有驅動基因突變 ➜ 標靶藥物 / 無突變 ➜ 依 PD-L1 選擇免疫±化療。',
-      boxes:[{title:'精準治療決策',color:'blue',badge:'分子導航',list:['基因突變者標靶優先，效果優於化療','EGFR/ALK 為最常見驅動基因','NGS 報告是精準醫療的「門票」']},{title:'健保 NGS 新制',color:'orange',badge:'政策亮點',list:['IV 期肺癌給付一次 NGS 檢測','PD-L1 ≥50% 可單用免疫治療','建議確診 8 週內轉介支持照護']}],
-      footer:'強烈建議同步啟動支持照護、營養諮詢及心理支持。'}
-  },
-  NSCLC_SQ: {
-    early: {goal:'【根除病灶】早期鱗狀上皮癌以手術切除為主，輔以化療降低復發。', mechanism:'肺葉切除 + 淋巴廓清 ➜ 鉑類雙藥化療。',
-      boxes:[{title:'手術標準處置',color:'blue',badge:'標準指引',list:['手術仍為早期治癒唯一方式','鱗狀細胞癌不使用 Pemetrexed','IB 高風險/IIA 需輔助化療']},{title:'注意事項',color:'orange',badge:'鱗癌特色',list:['中央型腫瘤比例較高','需仔細評估氣道侵犯程度','不用 Bevacizumab（出血風險）']}],
-      footer:'PD-L1 ≥1% 且 EGFR/ALK(-) 者可考慮免疫輔助治療。'},
-    local: {goal:'【降階與根除】可手術者先做前導治療再手術；不可手術者化放療＋免疫鞏固。', mechanism:'新輔助 IO+化療 ➜ 手術 / 或 CCRT ➜ 免疫鞏固。',
-      boxes:[{title:'可手術方案',color:'blue',badge:'多模態治療',list:['新輔助 免疫+鉑類化療','術後完成化療±免疫鞏固','MDM 確認切除可行性']},{title:'不可手術方案',color:'orange',badge:'化放免疫',list:['CCRT 結束後啟動免疫鞏固','放射搭配鉑類化療','42 天內啟動免疫鞏固']}],
-      footer:'鱗癌放療選擇 鉑類化療。'},
-    IV: {goal:'【精準抗癌】鱗癌驅動基因突變較少，以免疫治療為主軸。', mechanism:'PD-L1 ≥50% ➜ 單用免疫 / PD-L1 <50% ➜ 免疫+化療組合。',
-      boxes:[{title:'免疫治療導航',color:'blue',badge:'分子導航',list:['鱗癌驅動基因突變率低','PD-L1 表現是治療選擇關鍵','免疫藥物 + 鉑類化療為常見組合']},{title:'注意禁忌',color:'orange',badge:'安全提醒',list:['不可使用 Pemetrexed','不可使用 Bevacizumab','注意免疫相關副作用管理']}],
-      footer:'二線選擇：化療 ± 免疫藥物。'}
-  },
+  NSCLC_NS: { ..._NSCLC_SUM },
+  NSCLC_SQ: { ..._NSCLC_SUM, 'M1c': s => { const m=s.mutation||'PENDING'; if(m==='EGFR'||m==='ALK'||m==='OTHER_TKI') return '標靶藥物'; if(m==='PDL1_HIGH') return '免疫±化療'; if(m==='PDL1_LOW'||m==='PDL1_NEG') return '免疫+化療 or 化療（依PS）'; return '等報告中—先化療'; } },
   SCLC: {
-    early: {goal:'【快速壓制與全腦保護】利用小細胞癌的高化療敏感度達成快速緩解。', mechanism:'T1-2N0: 手術+化療+PCI / 其他: 同步化放療(EP) ➜ PCI。',
-      boxes:[{title:'侷限期核心處置',color:'blue',badge:'必做流程',list:['放療應與化療第 1-2 週期同步啟動','T1-2N0 可考慮手術+化療','PCI 預防腦轉移（即使 MRI 正常）']},{title:'時效管控',color:'orange',badge:'黃金時間',list:['小細胞癌倍增時間極短','診斷後兩週內應啟動首治','BID 放療 45Gy/30fx 優於 QD']}],
-      footer:'完成治療後應進行完整療效評估。'},
-    local: {goal:'【快速壓制與局部控制】同步化放療達成最大緩解，PCI 預防腦轉移。', mechanism:'同步化放療 (EP + RT) ➜ PCI 預防性全腦照射。',
-      boxes:[{title:'侷限期化放整合',color:'blue',badge:'標準模式',list:['EP (Cisplatin/Etoposide) × 4-6 cycles','放療與第 1-2 cycle 同步','BID 45Gy/30fx 優於 QD 60Gy']},{title:'PCI 決策',color:'orange',badge:'腦保護',list:['CR/PR 後建議 PCI 25Gy/10fx','替代：MRI 每 3 月追蹤','PS 差者可考慮跳過 PCI']}],
-      footer:'PS 不佳者可考慮序貫化療→放療或直接化療+IO。'},
-    IV: {goal:'【快速緩解與維持控制】化療快速縮小病灶，免疫延長緩解時間。', mechanism:'誘導：化療+免疫(PD-L1) × 4 cycles ➜ 維持：持續免疫輸注。',
-      boxes:[{title:'擴散期化免路徑',color:'blue',badge:'國際標準',list:['化療 + 免疫藥物','替代：免疫藥物','標準誘導 4 cycles']},{title:'後續管理',color:'orange',badge:'副作用管理',list:['注意自體免疫副作用 (irAE)','每 2-3 月影像複查','鞏固胸腔 RT 30Gy 可考慮']}],
-      footer:'敏感復發(≥6月)：再次化療；抗藥復發(<6月)：二線化療藥物。'}
+    'ls_surg': s => '手術+淋巴廓清→化療±放療',
+    'ls_chemoRT': s => '化療+放療(EP+RT)→PCI',
+    'extensive': s => '化療+免疫（健保事審）±鞏固RT',
   }
 };
+
+const _NSCLC_GOALS = {
+  I_periph: {goal:'【根除病灶】早期肺癌以治癒為目標，手術清除所有可見病灶。', mechanism:'肺葉切除+淋巴廓清 ➜ 依術後病理分期決定觀察或化療。',
+    boxes:[{title:'手術標準處置',color:'blue',badge:'標準指引',list:['外科切除為早期治癒首選','微創手術(VATS/RATS)優先','不適合手術者可做SBRT']},{title:'高風險因子評估',color:'orange',badge:'評估關鍵',list:['腫瘤≧4cm、侵犯肋膜、血管浸潤','高風險IB需輔助化療','Tis/T1mi可術後再做腦/PET']}],
+    footer:'術前須完成肺功能(PFT)、CT含腎上腺、腦部CT/MRI、PET。'},
+  surgical: {goal:'【手術探查與輔助】中央型或N1病灶需手術探查，依病理決定後續。', mechanism:'手術切除 ➜ 病理分期 ➜ 輔助化療/放療。不適合手術 ➜ CCRT。',
+    boxes:[{title:'可手術路線',color:'blue',badge:'探查後決定',list:['手術後依病理分期走輔助流程','中央型需評估氣管侵犯','T3N0同一葉多結節']},{title:'不可手術路線',color:'orange',badge:'替代方案',list:['N0：放療±化療','N1：合併化放療(CCRT)','高齡/PS差可改Sequential']}],
+    footer:'SBRT健保給付：病灶≦5cm，ECOG≦2。'},
+  resect_adv: {goal:'【降階或直接手術】前導治療縮小腫瘤再手術；無法手術者化放療。', mechanism:'前導化療或化放療 ➜ 再評估 ➜ 手術 ➜ 輔助治療。',
+    boxes:[{title:'可手術三策略',color:'blue',badge:'多模態',list:['①直接手術','②前導同步化放療→手術','③前導化療→手術']},{title:'無法手術',color:'orange',badge:'T4 Unresectable',list:['合併化放療(CCRT)','高齡可改Sequential','PS差考慮支持性治療']}],
+    footer:'前導治療後須再次影像評估手術可行性。'},
+  N2: {goal:'【多模態策略】N2淋巴結轉移可嘗試新輔助後手術或直接化放療。', mechanism:'CCRT/引導化療/新輔助(IO+化療) ➜ 依反應決定手術或系統治療。',
+    boxes:[{title:'IIIA (T1-2,N2)',color:'blue',badge:'雙軌策略',list:['CCRT或化療或免疫(自費)','引導化療後無惡化→手術','惡化→轉M1路徑']},{title:'IIIB (T3,N2)',color:'orange',badge:'新輔助',list:['免疫+化療 or CCRT→手術','基因檢測導引系統治療','合併化放療或標靶/免疫']}],
+    footer:'基因檢測：先EGFR/PD-L1，陰性可加驗ALK或NGS。'},
+  N3: {goal:'【化放療為主】N3淋巴結轉移以同步化放療為核心治療。', mechanism:'CCRT/標靶/免疫治療（依健保規範）。',
+    boxes:[{title:'核心治療',color:'blue',badge:'CCRT',list:['同步化放療為主要選擇','可合併標靶或免疫治療','高齡/PS差改Sequential']},{title:'注意事項',color:'orange',badge:'追蹤',list:['需排除遠端轉移','基因檢測指引用藥','定期影像追蹤']}],
+    footer:'遠端轉移確認後轉入M1路徑。'},
+  T4N2N3: {goal:'【化放療為主】T4合併N2/N3以合併化放療為核心。', mechanism:'CCRT/標靶/免疫治療（依健保規範）。',
+    boxes:[{title:'核心治療',color:'blue',badge:'CCRT',list:['合併化放療','標靶或免疫(依基因檢測及健保規範)','病理報告須先確認']},{title:'注意事項',color:'orange',badge:'評估',list:['需完整CT/MRI/PET分期','基因檢測導引治療','高齡可改Sequential']}],
+    footer:'T4包含侵犯縱膈腔、大血管、食道、椎體等。'},
+  M1a: {goal:'【局部控制後全身治療】惡性積水需先局部處理，再進行系統治療。', mechanism:'肋膜放液/沾粘 or 心包膜剝離 ➜ 全身治療。',
+    boxes:[{title:'判斷積水性質',color:'blue',badge:'必做',list:['送檢確認惡性或非惡性','非惡性→回原期別處理','惡性→局部控制後全身治療']},{title:'局部處理',color:'orange',badge:'先處理',list:['肋膜放液+肋膜沾粘術','心包膜積水→剝離術','控制後轉全身治療']}],
+    footer:'積水送細胞學檢查確認。'},
+  M1b: {goal:'【依PS及轉移部位決定治療】PS好者積極治療；PS差者支持照護。', mechanism:'PS 0-2:腦轉移局部處理+全身治療 / PS 3-4:標靶/免疫或支持性。',
+    boxes:[{title:'PS 0-2 積極治療',color:'blue',badge:'可治療',list:['腦轉移：手術/WBRT/伽瑪刀','其他轉移：全身治療','多處轉移：系統治療']},{title:'PS 3-4',color:'orange',badge:'評估',list:['PS 3：符合標靶/免疫可用','PS 4：支持性治療','最佳支持=心理+安寧']}],
+    footer:'腦轉移處理後接續全身治療。'},
+  M1c: {goal:'【精準抗癌】依基因檢測結果選擇標靶、免疫或化療。', mechanism:'有驅動基因 ➜ 標靶藥物 / 無突變 ➜ 依PD-L1及PS選擇免疫±化療。',
+    boxes:[{title:'基因導向治療',color:'blue',badge:'精準醫療',list:['EGFR/ALK/ROS1/BRAF/KRAS/MET','有突變→對應標靶藥物','無突變→免疫±化療']},{title:'健保與檢測',color:'orange',badge:'政策',list:['先EGFR/PD-L1再ALK/NGS','IV期給付一次NGS','免疫治療依健保規範']}],
+    footer:'鱗狀細胞癌不使用Pemetrexed及Bevacizumab。'},
+};
+const STAGE_GOALS = {
+  NSCLC_NS: { ..._NSCLC_GOALS },
+  NSCLC_SQ: { ..._NSCLC_GOALS },
+  SCLC: {
+    ls_surg: {goal:'【早期手術+化療】cT1-2N0可手術，術後依淋巴結決定放療。', mechanism:'Lobectomy+LN dissection ➜ 化療±放療。',
+      boxes:[{title:'手術流程',color:'blue',badge:'必做',list:['肺葉切除+淋巴廓清','LN(−)→化療','LN(+)→化療±放療']},{title:'無法手術',color:'orange',badge:'替代',list:['SBRT後接化療','或化療+放療','SCLC不建議僅觀察']}],
+      footer:'SCLC倍增時間極短，診斷後兩週內應啟動首治。'},
+    ls_chemoRT: {goal:'【化放療壓制】侷限期以同步化放療為標準，CR/PR後做PCI。', mechanism:'Cisplatin/Etoposide+同步RT ➜ PCI預防腦轉移。',
+      boxes:[{title:'PS 0-2',color:'blue',badge:'標準治療',list:['化療+放療','CCRT 50-70Gy','CR/PR→PCI']},{title:'PS 3-4',color:'orange',badge:'依原因',list:['因癌症：化療±放療','非癌症：支持性治療','個別評估決定']}],
+      footer:'放療應與化療第1-2週期同步啟動。'},
+    extensive: {goal:'【化療+免疫控制】擴散期以化療+免疫為主，緩解後考慮鞏固RT。', mechanism:'化療+免疫(健保事審) ➜ 維持 ➜ PCI±鞏固胸腔RT。',
+      boxes:[{title:'系統治療',color:'blue',badge:'一線',list:['化療+免疫（健保事審）','有症狀區域加局部放療','腦轉移依症狀決定時序']},{title:'後續管理',color:'orange',badge:'追蹤',list:['PR/CR→PCI±鞏固RT','惡化→二線化療','最佳支持=心理+安寧']}],
+      footer:'Extensive stage如經濟許可可加免疫治療。'}
+  }
+};
+
 
 // ── Treatment Execution Options ──
 const TX_EXEC_OPTIONS = [
@@ -2234,19 +2286,15 @@ function checkKPI(){
   const tx = S.actualTx || {};
   const txCount = Object.keys(tx).length;
   if(txCount > 0 && S.stage){
-    const grp = txGroup(S.stage);
-    const isSCLC = S.type === 'SCLC';
-    if(grp === 'early'){
-      // Early: should have surgery (± neoadj/adj) or SABR
-      if(!tx.surgery && !tx.sabr){ stratOk=false; stratDetail='早期建議手術或SABR'; }
-    } else if(grp === 'local'){
-      // Local: surgery with neoadj, or CCRT/seq-CRT
-      if(!tx.surgery && !tx.ccrt && !tx.seq_crt && !tx.neoadj_io_chemo && !tx.neoadj_chemo){ stratOk=false; stratDetail='局部晚期建議手術或化放療'; }
-      if(isSCLC && !tx.ccrt && !tx.seq_crt){ stratOk=false; stratDetail='SCLC 局限期建議化放療'; }
-    } else if(grp === 'IV'){
-      // IV: should have systemic therapy
+    const grp = txGroup(S);
+    const broad = txBroad(grp);
+    if(broad === 'surgical'){
+      if(!tx.surgery && !tx.sabr){ stratOk=false; stratDetail='建議手術或SABR'; }
+    } else if(broad === 'chemoRT'){
+      if(!tx.surgery && !tx.ccrt && !tx.seq_crt && !tx.neoadj_io_chemo && !tx.neoadj_chemo){ stratOk=false; stratDetail='建議手術或化放療'; }
+    } else if(broad === 'systemic'){
       if(!tx.chemo_alone && !tx.target_1l && !tx.io_chemo_combo && !tx.io_mono && !tx.palliative){
-        stratOk=false; stratDetail='晚期建議全身治療';
+        stratOk=false; stratDetail='建議全身治療';
       }
     }
   }
@@ -2276,12 +2324,67 @@ function renderKPI(){
 }
 
 // ── Render Education Handout in Summary ──
+// ⚙ 設定掃碼頁面 base URL（部署到 GitHub Pages 後修改此處）
+const EDU_BASE_URL = 'https://YOUR-USERNAME.github.io/pathway/edu.html';
+
+function maskName(name){
+  if(!name) return '○○○';
+  if(name.length<=1) return name+'○';
+  if(name.length===2) return name[0]+'○';
+  return name[0] + '○'.repeat(name.length-2) + name[name.length-1];
+}
+
+function buildEduPayload(){
+  const S = A.S;
+  const grp = txGroup(S);
+  const goals = STAGE_GOALS[S.type]?.[grp];
+  const fn = PW_SUMMARY[S.type]?.[grp];
+  const tm = CFG.team;
+  const payload = {
+    n: maskName(S.name),
+    dx: TYPE_LABEL[S.type]||'',
+    stg: S.stage||'',
+    goal: goals?.goal||'',
+    tx: fn ? fn(S) : '',
+    team: tm.depts.map(d=>{
+      const rec = S.consult?.[d.id];
+      return {d:d.fullDept, n: rec ? maskName(rec.doctor) : ''};
+    }),
+    cm: maskName(tm.caseManager.name),
+    dt: todayStr()
+  };
+  return payload;
+}
+
+function buildEduURL(){
+  const json = JSON.stringify(buildEduPayload());
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return EDU_BASE_URL + '#' + b64;
+}
+
+function renderEduQR(){
+  const container = document.getElementById('edu-qr-target');
+  if(!container) return;
+  container.innerHTML = '';
+  try {
+    const url = buildEduURL();
+    new QRCode(container, {
+      text: url,
+      width: 120,
+      height: 120,
+      colorDark: '#1a365d',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e){ container.innerHTML = '<span style="font-size:11px;color:var(--text3)">QR 產生失敗</span>'; }
+}
+
 function renderEduHandout(){
   const el = document.getElementById('sum-edu');
   if(!el) return;
   const S = A.S;
   if(!S.type || !S.stage){ el.innerHTML = ''; return; }
-  const grp = txGroup(S.stage);
+  const grp = txGroup(S);
   const goals = STAGE_GOALS[S.type]?.[grp];
   if(!goals){ el.innerHTML = ''; return; }
   const typeLabel = TYPE_LABEL[S.type]||'';
@@ -2290,14 +2393,16 @@ function renderEduHandout(){
   let h = '<div class="edu-handout">';
   h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 病患個人化照護導航手冊</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
   h += '<div class="edu-body">';
-  // Row 1: Patient info (4 columns compact)
+  // Row 1: Patient info (4 columns)
   h += '<div class="edu-info">';
   h += `<div><b>姓名：</b>${S.name||'________'}</div>`;
   h += `<div><b>收案 ID：</b>${S.code||'N/A'}</div>`;
   h += `<div><b>診斷：</b>${typeLabel}</div>`;
   h += `<div><b>分期：</b>Stage ${S.stage||'—'}</div>`;
   h += '</div>';
-  // Row 2: Two columns — left: care team, right: treatment goal + plan
+  // Main content: QR wrap = 2col + QR card
+  h += '<div class="edu-qr-wrap">';
+  // Two columns
   h += '<div class="edu-2col">';
   // Left column: team
   h += '<div class="edu-col">';
@@ -2312,7 +2417,6 @@ function renderEduHandout(){
   });
   h += `<tr style="background:#f0fdfa"><td>${tm.caseManager.title}</td><td style="font-weight:700;color:#0891b2">${tm.caseManager.name}</td></tr>`;
   h += '</table>';
-  // Emergency in left column
   h += '<div class="edu-emg"><b>🚨 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
   h += '</div>';
   // Right column: goal + plan + side effects
@@ -2323,10 +2427,19 @@ function renderEduHandout(){
   h += `<h4 class="edu-sh"><i class="fa-solid fa-shield-heart"></i> 副作用管理</h4>`;
   h += '<p class="edu-p">持續發燒、皮膚紅腫或皮疹、腹瀉不止、呼吸急促、嚴重疲倦無法進食 → 請聯繫個管師。</p>';
   h += '</div></div>';
+  // QR card
+  h += '<div class="edu-qr-card">';
+  h += '<div class="edu-qr-label"><i class="fa-solid fa-qrcode"></i> 電子版</div>';
+  h += '<div id="edu-qr-target"></div>';
+  h += '<div class="edu-qr-hint">掃描查看<br>個人化照護資訊</div>';
+  h += '</div>';
+  h += '</div>'; // close edu-qr-wrap
   // Footer
   h += `<div class="edu-footer"><b>個管師：</b>${tm.caseManager.name}　<b>電話：</b>______________　<b>日期：</b>______________</div>`;
   h += '</div></div>';
   el.innerHTML = h;
+  // Generate QR after DOM is ready
+  setTimeout(renderEduQR, 50);
 }
 
 // ── Save record ──
@@ -2460,9 +2573,9 @@ function renderSummary(){
   // Treatment
   let txH = '<div class="st"><i class="fa-solid fa-stethoscope"></i> 治療路徑</div>';
   if(S.type && S.stage){
-    const grp = txGroup(S.stage);
+    const grp = txGroup(S);
     const fn=PW_SUMMARY[S.type]?.[grp]; const txt=fn?fn(S):'尚無摘要';
-    const self=(S.mutation==='EGFR'||S.mutation==='ALK'||S.mutation==='OTHER_TKI')||grp==='IV';
+    const self=(S.mutation==='EGFR'||S.mutation==='ALK'||S.mutation==='OTHER_TKI')||['M1a','M1b','M1c','N2','N3','T4N2N3'].includes(grp);
     txH += `<div class="stx"><div class="tl">🎯 建議方案</div><div class="tv">${txt}</div></div>`;
     txH += `<div class="stx"><div class="tl">💰 費用概估</div><div class="tv">${self?'部分自費項目，建議確認保險':'以健保給付為主'}</div></div>`;
     const txExecDone = S.actualTx ? Object.keys(S.actualTx) : [];
