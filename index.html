@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v12</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -656,7 +656,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v12</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v14</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -912,7 +912,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v12</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v14</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1629,7 +1629,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v12 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v14 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -2324,8 +2324,8 @@ function renderKPI(){
 }
 
 // ── Render Education Handout in Summary ──
-// ⚙ 設定掃碼頁面 base URL（部署到 GitHub Pages 後修改此處）
-const EDU_BASE_URL = 'https://YOUR-USERNAME.github.io/pathway/edu.html';
+// ⚙ 設定掃碼頁面 base URL（部署後修改；路徑越短 QR 越好掃）
+const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/edu.html';
 
 function maskName(name){
   if(!name) return '○○○';
@@ -2334,26 +2334,19 @@ function maskName(name){
   return name[0] + '○'.repeat(name.length-2) + name[name.length-1];
 }
 
+// QR payload: 只帶代碼，edu.html 自己查表還原完整內容
+// 目標 URL ≦ 200 字元，確保 QR 好掃
 function buildEduPayload(){
   const S = A.S;
-  const grp = txGroup(S);
-  const goals = STAGE_GOALS[S.type]?.[grp];
-  const fn = PW_SUMMARY[S.type]?.[grp];
-  const tm = CFG.team;
-  const payload = {
+  const typeCode = {NSCLC_NS:'NS',NSCLC_SQ:'SQ',SCLC:'SC'}[S.type]||'';
+  return {
     n: maskName(S.name),
-    dx: TYPE_LABEL[S.type]||'',
-    stg: S.stage||'',
-    goal: goals?.goal||'',
-    tx: fn ? fn(S) : '',
-    team: tm.depts.map(d=>{
-      const rec = S.consult?.[d.id];
-      return {d:d.fullDept, n: rec ? maskName(rec.doctor) : ''};
-    }),
-    cm: maskName(tm.caseManager.name),
-    dt: todayStr()
+    t: typeCode,
+    s: S.stage||'',
+    m: S.mutation||'',
+    c: maskName(CFG.team.caseManager.name),
+    d: todayStr()
   };
-  return payload;
 }
 
 function buildEduURL(){
