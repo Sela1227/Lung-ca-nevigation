@@ -129,7 +129,11 @@ body{font-family:'Noto Sans TC','Inter',system-ui,sans-serif;background:#f1f5f9;
     h += '<div class="edu-col">';
     h += '<h4 class="edu-sh"><i class="fa-solid fa-user-doctor"></i> 您的照護團隊</h4>';
     h += '<table class="edu-team">';
-    TEAM.forEach(t=>{ h += `<tr><td>${t.dept}</td><td style="color:#999;font-style:italic">（請洽個管師）</td></tr>`; });
+    TEAM.forEach((t,i)=>{
+      const doc = d.tm && d.tm[i] ? d.tm[i] : '';
+      const style = doc ? 'font-weight:700;color:#166534' : 'color:#999;font-style:italic';
+      h += `<tr><td>${t.dept}</td><td style="${style}">${doc ? doc+' 醫師' : '（待安排）'}</td></tr>`;
+    });
     if(d.c) h += `<tr style="background:#f0fdfa"><td>個案管理師</td><td style="font-weight:700;color:#0891b2">${d.c}</td></tr>`;
     h += '</table>';
     h += '<div class="edu-emg"><b>🚨 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
