@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v16</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -180,7 +180,7 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .pt-input:focus{border-color:var(--primary)}
 /* Pathway — 3 column layout */
 #panel-pathway{padding:16px!important;overflow:hidden!important}
-.pw-layout{height:100%;display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.pw-layout{height:100%;display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden;max-width:960px;margin:0 auto;width:100%}
 .pw-side{width:180px;flex-shrink:0;border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:10px;background:var(--surface2)}
 .pw-side-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
 .pw-side-row{display:flex;justify-content:space-between;align-items:center;font-size:15px;padding:5px 0;border-bottom:1px dashed var(--border)}
@@ -658,7 +658,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v16</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v17</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -917,7 +917,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v16</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v17</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1496,7 +1496,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v16</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v17</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1646,7 +1646,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v16 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v17 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1749,7 +1749,7 @@ const _NSCLC = {
       `<div class="tx-box blue"><h4>🔹 不適合手術 / 拒絕手術 — SBRT</h4>
         <p>立體定位放射治療（SBRT）</p>
         <div class="row"><span></span><span class="badge nhi">健保（條件見下方）</span></div></div>` +
-      _warn('📋 ' + _N2) + _alert('fa-circle-info','📋 ' + _N3) + _alert('fa-circle-info','📋 ' + _N4),
+      ,
     cost:[{l:'肺葉切除 (VATS)',v:'健保全額'},{l:'達文西 (RATS) 差額',v:'15-25萬'},{l:'SBRT',v:'健保（條件）'},{l:'輔助化療',v:'健保全額'}]
   }),
 
@@ -1761,7 +1761,7 @@ const _NSCLC = {
       `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 臨床評估不適合手術 / 拒絕手術</h4>
         <p><b>N0：</b>放射治療；針對高風險 IB～IIB 考慮加化療</p>
         <p><b>N1：</b>合併化放療（CCRT）</p></div>` +
-      _alert('fa-circle-info','📋 ' + _N4) + _warn('📋 ' + _N2),
+      ,
     cost:[{l:'手術 (VATS)',v:'健保全額'},{l:'化療',v:'健保全額'},{l:'放療',v:'健保全額'},{l:'CCRT',v:'健保全額'}]
   }),
 
@@ -1774,7 +1774,6 @@ const _NSCLC = {
       <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
     tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 T4 N0-1 無法手術 (Unresectable)</h4>
       <p>合併化放療（CCRT）</p></div>`;
-    tx += _alert('fa-circle-info','📋 ' + _N4);
     return { tx, cost:[{l:'手術',v:'健保'},{l:'前導化療',v:'健保'},{l:'CCRT',v:'健保'}] };
   },
 
@@ -1797,7 +1796,6 @@ const _NSCLC = {
       tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 基因檢測後系統治療</h4>
         <p>合併化放療 或標靶治療 或免疫治療（自費）</p></div>`;
     }
-    tx += _alert('fa-circle-info','📋 ' + _N4) + _alert('fa-dna','📋 ' + _N5);
     return { tx, cost:[{l:'CCRT',v:'健保'},{l:'免疫治療',v:'自費/健保申請'},{l:'化療',v:'健保'},{l:'手術',v:'健保'}] };
   },
 
@@ -1807,7 +1805,7 @@ const _NSCLC = {
         <p>同步化放療（CCRT）或標靶治療 或免疫治療（依健保規範）</p>
         <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">標靶/免疫依規範</span></div></div>` +
       `<div class="tx-box gray"><h4>🔹 若發現遠端轉移</h4><p>依轉移性疾病 (M1c) 路徑治療</p></div>` +
-      _alert('fa-circle-info','📋 ' + _N4) + _alert('fa-dna','📋 ' + _N5),
+      ,
     cost:[{l:'CCRT',v:'健保'},{l:'標靶治療',v:'健保申請/自費'},{l:'免疫治療',v:'依健保規範'}]
   }),
 
@@ -1816,7 +1814,7 @@ const _NSCLC = {
       `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>⭐ 合併化放療 / 標靶 / 免疫治療</h4>
         <p>合併化放療（CCRT）或標靶治療 或免疫治療（依健保規範）</p>
         <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">標靶/免疫依規範</span></div></div>` +
-      _alert('fa-circle-info','📋 ' + _N4) + _alert('fa-dna','📋 ' + _N5),
+      ,
     cost:[{l:'CCRT',v:'健保'},{l:'標靶治療',v:'健保申請/自費'},{l:'免疫治療',v:'依健保規範'}]
   }),
 
@@ -1829,7 +1827,7 @@ const _NSCLC = {
         <p>① 肋膜放液術 + 肋膜沾粘術</p>
         <p>② 心包膜剝離術（心包膜積水時）</p>
         <p>→ 局部控制後依轉移性疾病路徑進行全身治療</p></div>` +
-      _alert('fa-dna','📋 ' + _N5),
+      ,
     cost:[{l:'肋膜沾粘術',v:'健保'},{l:'全身治療',v:'依方案'}]
   }),
 
@@ -1842,7 +1840,7 @@ const _NSCLC = {
       `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 PS 3-4</h4>
         <p><b>PS 3：</b>如符合標靶或免疫治療者仍可使用</p>
         <p><b>PS 4：</b>最佳支持性治療（心理治療或臨終關懷）</p></div>` +
-      _alert('fa-dna','📋 ' + _N5),
+      ,
     cost:[{l:'腦部放射/伽瑪刀',v:'健保'},{l:'化療/標靶/免疫',v:'依方案'},{l:'支持性治療',v:'健保'}]
   }),
 };
@@ -1872,7 +1870,6 @@ function _M1c_NS(s){
   } else {
     tx += `<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 建議等待基因檢測結果。PS 良好可先以化療起步。</div></div>`;
   }
-  tx += _alert('fa-dna','📋 ' + _N5);
   return { tx, cost:[{l:'標靶藥物',v:'健保一線/申請'},{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'}] };
 }
 
@@ -1897,7 +1894,6 @@ function _M1c_SQ(s){
     tx += `<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 可先以化療起步。</div></div>`;
   }
   tx += `<div class="alert-box warn" style="margin-top:8px"><i class="fa-solid fa-triangle-exclamation"></i><div>⚠ 鱗狀細胞癌不使用 Pemetrexed 及 Bevacizumab</div></div>`;
-  tx += _alert('fa-dna','📋 ' + _N5);
   return { tx, cost:[{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'},{l:'標靶(如適用)',v:'健保申請'}] };
 }
 
