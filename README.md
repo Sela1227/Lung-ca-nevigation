@@ -67,3 +67,7 @@
 - 修正 `updateTitle()` 覆蓋 topbar 問題：醫院名稱+版本號現在永久顯示，病人代號/姓名附加在後方
 - edu.html 配色從藍色 (#1a5276) 改為綠色 (#0d9b6a)，與主程式一致
 - EDU_BASE_URL 已設定為 https://sela1227.github.io/Lung-ca-nevigation/edu.html
+
+### v15 (2026-03-26)
+- 病人頁、基礎檢查、進階檢查三頁加上 max-width:800px 居中，視覺風格對齊決策頁的卡片式佈局
+- 大螢幕不再撐滿全寬，填表更集中
