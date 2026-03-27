@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v23</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -657,7 +657,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v23</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v24</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -834,10 +834,17 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
             <div class="q-label" style="margin-bottom:20px"><span class="q-num">2</span> T 分期（腫瘤大小與侵犯）</div>
             <div class="q-options" id="q-tstage-opts">
               <button class="big-btn dt-btn" data-q="tstage" data-val="Tis" onclick="APP.dt('tstage','Tis')"><div class="icon-circle" style="background:var(--surface2);color:var(--text3);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">Tis</div><div><div class="btn-label">Tis — 原位癌</div><div class="btn-desc">AIS 原位腺癌 / SCIS 鱗狀原位癌</div></div></button>
-              <button class="big-btn dt-btn" data-q="tstage" data-val="T1" onclick="APP.dt('tstage','T1')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T1</div><div><div class="btn-label">T1 — ≤3 cm</div><div class="btn-desc">含 T1mi（微侵犯腺癌 ≤0.5cm）</div></div></button>
-              <button class="big-btn dt-btn" data-q="tstage" data-val="T2" onclick="APP.dt('tstage','T2')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T2</div><div><div class="btn-label">T2 — >3-5 cm</div><div class="btn-desc">或侵犯主支氣管/臟層肋膜/肺不張</div></div></button>
-              <button class="big-btn dt-btn" data-q="tstage" data-val="T3" onclick="APP.dt('tstage','T3')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T3</div><div><div class="btn-label">T3 — >5-7 cm</div><div class="btn-desc">或侵犯胸壁/膈神經/心包 / 同葉衛星結節</div></div></button>
-              <button class="big-btn dt-btn" data-q="tstage" data-val="T4" onclick="APP.dt('tstage','T4')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T4</div><div><div class="btn-label">T4 — >7 cm 或侵犯縱膈腔</div><div class="btn-desc">心臟/大血管/氣管/食道/脊椎 / 同側不同葉結節</div></div></button>
+              <div style="padding:8px 0 4px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.3px">▾ T1 ≤3cm — 被肺或臟層肋膜包圍</div>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T1mi" onclick="APP.dt('tstage','T1mi')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:11px;font-weight:900;border-radius:10px">T1mi</div><div><div class="btn-label">T1mi — 微侵犯腺癌</div><div class="btn-desc">≤3cm，浸潤成分 ≤0.5cm</div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T1a" onclick="APP.dt('tstage','T1a')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T1a</div><div><div class="btn-label">T1a — ≤1 cm</div><div class="btn-desc"></div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T1b" onclick="APP.dt('tstage','T1b')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T1b</div><div><div class="btn-label">T1b — >1 至 ≤2 cm</div><div class="btn-desc"></div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T1c" onclick="APP.dt('tstage','T1c')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T1c</div><div><div class="btn-label">T1c — >2 至 ≤3 cm</div><div class="btn-desc"></div></div></button>
+              <div style="padding:8px 0 4px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.3px">▾ T2 >3-5cm — 或侵犯主支氣管/臟層肋膜/肺不張</div>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T2a" onclick="APP.dt('tstage','T2a')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T2a</div><div><div class="btn-label">T2a — >3 至 ≤4 cm</div><div class="btn-desc"></div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T2b" onclick="APP.dt('tstage','T2b')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T2b</div><div><div class="btn-label">T2b — >4 至 ≤5 cm</div><div class="btn-desc"></div></div></button>
+              <div style="padding:8px 0 4px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.3px">▾ T3-T4</div>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T3" onclick="APP.dt('tstage','T3')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T3</div><div><div class="btn-label">T3 — >5 至 ≤7 cm</div><div class="btn-desc">或侵犯胸壁/壁層心包/膈神經/同葉衛星結節</div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T4" onclick="APP.dt('tstage','T4')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T4</div><div><div class="btn-label">T4 — >7 cm 或侵犯縱膈腔</div><div class="btn-desc">心臟/大血管/氣管/食道/脊椎/同側不同葉結節</div></div></button>
             </div>
             <button class="dt-back-btn" onclick="APP.dtBack(1)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
           </div>
@@ -847,9 +854,11 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
             <div class="q-label" style="margin-bottom:20px"><span class="q-num">3</span> N 分期（淋巴結）</div>
             <div class="q-options" id="q-nstage-opts">
               <button class="big-btn dt-btn" data-q="nstage" data-val="N0" onclick="APP.dt('nstage','N0')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">N0</div><div><div class="btn-label">N0 — 無區域淋巴結轉移</div></div></button>
-              <button class="big-btn dt-btn" data-q="nstage" data-val="N1" onclick="APP.dt('nstage','N1')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">N1</div><div><div class="btn-label">N1 — 同側支氣管旁/肺門</div><div class="btn-desc">同側支氣管周圍或肺門淋巴結</div></div></button>
-              <button class="big-btn dt-btn" data-q="nstage" data-val="N2" onclick="APP.dt('nstage','N2')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">N2</div><div><div class="btn-label">N2 — 同側縱膈腔/隆突下</div><div class="btn-desc">同側縱膈腔或隆突下淋巴結</div></div></button>
-              <button class="big-btn dt-btn" data-q="nstage" data-val="N3" onclick="APP.dt('nstage','N3')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">N3</div><div><div class="btn-label">N3 — 對側縱膈/鎖骨上</div><div class="btn-desc">對側縱膈腔/肺門或鎖骨上淋巴結</div></div></button>
+              <button class="big-btn dt-btn" data-q="nstage" data-val="N1" onclick="APP.dt('nstage','N1')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">N1</div><div><div class="btn-label">N1 — 同側支氣管旁/肺門</div><div class=\"btn-desc\">同側肺門或支氣管周圍淋巴結</div></div></button>
+              <div style="padding:8px 0 4px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.3px">▾ N2 — 同側縱膈腔/隆突下</div>
+              <button class="big-btn dt-btn" data-q="nstage" data-val="N2a" onclick="APP.dt('nstage','N2a')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">N2a</div><div><div class="btn-label">N2a — 單站 N2</div><div class=\"btn-desc\">單一 N2 淋巴站轉移</div></div></button>
+              <button class="big-btn dt-btn" data-q="nstage" data-val="N2b" onclick="APP.dt('nstage','N2b')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">N2b</div><div><div class="btn-label">N2b — 多站 N2</div><div class=\"btn-desc\">多個 N2 淋巴站轉移</div></div></button>
+              <button class="big-btn dt-btn" data-q="nstage" data-val="N3" onclick="APP.dt('nstage','N3')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">N3</div><div><div class="btn-label">N3 — 對側縱膈/鎖骨上</div><div class=\"btn-desc\">對側縱膈腔/肺門或鎖骨上淋巴結</div></div></button>
             </div>
             <button class="dt-back-btn" onclick="APP.dtBack(2)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
           </div>
@@ -858,10 +867,12 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="card" style="padding:28px 24px">
             <div class="q-label" style="margin-bottom:20px"><span class="q-num">4</span> M 分期（遠端轉移）</div>
             <div class="q-options" id="q-mstage-opts">
-              <button class="big-btn dt-btn" data-q="mstage" data-val="M0" onclick="APP.dt('mstage','M0')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">M0</div><div><div class="btn-label">M0 — 無遠端轉移</div></div></button>
+              <button class="big-btn dt-btn" data-q="mstage" data-val="M0" onclick="APP.dt('mstage','M0')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">M0</div><div><div class="btn-label">M0 — 無遠端轉移</div><div class="btn-desc"></div></div></button>
               <button class="big-btn dt-btn" data-q="mstage" data-val="M1a" onclick="APP.dt('mstage','M1a')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:42px;height:42px;font-size:13px;font-weight:900;border-radius:10px">M1a</div><div><div class="btn-label">M1a — 胸腔內轉移</div><div class="btn-desc">肋膜/心包膜積液 或 對側肺結節</div></div></button>
-              <button class="big-btn dt-btn" data-q="mstage" data-val="M1b" onclick="APP.dt('mstage','M1b')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:13px;font-weight:900;border-radius:10px">M1b</div><div><div class="btn-label">M1b — 單一胸腔外轉移</div><div class="btn-desc">單一器官單一病灶</div></div></button>
-              <button class="big-btn dt-btn" data-q="mstage" data-val="M1c" onclick="APP.dt('mstage','M1c')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:13px;font-weight:900;border-radius:10px">M1c</div><div><div class="btn-label">M1c — 多處胸腔外轉移</div><div class="btn-desc">單一或多個器官之多處轉移</div></div></button>
+              <button class="big-btn dt-btn" data-q="mstage" data-val="M1b" onclick="APP.dt('mstage','M1b')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:13px;font-weight:900;border-radius:10px">M1b</div><div><div class="btn-label">M1b — 單一胸腔外轉移</div><div class="btn-desc">單一器官系統中單一病灶</div></div></button>
+              <div style="padding:8px 0 4px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.3px">▾ M1c — 多處胸腔外轉移</div>
+              <button class="big-btn dt-btn" data-q="mstage" data-val="M1c1" onclick="APP.dt('mstage','M1c1')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:11px;font-weight:900;border-radius:10px">M1c1</div><div><div class="btn-label">M1c1 — 單一器官多處</div><div class="btn-desc">單一器官系統中多處轉移</div></div></button>
+              <button class="big-btn dt-btn" data-q="mstage" data-val="M1c2" onclick="APP.dt('mstage','M1c2')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:11px;font-weight:900;border-radius:10px">M1c2</div><div><div class="btn-label">M1c2 — 多器官多處</div><div class="btn-desc">多個器官系統之多處轉移</div></div></button>
             </div>
             <button class="dt-back-btn" onclick="APP.dtBack(3)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
           </div>
@@ -937,7 +948,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v23</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v24</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1155,8 +1166,8 @@ const CFG = {
     caseManager: {name:'郭美伶', title:'個案管理師', icon:'fa-solid fa-user-nurse', color:'#0891b2'},
   },
   stages: {
-    NSCLC_NS:[{v:'0',l:'0'},{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
-    NSCLC_SQ:[{v:'0',l:'0'},{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
+    NSCLC_NS:[{v:'0',l:'0'},{v:'IA1',l:'IA1'},{v:'IA2',l:'IA2'},{v:'IA3',l:'IA3'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
+    NSCLC_SQ:[{v:'0',l:'0'},{v:'IA1',l:'IA1'},{v:'IA2',l:'IA2'},{v:'IA3',l:'IA3'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
     SCLC:[{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
   },
   hasMutation: false,
@@ -1205,7 +1216,7 @@ const TYPE_LABEL = CFG.typeLabel;
 const STAGES = CFG.stages;
 
 // ── Stage-based requirement evaluator ──
-const STAGE_ORDER = ['0','IA','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
+const STAGE_ORDER = ['0','IA1','IA2','IA3','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
 function stageIdx(s){ return STAGE_ORDER.indexOf(s); }
 function stageGte(s, min){ const i=stageIdx(s), m=stageIdx(min); return i>=0 && m>=0 && i>=m; }
 
@@ -1250,33 +1261,40 @@ let draftId = null;
 // ── AJCC Stage auto-computation ──
 function computeAJCC(t,n,m){
   if(!t||!n||!m) return '';
+  // Helper: T group
+  const isT1 = /^T1/.test(t);  // T1mi,T1a,T1b,T1c
+  const isT2 = /^T2/.test(t);  // T2a,T2b
+  const isN2 = /^N2/.test(n);  // N2a,N2b
   // M1 → Stage IV
   if(m!=='M0'){
     if(m==='M1a'||m==='M1b') return 'IVA';
-    return 'IVB'; // M1c
+    return 'IVB'; // M1c1,M1c2
   }
   // M0 + N0
   if(n==='N0'){
     if(t==='Tis') return '0';
-    if(t==='T1') return 'IA';
-    if(t==='T2') return 'IB';
+    if(t==='T1mi'||t==='T1a') return 'IA1';
+    if(t==='T1b') return 'IA2';
+    if(t==='T1c') return 'IA3';
+    if(t==='T2a') return 'IB';
+    if(t==='T2b') return 'IIA';
     if(t==='T3') return 'IIB';
     if(t==='T4') return 'IIIA';
   }
   // M0 + N1
   if(n==='N1'){
-    if(t==='T1'||t==='T2') return 'IIB';
+    if(isT1||isT2) return 'IIB';
     if(t==='T3') return 'IIIA';
     if(t==='T4') return 'IIIA';
   }
-  // M0 + N2
-  if(n==='N2'){
-    if(t==='T1'||t==='T2') return 'IIIA';
+  // M0 + N2 (N2a or N2b)
+  if(isN2){
+    if(isT1||isT2) return 'IIIA';
     if(t==='T3'||t==='T4') return 'IIIB';
   }
   // M0 + N3
   if(n==='N3'){
-    if(t==='T1'||t==='T2') return 'IIIB';
+    if(isT1||isT2) return 'IIIB';
     if(t==='T3'||t==='T4') return 'IIIC';
   }
   return '';
@@ -1296,7 +1314,7 @@ function txGroup(S){
   if(M==='M1b') return 'M1b';
   if(M.startsWith('M1c')) return 'M1c';
   if(N==='N3') return T==='T4'?'T4N2N3':'N3';
-  if(N==='N2') return T==='T4'?'T4N2N3':'N2';
+  if(/^N2/.test(N)) return T==='T4'?'T4N2N3':'N2';
   if(T==='T4') return 'resect_adv';
   if(T==='T3'&&N==='N1') return 'resect_adv';
   if(N==='N0'&&(/^T1/.test(T)||T==='Tis')) return 'I_periph';
@@ -1521,7 +1539,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v23</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v24</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1671,7 +1689,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v23 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v24 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -2992,7 +3010,7 @@ async function loadStats(){
     <div class="stat-card"><div class="stat-num">${recs.filter(r=>(r.stage||'').startsWith('IV')).length}</div><div class="stat-label">轉移性</div></div>`;
   const typeKeys=['NSCLC_NS','NSCLC_SQ','SCLC'], typeLabels=typeKeys.map(k=>TYPE_LABEL[k]), typeColors=['#10b981','#f59e0b','#ef4444'];
   mkChart('ch-type','doughnut',typeLabels,typeKeys.map(k=>recs.filter(r=>r.type===k).length),typeColors);
-  const stageGroups=['IA','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
+  const stageGroups=['0','IA1','IA2','IA3','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
   const stageCounts=stageGroups.map(s=>recs.filter(r=>r.stage===s).length);
   mkChart('ch-stage','bar',stageGroups,stageCounts,stageGroups.map(s=>s.startsWith('IV')?'#ef4444':s.startsWith('III')?'#f59e0b':'#10b981'));
   const mv=['EGFR','ALK','OTHER_TKI','PDL1_HIGH','PDL1_LOW','PDL1_NEG','PENDING','N/A'];
@@ -3129,7 +3147,7 @@ async function loadStats(){
   const grid={};
   types.forEach(t=>{ grid[t]={}; sGroups.forEach(sg=>{ grid[t][sg]=recs.filter(r=>r.type===t&&(r.stage||'').startsWith(sg)).length; if(grid[t][sg]>maxVal)maxVal=grid[t][sg]; }); });
   // Simpler cross table by AJCC groups
-  const sGroupsFull=['IA','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
+  const sGroupsFull=['0','IA1','IA2','IA3','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
   const grid2={};
   types.forEach(t=>{ grid2[t]={}; sGroupsFull.forEach(s=>{ grid2[t][s]=recs.filter(r=>r.type===t&&r.stage===s).length; }); });
   let ctHtml='<table class="cross-tbl"><thead><tr><th></th>';
