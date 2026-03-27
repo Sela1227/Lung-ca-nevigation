@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v21</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v23</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -657,7 +657,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v21</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v23</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -833,7 +833,8 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="card" style="padding:28px 24px">
             <div class="q-label" style="margin-bottom:20px"><span class="q-num">2</span> T 分期（腫瘤大小與侵犯）</div>
             <div class="q-options" id="q-tstage-opts">
-              <button class="big-btn dt-btn" data-q="tstage" data-val="T1" onclick="APP.dt('tstage','T1')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T1</div><div><div class="btn-label">T1 — ≤3 cm</div><div class="btn-desc">被肺或臟層肋膜包圍，未侵犯主支氣管</div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="Tis" onclick="APP.dt('tstage','Tis')"><div class="icon-circle" style="background:var(--surface2);color:var(--text3);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">Tis</div><div><div class="btn-label">Tis — 原位癌</div><div class="btn-desc">AIS 原位腺癌 / SCIS 鱗狀原位癌</div></div></button>
+              <button class="big-btn dt-btn" data-q="tstage" data-val="T1" onclick="APP.dt('tstage','T1')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T1</div><div><div class="btn-label">T1 — ≤3 cm</div><div class="btn-desc">含 T1mi（微侵犯腺癌 ≤0.5cm）</div></div></button>
               <button class="big-btn dt-btn" data-q="tstage" data-val="T2" onclick="APP.dt('tstage','T2')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T2</div><div><div class="btn-label">T2 — >3-5 cm</div><div class="btn-desc">或侵犯主支氣管/臟層肋膜/肺不張</div></div></button>
               <button class="big-btn dt-btn" data-q="tstage" data-val="T3" onclick="APP.dt('tstage','T3')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T3</div><div><div class="btn-label">T3 — >5-7 cm</div><div class="btn-desc">或侵犯胸壁/膈神經/心包 / 同葉衛星結節</div></div></button>
               <button class="big-btn dt-btn" data-q="tstage" data-val="T4" onclick="APP.dt('tstage','T4')"><div class="icon-circle" style="background:var(--rose-light);color:var(--rose);width:42px;height:42px;font-size:14px;font-weight:900;border-radius:10px">T4</div><div><div class="btn-label">T4 — >7 cm 或侵犯縱膈腔</div><div class="btn-desc">心臟/大血管/氣管/食道/脊椎 / 同側不同葉結節</div></div></button>
@@ -936,7 +937,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v21</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v23</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1154,28 +1155,31 @@ const CFG = {
     caseManager: {name:'郭美伶', title:'個案管理師', icon:'fa-solid fa-user-nurse', color:'#0891b2'},
   },
   stages: {
-    NSCLC_NS:[{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
-    NSCLC_SQ:[{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
+    NSCLC_NS:[{v:'0',l:'0'},{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
+    NSCLC_SQ:[{v:'0',l:'0'},{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
     SCLC:[{v:'IA',l:'IA'},{v:'IB',l:'IB'},{v:'IIA',l:'IIA'},{v:'IIB',l:'IIB'},{v:'IIIA',l:'IIIA'},{v:'IIIB',l:'IIIB'},{v:'IIIC',l:'IIIC'},{v:'IVA',l:'IVA'},{v:'IVB',l:'IVB'}],
   },
   hasMutation: false,
   hasPdl1: false,
   checklist: [
-    // phase:'basic' = 基礎檢查（不需期別）, phase:'adv' = 進階檢查（需期別）
-    // ── Phase 1：初診檢驗（收案當週）──
-    {id:'c14',g:'01 — 初診檢驗',l:'CBC、肝腎功能、電解質、LDH', req:'all', phase:'basic'},
-    {id:'c15',g:'01 — 初診檢驗',l:'凝血功能（術前）', req:'surgery', phase:'basic'},
-    {id:'c1', g:'01 — 初診檢驗',l:'胸部增強 CT（腫瘤及縱膈腔評估）', req:'all', phase:'basic'},
-    {id:'c21',g:'01 — 初診檢驗',l:'營養狀態評估 ／ 戒菸諮詢', req:'all', phase:'basic'},
-    // ── Phase 2：分期評估（1-2 週）──
-    {id:'c6', g:'02 — 分期評估',l:'組織切片病理確認（含免疫組化）', req:'all', phase:'basic'},
-    {id:'c2', g:'02 — 分期評估',l:'FDG-PET/CT（分期評估）', req:'IB+', phase:'basic'},
-    {id:'c3', g:'02 — 分期評估',l:'腦部 MRI（腦轉移篩檢）', req:'II+', phase:'basic'},
-    {id:'c4', g:'02 — 分期評估',l:'腹部 CT 或 MRI（腎上腺/肝轉移）', req:'III+', phase:'basic'},
-    {id:'c5', g:'02 — 分期評估',l:'骨骼掃描（PET 未涵蓋時）', req:'opt', phase:'basic'},
-    {id:'c7', g:'02 — 分期評估',l:'支氣管鏡 ± EBUS/EUS（縱膈腔分期）', req:'II+', phase:'basic'},
-    {id:'c8', g:'02 — 分期評估',l:'CT 導引穿刺切片（周邊病灶）', req:'opt', phase:'basic'},
-    {id:'c9', g:'02 — 分期評估',l:'縱膈鏡 ／ 胸腔鏡（淋巴結確認）', req:'opt', phase:'basic'},
+    // phase:'basic' = 基礎檢查（分期前）, phase:'adv' = 進階檢查（分期後）
+    // ── 01 初步評估 — 對齊本院指引 v12 初步評估 ──
+    {id:'c30',g:'01 — 初步評估',l:'病史及理學檢查（含體能狀況 + 體重減輕）', req:'all', phase:'basic'},
+    {id:'c31',g:'01 — 初步評估',l:'胸部 X 光', req:'all', phase:'basic'},
+    {id:'c1', g:'01 — 初步評估',l:'胸部電腦斷層，含腎上腺', req:'all', phase:'basic'},
+    {id:'c14',g:'01 — 初步評估',l:'完全血球計數及血小板計數（CBC）', req:'all', phase:'basic'},
+    {id:'c32',g:'01 — 初步評估',l:'生化檢查', req:'all', phase:'basic'},
+    {id:'c3', g:'01 — 初步評估',l:'腦部電腦斷層或磁振造影', req:'opt', phase:'basic'},
+    {id:'c5', g:'01 — 初步評估',l:'骨骼掃描或正子攝影', req:'opt', phase:'basic'},
+    // ── 02 治療前評估 — 對齊本院指引 v12 治療前評估 ──
+    {id:'c6', g:'02 — 治療前評估',l:'組織切片病理確認（含免疫組化）', req:'all', phase:'basic'},
+    {id:'c17',g:'02 — 治療前評估',l:'肺功能檢查', req:'all', phase:'basic'},
+    {id:'c33',g:'02 — 治療前評估',l:'胸部電腦斷層，含腎上腺（治療前）', req:'all', phase:'basic'},
+    {id:'c34',g:'02 — 治療前評估',l:'骨骼掃描或正子攝影', req:'all', phase:'basic'},
+    {id:'c35',g:'02 — 治療前評估',l:'腦部電腦斷層或核磁共振', req:'all', phase:'basic'},
+    {id:'c7', g:'02 — 治療前評估',l:'支氣管鏡檢查', req:'opt', phase:'basic'},
+    {id:'c9', g:'02 — 治療前評估',l:'縱膈腔鏡檢查', req:'opt', phase:'basic'},
+    {id:'c36',g:'02 — 治療前評估',l:'心臟超音波', req:'opt', phase:'basic'},
     // ── Phase 3：分子檢測（需期別）──
     {id:'c10',g:'03 — 分子檢測',l:'NGS 廣泛基因檢測（EGFR/ALK/ROS1/BRAF/MET/RET/NTRK/HER2/KRAS）', req:'nsclc_adv', phase:'adv'},
     {id:'c11',g:'03 — 分子檢測',l:'PD-L1 表現檢測（IHC 22C3/SP263）', req:'nsclc_adv', phase:'adv'},
@@ -1183,8 +1187,6 @@ const CFG = {
     {id:'c13',g:'03 — 分子檢測',l:'液態切片 ctDNA（組織不足時）', req:'opt', phase:'adv'},
     // ── Phase 4：治療準備（需期別）──
     {id:'c16',g:'04 — 治療準備',l:'多專科團隊 (MDT) 討論', req:'all', phase:'adv'},
-    {id:'c17',g:'04 — 治療準備',l:'肺功能檢查 PFT（手術評估）', req:'surgery', phase:'adv'},
-    {id:'c18',g:'04 — 治療準備',l:'心臟功能評估（化療/手術前）', req:'IB+', phase:'adv'},
     {id:'c19',g:'04 — 治療準備',l:'重大傷病卡已申請', req:'all', phase:'adv'},
     {id:'c20',g:'04 — 治療準備',l:'人工血管置入 (Port-A)', req:'IB+', phase:'adv'},
     // ── Phase 5：啟動治療（需期別）──
@@ -1203,7 +1205,7 @@ const TYPE_LABEL = CFG.typeLabel;
 const STAGES = CFG.stages;
 
 // ── Stage-based requirement evaluator ──
-const STAGE_ORDER = ['IA','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
+const STAGE_ORDER = ['0','IA','IB','IIA','IIB','IIIA','IIIB','IIIC','IVA','IVB'];
 function stageIdx(s){ return STAGE_ORDER.indexOf(s); }
 function stageGte(s, min){ const i=stageIdx(s), m=stageIdx(min); return i>=0 && m>=0 && i>=m; }
 
@@ -1255,6 +1257,7 @@ function computeAJCC(t,n,m){
   }
   // M0 + N0
   if(n==='N0'){
+    if(t==='Tis') return '0';
     if(t==='T1') return 'IA';
     if(t==='T2') return 'IB';
     if(t==='T3') return 'IIB';
@@ -1296,7 +1299,7 @@ function txGroup(S){
   if(N==='N2') return T==='T4'?'T4N2N3':'N2';
   if(T==='T4') return 'resect_adv';
   if(T==='T3'&&N==='N1') return 'resect_adv';
-  if(N==='N0'&&/^T1/.test(T)) return 'I_periph';
+  if(N==='N0'&&(/^T1/.test(T)||T==='Tis')) return 'I_periph';
   return 'surgical';
 }
 function txBroad(grp){
@@ -1518,7 +1521,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v21</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v23</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1668,7 +1671,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v21 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v23 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -2667,7 +2670,7 @@ function renderSummary(){
 let bckGroups = [];
 let bckCurTab = 0;
 
-const BCK_TAB_ICONS = {'01':'fa-solid fa-vial','02':'fa-solid fa-x-ray'};
+const BCK_TAB_ICONS = {'01':'fa-solid fa-stethoscope','02':'fa-solid fa-vial'};
 
 function buildBCKGroups(){
   bckGroups = []; let lastG='';
@@ -2740,11 +2743,22 @@ A.bckNext = function(){
 function updateBCKNav(){
   const total = bckGroups.length;
   const isLast = bckCurTab>=total-1;
-  document.getElementById('bck-prev').disabled = bckCurTab<=0;
+  const pb = document.getElementById('bck-prev');
   const nb = document.getElementById('bck-next');
+  pb.disabled = bckCurTab<=0;
+  if(bckCurTab>0){
+    const prevName = bckGroups[bckCurTab-1].key.replace(/^\d+\s*—\s*/,'');
+    pb.innerHTML = `<i class="fa-solid fa-chevron-left"></i> ${prevName}`;
+  }
   nb.disabled = false;
-  nb.innerHTML = isLast ? '進入決策 <i class="fa-solid fa-arrow-right"></i>' : '下一組 <i class="fa-solid fa-chevron-right"></i>';
-  nb.className = isLast ? 'ck-nav-btn next flow-next' : 'ck-nav-btn next';
+  if(isLast){
+    nb.innerHTML = '進入決策 <i class="fa-solid fa-arrow-right"></i>';
+    nb.className = 'ck-nav-btn next flow-next';
+  } else {
+    const nextName = bckGroups[bckCurTab+1].key.replace(/^\d+\s*—\s*/,'');
+    nb.innerHTML = `${nextName} <i class="fa-solid fa-chevron-right"></i>`;
+    nb.className = 'ck-nav-btn next';
+  }
   document.getElementById('bck-page-info').textContent = `${bckCurTab+1} / ${total}`;
 }
 
@@ -2850,10 +2864,9 @@ function renderCK(){
 
 A.ckTab = function(i){
   ckCurTab = i;
-  document.querySelectorAll('.ck-tab').forEach((t,j)=>t.classList.toggle('on',j===i));
-  document.querySelectorAll('.ck-grp-pane').forEach((p,j)=>p.classList.toggle('active',j===i));
+  document.querySelectorAll('#ck-tabs .ck-tab').forEach((t,j)=>t.classList.toggle('on',j===i));
+  document.querySelectorAll('[data-ckpane]').forEach((p,j)=>p.classList.toggle('active',j===i));
   updateCKNav();
-  // scroll body to top
   document.getElementById('ck-list').scrollTop = 0;
 };
 A.ckPrev = function(){ if(ckCurTab>0) A.ckTab(ckCurTab-1); };
@@ -2863,13 +2876,25 @@ A.ckNext = function(){
 };
 
 function updateCKNav(){
-  const isLast = ckCurTab>=ckGroups.length-1;
-  document.getElementById('ck-prev').disabled = ckCurTab<=0;
+  const total = ckGroups.length;
+  const isLast = ckCurTab>=total-1;
+  const pb = document.getElementById('ck-prev');
   const nb = document.getElementById('ck-next');
+  pb.disabled = ckCurTab<=0;
+  if(ckCurTab>0){
+    const prevName = ckGroups[ckCurTab-1].key.replace(/^\d+\s*—\s*/,'');
+    pb.innerHTML = `<i class="fa-solid fa-chevron-left"></i> ${prevName}`;
+  }
   nb.disabled = false;
-  nb.innerHTML = isLast ? '查看路徑 <i class="fa-solid fa-arrow-right"></i>' : '下一組 <i class="fa-solid fa-chevron-right"></i>';
-  nb.className = isLast ? 'ck-nav-btn next flow-next' : 'ck-nav-btn next';
-  document.getElementById('ck-page-info').textContent = `${ckCurTab+1} / ${ckGroups.length}`;
+  if(isLast){
+    nb.innerHTML = '查看路徑 <i class="fa-solid fa-arrow-right"></i>';
+    nb.className = 'ck-nav-btn next flow-next';
+  } else {
+    const nextName = ckGroups[ckCurTab+1].key.replace(/^\d+\s*—\s*/,'');
+    nb.innerHTML = `${nextName} <i class="fa-solid fa-chevron-right"></i>`;
+    nb.className = 'ck-nav-btn next';
+  }
+  document.getElementById('ck-page-info').textContent = `${ckCurTab+1} / ${total}`;
 }
 
 A.toggleCK = function(id,el){
@@ -2894,14 +2919,14 @@ A.toggleCK = function(id,el){
     if(hasStage){
       const reqItems = g.items.filter(it=>isItemRequired(it,type,stage));
       const reqDone = reqItems.filter(it=>A.S.ck[it.id]).length;
-      const tabs = document.querySelectorAll('.ck-tab');
+      const tabs = document.querySelectorAll('#ck-tabs .ck-tab');
       if(tabs[ckCurTab]){
         const cnt = tabs[ckCurTab].querySelector('.ck-tab-cnt');
         if(cnt) cnt.textContent = `${reqDone}/${reqItems.length}`;
       }
     } else {
       const done = g.items.filter(it=>A.S.ck[it.id]).length;
-      const tabs = document.querySelectorAll('.ck-tab');
+      const tabs = document.querySelectorAll('#ck-tabs .ck-tab');
       if(tabs[ckCurTab]){
         const cnt = tabs[ckCurTab].querySelector('.ck-tab-cnt');
         if(cnt) cnt.textContent = `${done}/${g.items.length}`;
