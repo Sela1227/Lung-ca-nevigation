@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v40</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v41</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -685,7 +685,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v40</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v41</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -976,7 +976,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v40</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v41</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1031,7 +1031,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-tabs" id="ck-tabs"></div>
           <div class="ck-body" id="ck-list"></div>
           <!-- Biomarker panel: shown when c10/c11 checked -->
-          <!-- BIO panel removed in v40 -->
+          <!-- BIO panel removed in v41 -->
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="ck-prev" onclick="APP.ckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
             <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
@@ -1559,7 +1559,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v40</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v41</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1861,7 +1861,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v40 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v41 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1904,8 +1904,14 @@ function renderPW(){
   if(goalEl && goals){
     let gh = '<div class="gl-goal"><h3><i class="fa-solid fa-bullseye"></i> '+goals.goal.split('】')[0]+'】</h3><p>'+goals.mechanism+'</p></div>';
     if(goals.boxes && goals.boxes.length){
+      // Filter boxes by actual TNM when applicable
+      let displayBoxes = goals.boxes;
+      if(grp==='N2'){
+        const isT3 = S.tstage==='T3';
+        displayBoxes = goals.boxes.filter((_,i)=> isT3 ? i===1 : i===0);
+      }
       gh += '<div class="gl-split">';
-      goals.boxes.forEach(box => {
+      displayBoxes.forEach(box => {
         gh += `<div class="gl-box ${box.color}"><div class="gl-badge">${box.badge}</div><h4>${box.title}</h4><ul class="gl-list">`;
         box.list.forEach(li => { gh += `<li><i class="fa-solid fa-circle-dot" style="color:${box.color==='blue'?'#005a8d':'#f59e0b'}"></i><div>${li}</div></li>`; });
         gh += '</ul></div>';
