@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v36</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v39</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -151,6 +151,13 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .ptnm-label{font-size:13px;font-weight:700;color:var(--text2);min-width:28px}
 .ptnm-btn{height:32px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:.15s;white-space:nowrap}
 .ptnm-btn:hover{border-color:var(--primary);color:var(--primary)}
+.drv-btn{height:auto;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:.15s;text-align:left;display:flex;align-items:center;gap:8px}
+.drv-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.drv-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.drv-btn.neg{background:var(--surface2);color:var(--text3);border-color:var(--border);opacity:.6;font-style:italic}
+.drv-btn .drv-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;background:rgba(0,0,0,.05);flex-shrink:0}
+.drv-btn.on .drv-icon{background:rgba(255,255,255,.2)}
+.drv-site{margin-top:4px;font-size:11px;opacity:.8;display:block}
 .ptnm-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
 .ptnm-result{margin-top:12px;padding:14px 18px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border)}
 .ptnm-stage{font-size:20px;font-weight:900;color:var(--primary)}
@@ -671,7 +678,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v36</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v39</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -889,22 +896,26 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
         </div>
         <div class="dt-card" id="dt-card-5">
           <div class="card" style="padding:28px 24px">
-            <div class="q-label" style="margin-bottom:20px"><span class="q-num">5</span> 驅動基因 / PD-L1 狀態</div>
-            <div class="q-options grid-2">
-              <button class="big-btn dt-btn" data-q="mutation" data-val="EGFR" onclick="APP.dt('mutation','EGFR')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:38px;height:38px;font-size:11px;font-weight:900;border-radius:10px">EGFR</div><div><div class="btn-label">EGFR 突變</div><div class="btn-desc">Exon 19del / L858R / 其他</div></div></button>
-              <button class="big-btn dt-btn" data-q="mutation" data-val="ALK" onclick="APP.dt('mutation','ALK')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:38px;height:38px;font-size:12px;font-weight:900;border-radius:10px">ALK</div><div><div class="btn-label">ALK 重排</div><div class="btn-desc">ALK 基因融合</div></div></button>
-              <button class="big-btn dt-btn" data-q="mutation" data-val="OTHER_TKI" onclick="APP.dt('mutation','OTHER_TKI')"><div class="icon-circle" style="background:var(--indigo-light);color:var(--indigo);width:38px;height:38px;font-size:10px;font-weight:900;border-radius:10px">TKI</div><div><div class="btn-label">其他可標靶</div><div class="btn-desc">ROS1/BRAF/MET/RET/NTRK/HER2/KRAS G12C</div></div></button>
-              <button class="big-btn dt-btn" data-q="mutation" data-val="PDL1_HIGH" onclick="APP.dt('mutation','PDL1_HIGH')"><div class="icon-circle" style="background:var(--accent-light);color:var(--accent);width:38px;height:38px;font-size:9px;font-weight:900;border-radius:10px">≥50%</div><div><div class="btn-label">PD-L1 ≥50%</div><div class="btn-desc">無可標靶驅動基因</div></div></button>
-              <button class="big-btn dt-btn" data-q="mutation" data-val="PDL1_LOW" onclick="APP.dt('mutation','PDL1_LOW')"><div class="icon-circle" style="background:var(--amber-light);color:var(--amber);width:38px;height:38px;font-size:9px;font-weight:900;border-radius:10px">1-49%</div><div><div class="btn-label">PD-L1 1-49%</div><div class="btn-desc">無可標靶驅動基因</div></div></button>
-              <button class="big-btn dt-btn" data-q="mutation" data-val="PDL1_NEG" onclick="APP.dt('mutation','PDL1_NEG')"><div class="icon-circle" style="background:var(--surface2);color:var(--text3);width:38px;height:38px;font-size:9px;font-weight:900;border-radius:10px">&lt;1%</div><div><div class="btn-label">PD-L1 <1%</div><div class="btn-desc">無可標靶驅動基因</div></div></button>
-              <button class="big-btn dt-btn" data-q="mutation" data-val="PENDING" onclick="APP.dt('mutation','PENDING')"><div><div class="btn-label">等報告中</div><div class="btn-desc">分子檢測結果尚未出爐</div></div></button>
+            <div class="q-label" style="margin-bottom:16px"><span class="q-num">5</span> 分子檢測結果</div>
+            <!-- A. 驅動基因 -->
+            <div style="font-size:13px;font-weight:800;color:var(--primary-dark);margin-bottom:8px"><i class="fa-solid fa-dna" style="margin-right:4px"></i> A. 驅動基因（可多選）</div>
+            <div id="driver-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px"></div>
+            <!-- B. PD-L1 -->
+            <div style="font-size:13px;font-weight:800;color:var(--primary-dark);margin-bottom:8px"><i class="fa-solid fa-shield-halved" style="margin-right:4px"></i> B. PD-L1 表現量（獨立填寫）</div>
+            <div id="pdl1-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px"></div>
+            <div id="pdl1-val-box" style="display:none;margin-bottom:16px;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <label style="font-size:12px;font-weight:700;color:var(--text2)">TPS 數值 (選填)</label>
+              <input type="text" class="pt-input" id="pdl1-tps-input" placeholder="例：80%" oninput="APP.S.pdl1Tps=this.value" maxlength="20" style="margin-top:4px">
             </div>
+            <!-- Skip/pending -->
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+              <button class="ptnm-btn" id="mol-pending-btn" onclick="APP.setMolStatus('PENDING')" style="flex:1;padding:8px"><i class="fa-solid fa-clock" style="margin-right:4px"></i>等報告中</button>
+              <button class="ptnm-btn" id="mol-skip-btn" onclick="APP.setMolStatus('NOT_TESTED')" style="flex:1;padding:8px"><i class="fa-solid fa-forward" style="margin-right:4px"></i>未驗 / 跳過</button>
+            </div>
+            <!-- Done -->
+            <button class="btn-nav next" id="mol-done-btn" onclick="APP.finishMol()" style="width:100%;justify-content:center;padding:12px 0"><i class="fa-solid fa-check" style="margin-right:4px"></i>完成分子檢測</button>
             <button class="dt-back-btn" onclick="APP.dtBack(4)"><i class="fa-solid fa-chevron-left"></i> 上一題</button>
-          
-            <div id="mut-site-box" style="display:none;margin-top:12px;padding:12px 16px;background:var(--surface2);border-radius:10px">
-              <label style="font-size:13px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px"><i class="fa-solid fa-dna" style="margin-right:4px"></i> 位點/表現量 (選填)</label>
-              <input type="text" class="mut-site-input" id="mut-site-input" placeholder="例：L858R, Exon 19del, TPS 80%..." oninput="APP.setMutSite(this.value)" maxlength="100">
-            </div></div>
+          </div>
         </div>
         <div class="dt-card" id="dt-card-done">
           <div class="card" style="text-align:center;padding:40px 24px">
@@ -958,7 +969,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v36</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v39</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1013,12 +1024,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-tabs" id="ck-tabs"></div>
           <div class="ck-body" id="ck-list"></div>
           <!-- Biomarker panel: shown when c10/c11 checked -->
-          <div id="ck-bio-wrap" style="display:none;flex-shrink:0;border-top:2px solid var(--primary);padding:0">
-            <div class="bio-panel" style="border:none;border-radius:0">
-              <button class="bio-toggle open" onclick="APP.toggleBioPanel(this)"><span><i class="fa-solid fa-dna" style="color:var(--primary);margin-right:8px"></i>基因檢測結果 (NGS/IHC) <span style="font-size:12px;font-weight:400;color:var(--rose)">— 勾選基因檢測後必填</span></span><i class="fa-solid fa-chevron-down"></i></button>
-              <div class="bio-body show" id="bio-body"></div>
-            </div>
-          </div>
+          <!-- BIO panel removed in v39 -->
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="ck-prev" onclick="APP.ckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
             <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
@@ -1264,7 +1270,7 @@ let cur = 'patient';
 let db;
 
 // Session = current working patient (added tstage, nstage, mstage)
-A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
+A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',drivers:{},pdl1Val:'',driverSites:{},ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
 let editId = null;
 let draftId = null;
 
@@ -1549,7 +1555,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v36</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v39</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1557,7 +1563,7 @@ function updateTitle(){
 A.newPatient = function(){
   if(!confirm('開始新病人？')) return;
   editId=null; draftId=null;
-  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
+  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',drivers:{},pdl1Val:'',driverSites:{},ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
   document.getElementById('pt-code').value='';
   document.getElementById('pt-name').value='';
   document.getElementById('pt-casedate').value=todayStr();
@@ -1589,10 +1595,8 @@ function dtShowCard(n){
 }
 
 function totalSteps(){
-  // 1:Type, 2:T, 3:N, 4:M, 5:biomarker (NSCLC + IV only)
-  const isM1 = A.S.mstage && A.S.mstage!=='M0';
   const isNSCLC = A.S.type==='NSCLC_NS'||A.S.type==='NSCLC_SQ';
-  return (isNSCLC && isM1) ? 5 : 4;
+  return isNSCLC ? 5 : 4;
 }
 
 function updateDtSteps(){
@@ -1621,9 +1625,6 @@ A.dt = function(q,v){
     else if(q==='nstage'){ dtShowCard(4); }
     else if(q==='mstage'){ afterMstage(); }
     else if(q==='mutation'){
-        // Show site input before proceeding
-        const siteEl = document.getElementById('mut-site-box');
-        if(siteEl){ siteEl.style.display = (v && v!=='PENDING') ? 'block' : 'none'; }
         showDone();
       }
   },150);
@@ -1631,14 +1632,15 @@ A.dt = function(q,v){
 
 function afterMstage(){
   A.S.stage = computeAJCC(A.S.tstage, A.S.nstage, A.S.mstage);
-  const isM1 = A.S.mstage!=='M0';
   const isNSCLC = A.S.type==='NSCLC_NS'||A.S.type==='NSCLC_SQ';
-  if(isNSCLC && isM1){
+  if(isNSCLC){
     A.S.mutation='';
-    document.querySelectorAll('.dt-btn[data-q="mutation"]').forEach(b=>b.classList.remove('selected'));
+
     dtShowCard(5);
+    setTimeout(renderMolPanel, 50);
   } else {
-    A.S.mutation = isM1 ? '' : 'N/A';
+    // SCLC: no driver gene step
+    A.S.mutation = 'N/A';
     A.S.pdl1 = 'N/A';
     showDone();
   }
@@ -1670,9 +1672,166 @@ A.dtJump = function(step){
   if(step <= 2) document.querySelectorAll('.dt-btn[data-q="tstage"]').forEach(b=>b.classList.remove('selected'));
   if(step <= 3) document.querySelectorAll('.dt-btn[data-q="nstage"]').forEach(b=>b.classList.remove('selected'));
   if(step <= 4) document.querySelectorAll('.dt-btn[data-q="mstage"]').forEach(b=>b.classList.remove('selected'));
-  if(step <= 5) document.querySelectorAll('.dt-btn[data-q="mutation"]').forEach(b=>b.classList.remove('selected'));
+  if(step <= 5){ A.S.drivers={}; A.S.pdl1Val=''; A.S.mutation=''; }
   dtShowCard(step);
 };
+
+// ═══ 分子檢測 — 驅動基因 + PD-L1 ═══
+const DRIVER_GENES = [
+  {id:'egfr', name:'EGFR',   hint:'位點'},
+  {id:'alk',  name:'ALK',    hint:'方法'},
+  {id:'ros1', name:'ROS1',   hint:''},
+  {id:'braf', name:'BRAF',   hint:'位點'},
+  {id:'met',  name:'MET ex14',hint:''},
+  {id:'ret',  name:'RET',    hint:''},
+  {id:'ntrk', name:'NTRK',   hint:''},
+  {id:'her2', name:'HER2',   hint:''},
+  {id:'kras', name:'KRAS',   hint:'位點'},
+];
+const PDL1_OPTS = [
+  {id:'high',name:'≥50%',bg:'var(--primary-light)',fg:'var(--primary)'},
+  {id:'low', name:'1-49%',bg:'var(--amber-light)',fg:'var(--amber)'},
+  {id:'neg', name:'<1%',bg:'var(--surface2)',fg:'var(--text3)'},
+  {id:'pending',name:'未驗',bg:'var(--surface2)',fg:'var(--text3)'},
+];
+
+function renderMolPanel(){
+  const S = A.S;
+  if(!S.drivers) S.drivers = {};
+  if(!S.driverSites) S.driverSites = {};
+  // Driver grid
+  const dg = document.getElementById('driver-grid');
+  if(dg){
+    let h = '';
+    DRIVER_GENES.forEach(g=>{
+      const st = S.drivers[g.id]; // '+', '-', or undefined
+      const isPos = st==='+';
+      const isNeg = st==='-';
+      const cls = isPos ? 'drv-btn on' : isNeg ? 'drv-btn neg' : 'drv-btn';
+      const label = isPos ? '⊕ '+g.name : isNeg ? '⊖ '+g.name : g.name;
+      h += `<button class="${cls}" onclick="APP.toggleDriver('${g.id}')">
+        <div class="drv-icon">${g.name.substring(0,3)}</div>
+        <div><div>${label}</div>`;
+      if(isPos && g.hint){
+        const siteVal = S.driverSites[g.id]||'';
+        h += `<input class="drv-site" type="text" placeholder="${g.hint}" value="${siteVal}" onclick="event.stopPropagation()" oninput="APP.setDriverSite('${g.id}',this.value)" style="width:90%;border:none;border-bottom:1px solid rgba(255,255,255,.4);background:transparent;color:inherit;padding:2px 0;outline:none">`;
+      }
+      h += '</div></button>';
+    });
+    // All negative button
+    const allNeg = Object.values(S.drivers).length>0 && Object.values(S.drivers).every(v=>v==='-');
+    h += `<button class="drv-btn${allNeg?' on':''}" onclick="APP.setAllDriverNeg()" style="grid-column:1/-1;justify-content:center">
+      <div>全部陰性（無可標靶驅動基因）</div></button>`;
+    dg.innerHTML = h;
+  }
+  // PD-L1 grid
+  const pg = document.getElementById('pdl1-grid');
+  if(pg){
+    pg.innerHTML = PDL1_OPTS.map(o=>{
+      const on = S.pdl1Val===o.id;
+      return `<button class="drv-btn${on?' on':''}" onclick="APP.setPdl1('${o.id}')" style="justify-content:center;padding:10px 4px">
+        <div>${o.name}</div></button>`;
+    }).join('');
+  }
+  // TPS input
+  const tpsBox = document.getElementById('pdl1-val-box');
+  if(tpsBox){
+    const showTps = S.pdl1Val && S.pdl1Val!=='pending';
+    tpsBox.style.display = showTps ? 'block' : 'none';
+    if(showTps){
+      const inp = document.getElementById('pdl1-tps-input');
+      if(inp && !inp.matches(':focus')) inp.value = S.pdl1Tps||'';
+    }
+  }
+  // Update done button state
+  const hasAnyDriver = Object.values(S.drivers).some(v=>v==='+');
+  const hasAllNeg = Object.values(S.drivers).length>0 && Object.values(S.drivers).every(v=>v==='-');
+  const hasPdl1 = !!S.pdl1Val;
+  const btn = document.getElementById('mol-done-btn');
+  if(btn){
+    const ready = hasAnyDriver || hasAllNeg || hasPdl1;
+    btn.style.opacity = ready ? '1' : '.4';
+  }
+  // Pending/skip button state
+  const pendBtn = document.getElementById('mol-pending-btn');
+  const skipBtn = document.getElementById('mol-skip-btn');
+  if(pendBtn) pendBtn.classList.toggle('on', S.mutation==='PENDING');
+  if(skipBtn) skipBtn.classList.toggle('on', S.mutation==='NOT_TESTED');
+}
+
+A.toggleDriver = function(id){
+  if(!A.S.drivers) A.S.drivers = {};
+  const cur = A.S.drivers[id];
+  if(!cur) A.S.drivers[id] = '+';
+  else if(cur==='+') A.S.drivers[id] = '-';
+  else delete A.S.drivers[id];
+  deriveMutation();
+  renderMolPanel();
+};
+
+A.setAllDriverNeg = function(){
+  if(!A.S.drivers) A.S.drivers = {};
+  DRIVER_GENES.forEach(g=>{ A.S.drivers[g.id] = '-'; });
+  deriveMutation();
+  renderMolPanel();
+};
+
+A.setDriverSite = function(id, val){
+  if(!A.S.driverSites) A.S.driverSites = {};
+  A.S.driverSites[id] = val;
+};
+
+A.setPdl1 = function(id){
+  A.S.pdl1Val = A.S.pdl1Val===id ? '' : id;
+  deriveMutation();
+  renderMolPanel();
+};
+
+A.setMolStatus = function(status){
+  // Quick set: PENDING or NOT_TESTED
+  A.S.drivers = {};
+  A.S.pdl1Val = '';
+  A.S.mutation = status;
+  showDone();
+};
+
+A.finishMol = function(){
+  deriveMutation();
+  showDone();
+};
+
+function deriveMutation(){
+  const S = A.S;
+  const d = S.drivers||{};
+  // Priority: EGFR > ALK > ROS1 > BRAF > MET > RET > NTRK > HER2 > KRAS
+  const priority = ['egfr','alk','ros1','braf','met','ret','ntrk','her2','kras'];
+  const firstPos = priority.find(id=>d[id]==='+');
+  if(firstPos){
+    if(firstPos==='egfr') S.mutation = 'EGFR';
+    else if(firstPos==='alk') S.mutation = 'ALK';
+    else S.mutation = 'OTHER_TKI';
+    // Build mutSite from driver sites
+    const posDrivers = priority.filter(id=>d[id]==='+');
+    S.mutSite = posDrivers.map(id=>{
+      const g = DRIVER_GENES.find(g=>g.id===id);
+      const site = (S.driverSites||{})[id];
+      return g.name + (site ? '('+site+')' : '');
+    }).join(', ');
+  } else {
+    // No driver gene positive, use PD-L1
+    if(S.pdl1Val==='high') S.mutation = 'PDL1_HIGH';
+    else if(S.pdl1Val==='low') S.mutation = 'PDL1_LOW';
+    else if(S.pdl1Val==='neg') S.mutation = 'PDL1_NEG';
+    else if(S.pdl1Val==='pending') S.mutation = 'PENDING';
+    else {
+      const allNeg = Object.values(d).length>0 && Object.values(d).every(v=>v==='-');
+      S.mutation = allNeg ? 'PDL1_NEG' : (S.mutation==='NOT_TESTED'?'NOT_TESTED':'PENDING');
+    }
+    S.mutSite = '';
+  }
+}
+
+// renderMolPanel is called from afterMstage when showing step 5
 
 function restoreDT(){
   document.querySelectorAll('.dt-btn').forEach(b=>b.classList.remove('selected'));
@@ -1686,23 +1845,19 @@ function restoreDT(){
   if(!A.S.mstage){ dtShowCard(4); return; }
   document.querySelectorAll('.dt-btn[data-q="mstage"]').forEach(b=>b.classList.toggle('selected',b.dataset.val===A.S.mstage));
   A.S.stage = computeAJCC(A.S.tstage, A.S.nstage, A.S.mstage);
-  const isM1 = A.S.mstage!=='M0';
-  if((A.S.type==='NSCLC_NS'||A.S.type==='NSCLC_SQ') && isM1){
-    if(!A.S.mutation){ dtShowCard(5); return; }
-    document.querySelectorAll('.dt-btn[data-q="mutation"]').forEach(b=>b.classList.toggle('selected',b.dataset.val===A.S.mutation));
-    const siteEl = document.getElementById('mut-site-box');
-    if(siteEl && A.S.mutation && A.S.mutation!=='PENDING'){ siteEl.style.display='block'; }
-    const siteInput = document.getElementById('mut-site-input');
-    if(siteInput) siteInput.value = A.S.mutSite||'';
+  const isNSCLC_r = A.S.type==='NSCLC_NS'||A.S.type==='NSCLC_SQ';
+  if(isNSCLC_r){
+    if(!A.S.mutation){ dtShowCard(5); setTimeout(renderMolPanel,50); return; }
+    setTimeout(renderMolPanel,50);
   }
   const parts=[TYPE_LABEL[A.S.type], A.S.tstage+A.S.nstage+A.S.mstage, 'Stage '+A.S.stage];
-  if(A.S.mutation&&A.S.mutation!=='N/A') parts.push('分子:'+A.S.mutation);
+  if(A.S.mutation&&A.S.mutation!=='N/A'&&A.S.mutation!=='NOT_TESTED') parts.push('分子:'+A.S.mutation);
   document.getElementById('dt-summary-text').textContent=parts.join(' · ');
   dtShowCard(1);
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v36 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v39 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1716,15 +1871,15 @@ function renderPW(){
   side += `<div class="pw-edit-row" onclick="APP.dtJump(2);APP.go('decision')"><div><div class="l">② T 分期</div><div class="v">${S.tstage||'—'}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
   side += `<div class="pw-edit-row" onclick="APP.dtJump(3);APP.go('decision')"><div><div class="l">③ N 分期</div><div class="v">${S.nstage||'—'}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
   side += `<div class="pw-edit-row" onclick="APP.dtJump(4);APP.go('decision')"><div><div class="l">④ M 分期</div><div class="v">${S.mstage||'—'}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
-  const isM1 = S.mstage && S.mstage!=='M0';
-  if((S.type==='NSCLC_NS'||S.type==='NSCLC_SQ') && isM1){
+  const isNSCLC = S.type==='NSCLC_NS'||S.type==='NSCLC_SQ';
+  if(isNSCLC && S.mutation && S.mutation!=='N/A'){
     side += `<div class="pw-edit-row" onclick="APP.dtJump(5);APP.go('decision')"><div><div class="l">⑤ 分子標記</div><div class="v">${S.mutation||'—'}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
   }
   side += `<div class="pw-side-row" style="margin-top:8px;border:none;justify-content:center;font-size:13px;font-weight:600;color:var(--text3)">臨床分期</div>`;
   side += `<div class="pw-side-row" style="border:none;justify-content:center;font-size:16px;font-weight:900;color:var(--primary)">Stage ${S.stage}</div>`;
   if(S.pstage){
     side += `<div class="pw-side-row" style="margin-top:4px;border:none;justify-content:center;font-size:13px;font-weight:600;color:var(--text3)">病理分期</div>`;
-    side += `<div class="pw-side-row" style="border:none;justify-content:center;font-size:16px;font-weight:900;color:var(--amber)">pStage ${S.pstage}</div>`;
+    side += `<div class="pw-side-row" style="border:none;justify-content:center;font-size:16px;font-weight:900;color:var(--primary)">pStage ${S.pstage}</div>`;
   }
   side += `<div style="flex:1"></div>`;
   side += `<button class="btn-nav next" onclick="APP.go('summary')" style="padding:0 16px;width:100%;justify-content:center"><i class="fa-solid fa-id-card-clip"></i> 總覽</button>`;
@@ -2045,10 +2200,8 @@ const _NSCLC = {
         <p><b>③ 前導性化療：</b>化療後再次評估 → 手術 → 輔助治療</p>
         <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
     }
-    if(isT4){
-      tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 T4 無法手術 (Unresectable)</h4>
-        <p>合併化放療（CCRT）</p></div>`;
-    }
+    tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 不適合手術 / 拒絕手術${isT4?' / 無法手術 (Unresectable)':''}</h4>
+      <p>合併化放療（CCRT）</p></div>`;
     return { tx, cost:[{l:'手術',v:'健保'},{l:'前導化療',v:'健保'},{l:'CCRT',v:'健保'}] };
   },
 
@@ -2291,13 +2444,7 @@ const TX_PHASES = [
     {id:'surgery',    label:'外科根除手術'},
     {id:'re_surgery', label:'再手術'},
   ]},
-  {id:'rt', label:'③ 放射治療（根治性）', icon:'fa-solid fa-radiation', items:[
-    {id:'sabr',    label:'SBRT'},
-    {id:'rt_alone',label:'單獨放療（根治性）'},
-    {id:'ccrt',    label:'同步化放療 (CCRT)', link:'ccrt'},
-    {id:'seq_crt', label:'序貫化放療'},
-  ]},
-  {id:'drug', label:'④ 藥物治療', icon:'fa-solid fa-pills', subs:[
+  {id:'drug', label:'③ 系統性藥物治療', icon:'fa-solid fa-pills', subs:[
     {sub:'化療', items:[
       {id:'chemo_alone',  label:'單用化療（鉑類雙藥）'},
       {id:'drug_ccrt',    label:'同步化放療 (CCRT)', link:'ccrt'},
@@ -2310,6 +2457,12 @@ const TX_PHASES = [
       {id:'target_1l',     label:'一線標靶 TKI'},
       {id:'target_chemo',  label:'標靶 + 化療'},
     ]},
+  ]},
+  {id:'rt', label:'④ 放射治療（根治性）', icon:'fa-solid fa-radiation', items:[
+    {id:'sabr',    label:'SBRT'},
+    {id:'rt_alone',label:'單獨放療（根治性）'},
+    {id:'ccrt',    label:'同步化放療 (CCRT)', link:'ccrt'},
+    {id:'seq_crt', label:'序貫化放療'},
   ]},
   {id:'adj', label:'⑤ 輔助治療', icon:'fa-solid fa-forward-step', items:[
     {id:'adj_chemo',  label:'術後化療'},
@@ -2844,7 +2997,7 @@ A.save = async function(){
   }
   readForm();
   const now = new Date().toISOString();
-  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,ptstage:A.S.ptstage||'',pnstage:A.S.pnstage||'',pmstage:A.S.pmstage||'',pstage:A.S.pstage||'',pmargin:A.S.pmargin||'',ppending:A.S.ppending||false,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},consult:A.S.consult||{},created:A.S.created,savedAt:now};
+  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,drivers:A.S.drivers||{},pdl1Val:A.S.pdl1Val||'',driverSites:A.S.driverSites||{},pdl1Tps:A.S.pdl1Tps||'',ptstage:A.S.ptstage||'',pnstage:A.S.pnstage||'',pmstage:A.S.pmstage||'',pstage:A.S.pstage||'',pmargin:A.S.pmargin||'',ppending:A.S.ppending||false,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},consult:A.S.consult||{},created:A.S.created,savedAt:now};
   let isNew = !editId;
   if(editId){ rec.id = editId; await put('records', rec); }
   else { await put('records', rec); if(draftId){ await del('drafts',draftId); draftId=null; } const all = await getAll('records'); editId = all[all.length-1]?.id; }
@@ -2893,7 +3046,16 @@ function renderSummary(){
   // Diagnosis
   const tnm = [S.tstage,S.nstage,S.mstage].filter(Boolean).join('');
   const dTags = [{l:'組織',v:TYPE_LABEL[S.type]||'—'},{l:'臨床 TNM',v:tnm||'—'},{l:'臨床分期',v:S.stage?'Stage '+S.stage:'—'}];
-  if(S.mutation&&S.mutation!=='N/A') dTags.push({l:'決策分子',v:S.mutation + (S.mutSite?' ('+S.mutSite+')':'')});
+  if(S.mutation&&S.mutation!=='N/A'&&S.mutation!=='NOT_TESTED'){
+    // Build molecular display from drivers
+    const posDrivers = DRIVER_GENES ? DRIVER_GENES.filter(g=>(S.drivers||{})[g.id]==='+').map(g=>g.name) : [];
+    const driverText = posDrivers.length ? posDrivers.join(', ') : S.mutation;
+    dTags.push({l:'驅動基因',v:driverText + (S.mutSite?' ('+S.mutSite+')':'')});
+    if(S.pdl1Val && S.pdl1Val!=='pending'){
+      const pdl1Label = S.pdl1Val==='high'?'≥50%':S.pdl1Val==='low'?'1-49%':'<1%';
+      dTags.push({l:'PD-L1',v:pdl1Label+(S.pdl1Tps?' TPS:'+S.pdl1Tps:'')});
+    }
+  }
   let diagH = `<div class="st"><i class="fa-solid fa-microscope"></i> 診斷</div>` +
     `<div class="diag-row">${dTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v">${d.v}</span></span>`).join('')}</div>`;
   // pTNM on its own row
@@ -2901,7 +3063,7 @@ function renderSummary(){
     const ptnm = [S.ptstage,S.pnstage,S.pmstage].filter(Boolean).join('');
     const pTags = [{l:'病理 TNM',v:ptnm},{l:'病理分期',v:'pStage '+S.pstage}];
     if(S.pmargin) pTags.push({l:'切緣',v:S.pmargin==='neg'?'(−) 陰性':'(+) 陽性'});
-    diagH += `<div class="diag-row" style="margin-top:4px">${pTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v" style="color:${S.pmargin==='pos'?'var(--rose)':''}">${d.v}</span></span>`).join('')}</div>`;
+    diagH += `<div class="diag-row" style="margin-top:4px">${pTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v">${d.v}</span></span>`).join('')}</div>`;
   }
   // Biomarker summary
   const bio = S.bio || {};
@@ -3202,7 +3364,6 @@ function renderCK(){
   }).join('');
   updateCKBar();
   updateCKNav();
-  updateBioPanelVisibility();
 }
 
 A.ckTab = function(i){
@@ -3253,7 +3414,6 @@ A.toggleCK = function(id,el){
     }
   }
   updateCKBar();
-  updateBioPanelVisibility();
   // Update tab count
   if(ckGroups.length){
     const g = ckGroups[ckCurTab];
