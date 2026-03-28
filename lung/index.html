@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v31</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v32</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -669,7 +669,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v31</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v32</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -844,7 +844,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
             <div class="q-options" id="q-tstage-opts">
               <button class="big-btn dt-btn" data-q="tstage" data-val="Tis" onclick="APP.dt('tstage','Tis')"><div class="icon-circle" style="background:var(--surface2);color:var(--text3);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">Tis</div><div><div class="btn-label">Tis — 原位癌</div><div class="btn-desc">AIS 原位腺癌 / SCIS 鱗狀原位癌</div></div></button>
               <div style="padding:8px 0 4px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.3px">▾ T1 ≤3cm — 被肺或臟層肋膜包圍</div>
-              <button class="big-btn dt-btn" data-q="tstage" data-val="T1mi" onclick="APP.dt('tstage','T1mi')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:11px;font-weight:900;border-radius:10px">T1mi</div><div><div class="btn-label">T1mi — 微侵犯腺癌</div><div class="btn-desc">≤3cm，浸潤成分 ≤0.5cm</div></div></button>
               <button class="big-btn dt-btn" data-q="tstage" data-val="T1a" onclick="APP.dt('tstage','T1a')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T1a</div><div><div class="btn-label">T1a — ≤1 cm</div><div class="btn-desc"></div></div></button>
               <button class="big-btn dt-btn" data-q="tstage" data-val="T1b" onclick="APP.dt('tstage','T1b')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T1b</div><div><div class="btn-label">T1b — >1 至 ≤2 cm</div><div class="btn-desc"></div></div></button>
               <button class="big-btn dt-btn" data-q="tstage" data-val="T1c" onclick="APP.dt('tstage','T1c')"><div class="icon-circle" style="background:var(--primary-light);color:var(--primary);width:42px;height:42px;font-size:12px;font-weight:900;border-radius:10px">T1c</div><div><div class="btn-label">T1c — >2 至 ≤3 cm</div><div class="btn-desc"></div></div></button>
@@ -933,7 +932,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
               </div>
               <div class="pw-tab-pane" data-pwtab="exec">
                 <div id="pw-tx-exec" class="tx-exec"></div>
-                <div id="pw-ptnm" style="display:none"></div>
               </div>
               <div class="pw-tab-pane" data-pwtab="team">
                 <div id="pw-consult"></div>
@@ -958,7 +956,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v31</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v32</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1264,7 +1262,7 @@ let cur = 'patient';
 let db;
 
 // Session = current working patient (added tstage, nstage, mstage)
-A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',ptstage:'',pnstage:'',pmstage:'',pstage:'',notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
+A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
 let editId = null;
 let draftId = null;
 
@@ -1549,7 +1547,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v31</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v32</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1557,7 +1555,7 @@ function updateTitle(){
 A.newPatient = function(){
   if(!confirm('開始新病人？')) return;
   editId=null; draftId=null;
-  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',ptstage:'',pnstage:'',pmstage:'',pstage:'',notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
+  A.S={code:'',name:'',caseDate:todayStr(),dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
   document.getElementById('pt-code').value='';
   document.getElementById('pt-name').value='';
   document.getElementById('pt-casedate').value=todayStr();
@@ -1702,7 +1700,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v31 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v32 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1772,8 +1770,6 @@ function renderPW(){
   renderTxExec();
   // Render consultation routing
   renderConsult();
-  // Render pathological staging section (surgical routes only)
-  renderPTNM();
   updatePWNav();
 }
 
@@ -1805,95 +1801,139 @@ function updatePWNav(){
   document.getElementById('pw-page-info').textContent=`${i+1} / ${total}`;
 }
 
-// ═══ 術後病理分期 (pTNM) — 滾動式更新 ═══
+// ═══ 術後病理分期 (pTNM) — 內嵌在手術勾選下方 ═══
 const PTNM_T_OPTS = ['Tis','T1mi','T1a','T1b','T1c','T2a','T2b','T3','T4'];
 const PTNM_N_OPTS = ['N0','N1','N2a','N2b','N3'];
 const PTNM_M_OPTS = ['M0','M1a','M1b','M1c1','M1c2'];
+const PTNM_MARGIN = [{v:'neg',l:'邊緣 (−) 陰性'},{v:'pos',l:'邊緣 (+) 陽性'}];
 
-function renderPTNM(){
-  const el = document.getElementById('pw-ptnm');
-  if(!el) return;
-  const S = A.S;
-  const grp = txGroup(S);
-  const broad = txBroad(grp);
-  // Only show when surgery is actually checked in execution
-  const hadSurgery = !!(S.actualTx && S.actualTx.surgery);
-  if(!hadSurgery){ el.style.display='none'; return; }
-  el.style.display='block';
+function buildPTNMInline(S){
+  if(S.ppending) return buildPTNMPending();
   const hasPStage = !!S.pstage;
   function mkBtns(opts, field){
     return opts.map(v=>`<button class="ptnm-btn${S[field]===v?' on':''}" onclick="APP.setPTNM('${field}','${v}')">${v}</button>`).join('');
   }
   let h = `<div class="ptnm-section${hasPStage?' filled':''}">`;
-  h += `<div class="ptnm-title"><i class="fa-solid fa-microscope"></i> 術後病理分期 (pTNM)</div>`;
-  h += `<div style="font-size:12px;color:var(--text3);margin-bottom:12px">手術後依病理報告填寫，系統將自動更新輔助治療建議</div>`;
+  h += `<div class="ptnm-title"><i class="fa-solid fa-microscope"></i> 術後病理分期</div>`;
+  h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">`;
+  h += `<span style="font-size:12px;color:var(--text3)">依病理報告填寫</span>`;
+  h += `<button class="ptnm-btn" style="font-size:11px;color:var(--amber)" onclick="APP.setPTNMPending(true)"><i class="fa-solid fa-clock" style="margin-right:3px"></i>報告未出</button>`;
+  h += `</div>`;
   h += `<div class="ptnm-row"><span class="ptnm-label">pT</span>${mkBtns(PTNM_T_OPTS,'ptstage')}</div>`;
   h += `<div class="ptnm-row"><span class="ptnm-label">pN</span>${mkBtns(PTNM_N_OPTS,'pnstage')}</div>`;
   h += `<div class="ptnm-row"><span class="ptnm-label">pM</span>${mkBtns(PTNM_M_OPTS,'pmstage')}</div>`;
-  // Show computed pStage + adjuvant
+  // Margin
   if(S.ptstage && S.pnstage && S.pmstage){
     S.pstage = computeAJCC(S.ptstage, S.pnstage, S.pmstage);
+    h += `<div class="ptnm-row" style="margin-top:6px"><span class="ptnm-label" style="min-width:36px">切緣</span>${PTNM_MARGIN.map(m=>`<button class="ptnm-btn${S.pmargin===m.v?' on':''}" onclick="APP.setPTNM('pmargin','${m.v}')">${m.l}</button>`).join('')}</div>`;
     h += `<div class="ptnm-result">`;
-    h += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span style="font-size:13px;color:var(--text2)">病理分期</span><span class="ptnm-stage">pStage ${S.pstage||'—'}</span></div>`;
+    h += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span style="font-size:13px;color:var(--text2)">病理分期</span><span class="ptnm-stage">pStage ${S.pstage||'—'}</span>`;
+    if(S.pmargin) h += `<span style="font-size:13px;font-weight:700;color:${S.pmargin==='neg'?'var(--primary)':'var(--rose)'}">${S.pmargin==='neg'?'邊緣(−)':'邊緣(+)'}</span>`;
+    h += `</div>`;
     if(S.pstage){
-      h += `<div class="ptnm-adj">${getAdjuvantHTML(S.pstage, S.type)}</div>`;
+      h += `<div class="ptnm-adj">${getAdjuvantHTML(S.pstage, S.type, S.pmargin)}</div>`;
     }
     h += `</div>`;
   }
   h += '</div>';
-  el.innerHTML = h;
+  return h;
 }
+
+function buildPTNMPending(){
+  return `<div class="ptnm-section" style="text-align:center;padding:20px">
+    <div style="font-size:32px;margin-bottom:8px"><i class="fa-solid fa-clock" style="color:var(--amber)"></i></div>
+    <div style="font-size:15px;font-weight:700;color:var(--text2);margin-bottom:4px">病理報告等待中</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">報告出爐後回來填寫</div>
+    <button class="ptnm-btn" onclick="APP.setPTNMPending(false)"><i class="fa-solid fa-pen" style="margin-right:4px"></i>填寫病理結果</button>
+  </div>`;
+}
+
+A.setPTNMPending = function(v){
+  A.S.ppending = v;
+  if(v){ A.S.ptstage=''; A.S.pnstage=''; A.S.pmstage=''; A.S.pstage=''; A.S.pmargin=''; }
+  renderTxExec();
+};
 
 A.setPTNM = function(field, val){
   A.S[field] = val;
-  // Clear downstream
-  if(field==='ptstage'){ /* keep pnstage/pmstage if set */ }
-  // Recompute
   if(A.S.ptstage && A.S.pnstage && A.S.pmstage){
     A.S.pstage = computeAJCC(A.S.ptstage, A.S.pnstage, A.S.pmstage);
   }
-  renderPTNM();
+  renderTxExec();
 };
 
-function getAdjuvantHTML(pstage, type){
-  // 本院指引 v12 p.2 — 術後輔助治療
+function getAdjuvantHTML(pstage, type, margin){
+  // 本院指引 v12 p.2 — 術後輔助治療（依 pStage + 切緣）
   const s = pstage;
+  const isPos = margin==='pos';
+  const isNeg = margin==='neg';
+  const noMargin = !margin;
   if(s==='0' || s==='IA1' || s==='IA2' || s==='IA3'){
-    return `<div class="tx-box green" style="border:2px solid #a7f3d0;margin:0"><h4>⭐ pStage ${s} — 術後處置</h4>
-      <p><b>邊緣(−)：</b>定期追蹤觀察</p>
-      <p><b>邊緣(+)：</b>再手術切除 或 放射治療</p></div>`;
+    if(noMargin) return `<div class="tx-box green" style="border:2px solid #a7f3d0;margin:0"><h4>⭐ pStage ${s}</h4>
+      <p><b>邊緣(−)：</b>定期追蹤觀察</p><p><b>邊緣(+)：</b>再手術切除 或 放射治療</p><p style="font-size:12px;color:var(--text3)">← 請選擇切緣狀態</p></div>`;
+    if(isNeg) return `<div class="tx-box green" style="border:2px solid #a7f3d0;margin:0"><h4>✅ pStage ${s}，邊緣(−) — 定期追蹤觀察</h4>
+      <p>不需輔助化療，定期影像追蹤即可。</p></div>`;
+    return `<div class="tx-box amber" style="margin:0"><h4>⚠ pStage ${s}，邊緣(+) — 需處理</h4>
+      <p>再手術切除 或 放射治療</p></div>`;
   }
   if(s==='IB' || s==='IIA'){
-    return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s} — 觀察或輔助化療</h4>
-      <p><b>邊緣(−)：</b>觀察 或 化療（高風險因子時）</p>
-      <p><b>邊緣(+)：</b>再手術 ± 化療 或 放療 ± 化療</p>
-      <p style="font-size:12px;color:var(--text3);margin-top:6px">高風險因子：腫瘤≧4cm、血管侵犯、臟層肋膜侵犯、楔狀切除</p></div>`;
+    if(noMargin) return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s}</h4>
+      <p><b>邊緣(−)：</b>觀察 或 化療（高風險）</p><p><b>邊緣(+)：</b>再手術±化療 or 放療±化療</p>
+      <p style="font-size:12px;color:var(--text3)">高風險因子：腫瘤≧4cm、血管侵犯、臟層肋膜侵犯、楔狀切除</p><p style="font-size:12px;color:var(--text3)">← 請選擇切緣狀態</p></div>`;
+    if(isNeg) return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s}，邊緣(−) — 觀察或化療</h4>
+      <p>觀察追蹤；<b>有高風險因子時建議輔助化療</b></p>
+      <p style="font-size:12px;color:var(--text3)">高風險因子：腫瘤≧4cm、血管侵犯、臟層肋膜侵犯、楔狀切除</p></div>`;
+    return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4>⚠ pStage ${s}，邊緣(+)</h4>
+      <p>再手術 ± 化療 或 放療 ± 化療</p></div>`;
   }
   if(s==='IIB'){
-    return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s} — 輔助化療</h4>
-      <p><b>邊緣(−)：</b>化療</p>
-      <p><b>邊緣(+)：</b>再手術 + 化療 或 合併化放療</p></div>`;
+    if(noMargin) return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s}</h4>
+      <p><b>邊緣(−)：</b>化療</p><p><b>邊緣(+)：</b>再手術+化療 or 合併化放療</p><p style="font-size:12px;color:var(--text3)">← 請選擇切緣狀態</p></div>`;
+    if(isNeg) return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s}，邊緣(−) — 輔助化療</h4>
+      <p>建議術後輔助化療</p></div>`;
+    return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4>⚠ pStage ${s}，邊緣(+)</h4>
+      <p>再手術 + 化療 或 合併化放療</p></div>`;
   }
   if(s==='IIIA'){
-    return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4>🔹 pStage ${s} — 輔助化療 ± 放療</h4>
-      <p><b>邊緣(−)：</b>化療</p>
-      <p><b>邊緣(+)：</b>合併化放療</p></div>`;
+    if(noMargin) return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4>🔹 pStage ${s}</h4>
+      <p><b>邊緣(−)：</b>化療</p><p><b>邊緣(+)：</b>合併化放療</p><p style="font-size:12px;color:var(--text3)">← 請選擇切緣狀態</p></div>`;
+    if(isNeg) return `<div class="tx-box amber" style="margin:0"><h4>🔹 pStage ${s}，邊緣(−) — 輔助化療</h4>
+      <p>建議術後輔助化療</p></div>`;
+    return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4>⚠ pStage ${s}，邊緣(+) — 合併化放療</h4>
+      <p>合併化放療 (CCRT)</p></div>`;
   }
   if(s==='IIIB' || s==='IIIC' || s==='IVA' || s==='IVB'){
     return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4>⚠ Upstage pStage ${s}</h4>
-      <p>評估 ECOG 及基因檢測後，依對應期別路徑決定治療方向</p>
-      <p style="font-size:12px;color:var(--text3);margin-top:6px">建議回到決策頁重新評估，或直接由主治醫師決定</p></div>`;
+      <p>評估 ECOG 及基因檢測後，依對應期別路徑決定治療方向</p></div>`;
   }
   return '';
 }
 
-function getAdjuvantSummary(pstage){
+function getAdjuvantSummary(pstage, margin){
   const s = pstage;
-  if(s==='0'||s==='IA1'||s==='IA2'||s==='IA3') return '邊緣(−) → 觀察；邊緣(+) → 再手術或放療';
-  if(s==='IB'||s==='IIA') return '觀察或化療（高風險因子時）；邊緣(+) → 再手術±化療';
-  if(s==='IIB') return '輔助化療；邊緣(+) → 再手術+化療 or 合併化放療';
-  if(s==='IIIA') return '輔助化療；邊緣(+) → 合併化放療';
-  if(s==='IIIB'||s==='IIIC'||s==='IVA'||s==='IVB') return `Upstage pStage ${s} — 評估 ECOG 及基因檢測後決定`;
+  const isPos = margin==='pos';
+  const isNeg = margin==='neg';
+  if(s==='0'||s==='IA1'||s==='IA2'||s==='IA3'){
+    if(isNeg) return '定期追蹤觀察';
+    if(isPos) return '再手術切除 或 放射治療';
+    return '邊緣(−)→觀察；邊緣(+)→再手術或放療';
+  }
+  if(s==='IB'||s==='IIA'){
+    if(isNeg) return '觀察追蹤（有高風險因子時建議化療）';
+    if(isPos) return '再手術±化療 或 放療±化療';
+    return '觀察或化療（高風險）；邊緣(+)→再手術±化療';
+  }
+  if(s==='IIB'){
+    if(isNeg) return '術後輔助化療';
+    if(isPos) return '再手術+化療 或 合併化放療';
+    return '化療；邊緣(+)→再手術+化療 or CCRT';
+  }
+  if(s==='IIIA'){
+    if(isNeg) return '術後輔助化療';
+    if(isPos) return '合併化放療 (CCRT)';
+    return '化療；邊緣(+)→CCRT';
+  }
+  if(s==='IIIB'||s==='IIIC'||s==='IVA'||s==='IVB') return `Upstage pStage ${s} — 重新評估`;
   return '依病理報告決定';
 }
 
@@ -2226,15 +2266,14 @@ A.toggleTxExec = function(id){
   if(A.S.actualTx[id]) delete A.S.actualTx[id];
   else A.S.actualTx[id] = true;
   renderTxExec();
-  renderPTNM();
 };
 
 function renderTxExec(){
   const el = document.getElementById('pw-tx-exec');
   if(!el) return;
   if(!A.S.type||!A.S.stage){ el.innerHTML=''; return; }
+  const S = A.S;
   let h = '<div class="tx-exec-title"><i class="fa-solid fa-square-check" style="color:var(--primary)"></i> 實際執行治療策略</div>';
-  // Group by category
   const cats = []; const catMap = {};
   TX_EXEC_OPTIONS.forEach(tx => {
     if(!catMap[tx.cat]){ catMap[tx.cat] = []; cats.push(tx.cat); }
@@ -2244,11 +2283,15 @@ function renderTxExec(){
   cats.forEach(cat => {
     h += `<div style="font-size:11px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-top:1px solid var(--border);margin-top:4px;text-transform:uppercase;letter-spacing:.5px">${cat}</div>`;
     catMap[cat].forEach(tx => {
-      const done = A.S.actualTx?.[tx.id];
+      const done = S.actualTx?.[tx.id];
       h += `<div class="tx-exec-item${done?' done':''}" onclick="APP.toggleTxExec('${tx.id}')">
         <div class="tx-exec-check"><i class="fa-solid fa-check"></i></div>
         <span class="tx-exec-label">${tx.label}</span>
       </div>`;
+      // ── pTNM inline after surgery ──
+      if(tx.id==='surgery' && done){
+        h += buildPTNMInline(S);
+      }
     });
   });
   h += '</div>';
@@ -2625,7 +2668,7 @@ function renderEduHandout(){
   if(actualTxText){
     h += `<p class="edu-p">${actualTxText}</p>`;
     if(S.pstage && S.actualTx?.surgery){
-      h += `<p class="edu-p" style="color:var(--primary-dark);font-weight:600">術後輔助（pStage ${S.pstage}）：${getAdjuvantSummary(S.pstage)}</p>`;
+      h += `<p class="edu-p" style="color:var(--primary-dark);font-weight:600">術後輔助（pStage ${S.pstage}）：${getAdjuvantSummary(S.pstage, S.pmargin)}</p>`;
     }
   } else {
     h += `<p class="edu-p">${txSummary}</p>`;
@@ -2664,7 +2707,7 @@ A.save = async function(){
   }
   readForm();
   const now = new Date().toISOString();
-  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,ptstage:A.S.ptstage||'',pnstage:A.S.pnstage||'',pmstage:A.S.pmstage||'',pstage:A.S.pstage||'',notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},consult:A.S.consult||{},created:A.S.created,savedAt:now};
+  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,ptstage:A.S.ptstage||'',pnstage:A.S.pnstage||'',pmstage:A.S.pmstage||'',pstage:A.S.pstage||'',pmargin:A.S.pmargin||'',ppending:A.S.ppending||false,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},consult:A.S.consult||{},created:A.S.created,savedAt:now};
   let isNew = !editId;
   if(editId){ rec.id = editId; await put('records', rec); }
   else { await put('records', rec); if(draftId){ await del('drafts',draftId); draftId=null; } const all = await getAll('records'); editId = all[all.length-1]?.id; }
@@ -2791,7 +2834,7 @@ function renderSummary(){
     // Show pStage-based adjuvant if available, otherwise clinical recommendation
     if(S.pstage && S.actualTx?.surgery){
       txH += `<div class="stx"><div class="tl">🎯 初始治療</div><div class="tv">${txt}</div></div>`;
-      txH += `<div class="stx"><div class="tl">🔬 術後輔助（pStage ${S.pstage}）</div><div class="tv">${getAdjuvantSummary(S.pstage)}</div></div>`;
+      txH += `<div class="stx"><div class="tl">🔬 術後輔助（pStage ${S.pstage}）</div><div class="tv">${getAdjuvantSummary(S.pstage, S.pmargin)}</div></div>`;
     } else {
       txH += `<div class="stx"><div class="tl">🎯 建議方案</div><div class="tv">${txt}</div></div>`;
     }
