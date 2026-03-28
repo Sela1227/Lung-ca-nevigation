@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v39</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v40</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -151,13 +151,20 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .ptnm-label{font-size:13px;font-weight:700;color:var(--text2);min-width:28px}
 .ptnm-btn{height:32px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:.15s;white-space:nowrap}
 .ptnm-btn:hover{border-color:var(--primary);color:var(--primary)}
-.drv-btn{height:auto;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:.15s;text-align:left;display:flex;align-items:center;gap:8px}
+.drv-btn{height:auto;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:.15s;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px}
 .drv-btn:hover{border-color:var(--primary);background:var(--primary-light)}
 .drv-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-.drv-btn.neg{background:var(--surface2);color:var(--text3);border-color:var(--border);opacity:.6;font-style:italic}
-.drv-btn .drv-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;background:rgba(0,0,0,.05);flex-shrink:0}
-.drv-btn.on .drv-icon{background:rgba(255,255,255,.2)}
-.drv-site{margin-top:4px;font-size:11px;opacity:.8;display:block}
+.drv-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border)}
+.drv-row:last-child{border:none}
+.drv-name{font-size:14px;font-weight:800;min-width:72px;color:var(--text)}
+.drv-toggle{display:flex;gap:4px}
+.drv-toggle button{width:36px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;font-weight:900;transition:.15s}
+.drv-toggle button:hover{border-color:var(--primary)}
+.drv-toggle .pos{color:var(--primary)}
+.drv-toggle .pos.on{background:#059669;color:#fff;border-color:#059669}
+.drv-toggle .neg{color:var(--rose)}
+.drv-toggle .neg.on{background:var(--rose);color:#fff;border-color:var(--rose)}
+.drv-site-input{margin-top:4px;padding:6px 10px;border:1px solid var(--primary);border-radius:6px;font-size:13px;width:100%;background:var(--primary-light);color:var(--text);outline:none}
 .ptnm-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
 .ptnm-result{margin-top:12px;padding:14px 18px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border)}
 .ptnm-stage{font-size:20px;font-weight:900;color:var(--primary)}
@@ -678,7 +685,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v39</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v40</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -899,7 +906,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
             <div class="q-label" style="margin-bottom:16px"><span class="q-num">5</span> 分子檢測結果</div>
             <!-- A. 驅動基因 -->
             <div style="font-size:13px;font-weight:800;color:var(--primary-dark);margin-bottom:8px"><i class="fa-solid fa-dna" style="margin-right:4px"></i> A. 驅動基因（可多選）</div>
-            <div id="driver-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px"></div>
+            <div id="driver-grid" style="margin-bottom:16px"></div>
             <!-- B. PD-L1 -->
             <div style="font-size:13px;font-weight:800;color:var(--primary-dark);margin-bottom:8px"><i class="fa-solid fa-shield-halved" style="margin-right:4px"></i> B. PD-L1 表現量（獨立填寫）</div>
             <div id="pdl1-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px"></div>
@@ -969,7 +976,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v39</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v40</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1024,7 +1031,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-tabs" id="ck-tabs"></div>
           <div class="ck-body" id="ck-list"></div>
           <!-- Biomarker panel: shown when c10/c11 checked -->
-          <!-- BIO panel removed in v39 -->
+          <!-- BIO panel removed in v40 -->
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="ck-prev" onclick="APP.ckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
             <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
@@ -1196,12 +1203,9 @@ const CFG = {
     {id:'c1', g:'01 — 初步評估',l:'胸部電腦斷層，含腎上腺', req:'all', phase:'basic'},
     {id:'c14',g:'01 — 初步評估',l:'完全血球計數及血小板計數（CBC）', req:'all', phase:'basic'},
     {id:'c32',g:'01 — 初步評估',l:'生化檢查', req:'all', phase:'basic'},
-    {id:'c3', g:'01 — 初步評估',l:'腦部電腦斷層或磁振造影', req:'opt', phase:'basic'},
-    {id:'c5', g:'01 — 初步評估',l:'骨骼掃描或正子攝影', req:'opt', phase:'basic'},
     // ── 02 治療前評估 — 對齊本院指引 v12 治療前評估 ──
     {id:'c6', g:'02 — 治療前評估',l:'組織切片病理確認（含免疫組化）', req:'all', phase:'basic'},
     {id:'c17',g:'02 — 治療前評估',l:'肺功能檢查', req:'all', phase:'basic'},
-    {id:'c33',g:'02 — 治療前評估',l:'胸部電腦斷層，含腎上腺（治療前）', req:'all', phase:'basic'},
     {id:'c34',g:'02 — 治療前評估',l:'骨骼掃描或正子攝影', req:'all', phase:'basic'},
     {id:'c35',g:'02 — 治療前評估',l:'腦部電腦斷層或核磁共振', req:'all', phase:'basic'},
     {id:'c7', g:'02 — 治療前評估',l:'支氣管鏡檢查', req:'opt', phase:'basic'},
@@ -1555,7 +1559,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v39</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v40</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1707,21 +1711,22 @@ function renderMolPanel(){
       const st = S.drivers[g.id]; // '+', '-', or undefined
       const isPos = st==='+';
       const isNeg = st==='-';
-      const cls = isPos ? 'drv-btn on' : isNeg ? 'drv-btn neg' : 'drv-btn';
-      const label = isPos ? '⊕ '+g.name : isNeg ? '⊖ '+g.name : g.name;
-      h += `<button class="${cls}" onclick="APP.toggleDriver('${g.id}')">
-        <div class="drv-icon">${g.name.substring(0,3)}</div>
-        <div><div>${label}</div>`;
+      h += `<div class="drv-row">`;
+      h += `<span class="drv-name">${g.name}</span>`;
+      h += `<div class="drv-toggle">`;
+      h += `<button class="pos${isPos?' on':''}" onclick="APP.setDriver('${g.id}','+')" title="陽性">⊕</button>`;
+      h += `<button class="neg${isNeg?' on':''}" onclick="APP.setDriver('${g.id}','-')" title="陰性">⊖</button>`;
+      h += `</div>`;
       if(isPos && g.hint){
         const siteVal = S.driverSites[g.id]||'';
-        h += `<input class="drv-site" type="text" placeholder="${g.hint}" value="${siteVal}" onclick="event.stopPropagation()" oninput="APP.setDriverSite('${g.id}',this.value)" style="width:90%;border:none;border-bottom:1px solid rgba(255,255,255,.4);background:transparent;color:inherit;padding:2px 0;outline:none">`;
+        h += `<input class="drv-site-input" type="text" placeholder="${g.hint}" value="${siteVal}" oninput="APP.setDriverSite('${g.id}',this.value)">`;
       }
-      h += '</div></button>';
+      h += `</div>`;
     });
     // All negative button
     const allNeg = Object.values(S.drivers).length>0 && Object.values(S.drivers).every(v=>v==='-');
-    h += `<button class="drv-btn${allNeg?' on':''}" onclick="APP.setAllDriverNeg()" style="grid-column:1/-1;justify-content:center">
-      <div>全部陰性（無可標靶驅動基因）</div></button>`;
+    h += `<div style="margin-top:6px"><button class="drv-btn${allNeg?' on':''}" onclick="APP.setAllDriverNeg()" style="width:100%;padding:10px">
+      全部陰性（無可標靶驅動基因）</button></div>`;
     dg.innerHTML = h;
   }
   // PD-L1 grid
@@ -1759,12 +1764,11 @@ function renderMolPanel(){
   if(skipBtn) skipBtn.classList.toggle('on', S.mutation==='NOT_TESTED');
 }
 
-A.toggleDriver = function(id){
+A.setDriver = function(id, val){
   if(!A.S.drivers) A.S.drivers = {};
-  const cur = A.S.drivers[id];
-  if(!cur) A.S.drivers[id] = '+';
-  else if(cur==='+') A.S.drivers[id] = '-';
-  else delete A.S.drivers[id];
+  // Toggle: if already this value, clear it
+  if(A.S.drivers[id] === val) delete A.S.drivers[id];
+  else A.S.drivers[id] = val;
   deriveMutation();
   renderMolPanel();
 };
@@ -1857,7 +1861,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v39 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v40 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -2201,7 +2205,7 @@ const _NSCLC = {
         <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
     }
     tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 不適合手術 / 拒絕手術${isT4?' / 無法手術 (Unresectable)':''}</h4>
-      <p>合併化放療（CCRT）</p></div>`;
+      <p>合併化放療（CCRT）</p><div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
     return { tx, cost:[{l:'手術',v:'健保'},{l:'前導化療',v:'健保'},{l:'CCRT',v:'健保'}] };
   },
 
