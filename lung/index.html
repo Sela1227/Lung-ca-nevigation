@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v42</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v43</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -685,7 +685,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v42</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v43</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -976,7 +976,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v42</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v43</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1031,7 +1031,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-tabs" id="ck-tabs"></div>
           <div class="ck-body" id="ck-list"></div>
           <!-- Biomarker panel: shown when c10/c11 checked -->
-          <!-- BIO panel removed in v42 -->
+          <!-- BIO panel removed in v43 -->
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="ck-prev" onclick="APP.ckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
             <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
@@ -1559,7 +1559,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v42</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v43</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1861,7 +1861,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v42 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v43 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1877,7 +1877,8 @@ function renderPW(){
   side += `<div class="pw-edit-row" onclick="APP.dtJump(4);APP.go('decision')"><div><div class="l">④ M 分期</div><div class="v">${S.mstage||'—'}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
   const isNSCLC = S.type==='NSCLC_NS'||S.type==='NSCLC_SQ';
   if(isNSCLC && S.mutation && S.mutation!=='N/A'){
-    side += `<div class="pw-edit-row" onclick="APP.dtJump(5);APP.go('decision')"><div><div class="l">⑤ 分子標記</div><div class="v">${S.mutation||'—'}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
+    const mutLabel = {'EGFR':'EGFR','ALK':'ALK','OTHER_TKI':'其他標靶','PDL1_HIGH':'PD-L1≥50%','PDL1_LOW':'PD-L1 1-49%','PDL1_NEG':'PD-L1<1%','PENDING':'等報告','NOT_TESTED':'未驗','N/A':'—'}[S.mutation]||S.mutation||'—';
+    side += `<div class="pw-edit-row" onclick="APP.dtJump(5);APP.go('decision')"><div><div class="l">⑤ 分子標記</div><div class="v">${mutLabel}</div></div><i class="fa-solid fa-pen edit-icon"></i></div>`;
   }
   side += `<div class="pw-side-row" style="margin-top:8px;border:none;justify-content:center;font-size:13px;font-weight:600;color:var(--text3)">臨床分期</div>`;
   side += `<div class="pw-side-row" style="border:none;justify-content:center;font-size:16px;font-weight:900;color:var(--primary)">Stage ${S.stage}</div>`;
@@ -2219,13 +2220,15 @@ const _NSCLC = {
     const isT3N2 = s.tstage==='T3';
     let tx = _hdr(s,'fa-radiation');
     if(!isT3N2){
-      tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ Stage IIIA (T1-2, N2)</h4>
-        <p><b>路線 A：</b>合併化放療（CCRT）或化療 或免疫治療（自費）</p>
-        <p><b>路線 B：</b>引導化療 ± 放療 或免疫治療（自費）</p></div>`;
-      tx += `<div class="tx-box amber"><h4>🔹 引導治療後評估反應</h4>
+      tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 路線 A — 合併化放療 / 化療 / 免疫</h4>
+        <p>合併化放療（CCRT）或 化療 或 免疫治療（自費）</p>
+        <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">免疫自費</span></div></div>`;
+      tx += `<div class="tx-box blue"><h4>⭐ 路線 B — 引導化療後評估反應</h4>
+        <p>引導化療 ± 放療 或 免疫治療（自費）</p></div>`;
+      tx += `<div class="tx-box amber"><h4>🔹 路線 B 引導治療後評估</h4>
         <p><b>無惡化：</b>手術 ± 放療（若未接受過）</p>
         <p><b>惡化（局部）：</b>放療（若未接受過）± 化療</p>
-        <p><b>惡化（系統性）：</b>依轉移性疾病治療</p></div>`;
+        <p><b>惡化（系統性）：</b>參閱 M1 疾病初步治療</p></div>`;
     }
     if(isT3N2){
       tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ Stage IIIB (T3, N2) — 新輔助治療</h4>
@@ -2406,9 +2409,9 @@ const _NSCLC_GOALS = {
   resect_adv: {goal:'【降階或直接手術】前導治療縮小腫瘤再手術；無法手術者化放療。', mechanism:'前導化療或化放療 ➜ 再評估 ➜ 手術 ➜ 輔助治療。',
     boxes:[{title:'可手術三策略',color:'blue',badge:'多模態',list:['①直接手術','②前導同步化放療→手術','③前導化療→手術']},{title:'無法手術',color:'orange',badge:'T4 Unresectable',list:['合併化放療(CCRT)','高齡可改Sequential','PS差考慮支持性治療']}],
     footer:'前導治療後須再次影像評估手術可行性。'},
-  N2: {goal:'【多模態策略】N2淋巴結轉移可嘗試新輔助後手術或直接化放療。', mechanism:'CCRT/引導化療/新輔助(IO+化療) ➜ 依反應決定手術或系統治療。',
-    boxes:[{title:'IIIA (T1-2,N2)',color:'blue',badge:'雙軌策略',list:['CCRT或化療或免疫(自費)','引導化療後無惡化→手術','惡化→轉M1路徑']},{title:'IIIB (T3,N2)',color:'orange',badge:'新輔助',list:['免疫+化療 or CCRT→手術','基因檢測導引系統治療','合併化放療或標靶/免疫']}],
-    footer:'基因檢測：先EGFR/PD-L1，陰性可加驗ALK或NGS。'},
+  N2: {goal:'【多模態策略】N2淋巴結轉移可嘗試引導化療後手術或直接化放療。', mechanism:'合併化放療 / 引導化療±放療或免疫(自費) ➜ 依反應決定手術或系統治療。',
+    boxes:[{title:'IIIA (T1-2,N2)',color:'blue',badge:'兩條路線',list:['路線A：合併化放療/化療/免疫(自費)','路線B：引導化療±放療/免疫→評估反應','無惡化→手術±放療 / 惡化→M1路徑']},{title:'IIIB (T3,N2)',color:'orange',badge:'新輔助',list:['新輔助：免疫+化療 or 化療/CCRT','→再評估→手術→輔助治療','不手術：CCRT或標靶/免疫']}],
+    footer:'基因檢測：先EGFR/PD-L1，陰性可加驗ALK或健保部分給付NGS。'},
   N3: {goal:'【化放療為主】N3淋巴結轉移以同步化放療為核心治療。', mechanism:'CCRT/標靶/免疫治療（依健保規範）。',
     boxes:[{title:'核心治療',color:'blue',badge:'CCRT',list:['同步化放療為主要選擇','可合併標靶或免疫治療','高齡/PS差改Sequential']},{title:'注意事項',color:'orange',badge:'追蹤',list:['需排除遠端轉移','基因檢測指引用藥','定期影像追蹤']}],
     footer:'遠端轉移確認後轉入M1路徑。'},
@@ -3084,7 +3087,8 @@ function renderSummary(){
   if(S.mutation&&S.mutation!=='N/A'&&S.mutation!=='NOT_TESTED'){
     // Build molecular display from drivers
     const posDrivers = DRIVER_GENES ? DRIVER_GENES.filter(g=>(S.drivers||{})[g.id]==='+').map(g=>g.name) : [];
-    const driverText = posDrivers.length ? posDrivers.join(', ') : S.mutation;
+    const _mutLabel = {'EGFR':'EGFR','ALK':'ALK','OTHER_TKI':'其他標靶','PDL1_HIGH':'PD-L1≥50%','PDL1_LOW':'PD-L1 1-49%','PDL1_NEG':'PD-L1<1%','PENDING':'等報告'}[S.mutation]||S.mutation;
+    const driverText = posDrivers.length ? posDrivers.join(', ') : _mutLabel;
     dTags.push({l:'驅動基因',v:driverText + (S.mutSite?' ('+S.mutSite+')':'')});
     if(S.pdl1Val && S.pdl1Val!=='pending'){
       const pdl1Label = S.pdl1Val==='high'?'≥50%':S.pdl1Val==='low'?'1-49%':'<1%';
