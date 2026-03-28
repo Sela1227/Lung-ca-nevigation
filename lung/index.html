@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v34</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v35</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -476,6 +476,8 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 .tx-exec-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;background:#fff;border-radius:0}
 .tx-exec-item:first-child{border-radius:10px 10px 0 0}
 .tx-exec-item:last-child{border-radius:0 0 10px 10px;border-bottom:none}
+.tx-phase-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-top:8px;cursor:pointer;transition:.15s;user-select:none}
+.tx-phase-hdr:hover{background:var(--primary-light);border-color:var(--primary)}
 .tx-exec-item:hover{background:#f0f9ff}
 .tx-exec-item.done{background:#f0fdf4}
 .tx-exec-check{width:22px;height:22px;border-radius:6px;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0;transition:.2s;font-size:12px}
@@ -669,7 +671,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v34</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v35</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -956,7 +958,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v34</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v35</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1547,7 +1549,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v34</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v35</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1700,7 +1702,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v34 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v35 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1870,7 +1872,7 @@ function getAdjuvantHTML(pstage, type, margin, actualTx){
   const hasReSurg = tx.re_surgery;
   const hasRT = tx.adj_rt || tx.rt_alone;
   const hasChemo = tx.adj_chemo;
-  const hasCCRT = tx.ccrt;
+  const hasCCRT = tx.ccrt || tx.adj_ccrt;
   // Helper: filter "A 或 B" based on actual exec
   function reOpOrRT(){
     if(hasReSurg && !hasRT) return '再手術切除';
@@ -1947,7 +1949,7 @@ function getAdjuvantSummary(pstage, margin, actualTx){
   }
   if(s==='IIB'){
     if(isNeg) return '術後輔助化療';
-    if(isPos) return hasReSurg?'再手術+化療':tx.ccrt?'合併化放療':'再手術+化療 or CCRT';
+    if(isPos) return hasReSurg?'再手術+化療':(tx.ccrt||tx.adj_ccrt)?'合併化放療':'再手術+化療 or CCRT';
     return '化療';
   }
   if(s==='IIIA'){
@@ -2266,71 +2268,159 @@ const STAGE_GOALS = {
 
 
 // ── Treatment Execution Options ──
-const TX_EXEC_OPTIONS = [
-  // ── 手術相關 ──
-  {id:'surgery',      label:'外科根除手術',               cat:'手術'},
-  {id:'re_surgery',   label:'再手術 (Re-operation)',      cat:'手術'},
-  {id:'neoadj_chemo', label:'術前前導化療 (Neoadjuvant)',  cat:'手術'},
-  {id:'neoadj_io_chemo',label:'術前前導 IO+化療',             cat:'手術'},
-  {id:'adj_chemo',    label:'術後輔助化療 (Adjuvant)',     cat:'手術'},
-  {id:'adj_target',   label:'術後標靶鞏固',                cat:'手術'},
-  {id:'adj_io',       label:'術後免疫鞏固',                cat:'手術'},
-  // ── 放射治療 ──
-  {id:'adj_rt',       label:'術後放療 (Adjuvant RT)',      cat:'放療'},
-  {id:'rt_alone',     label:'單獨放療 (Definitive RT)',    cat:'放療'},
-  {id:'ccrt',         label:'同步化放療 (CCRT)',           cat:'放療'},
-  {id:'seq_crt',      label:'序貫化療→放療',              cat:'放療'},
-  {id:'sabr',         label:'SABR/SBRT 立體定位放射',     cat:'放療'},
-  {id:'pci',          label:'預防性全腦照射 (PCI)',        cat:'放療'},
-  {id:'palliative_rt',label:'姑息性放療 (骨/腦/症狀)',     cat:'放療'},
-  // ── 全身治療 ──
-  {id:'chemo_alone',  label:'單用化療 (鉑類雙藥)',         cat:'全身'},
-  {id:'target_1l',    label:'一線標靶 TKI',               cat:'全身'},
-  {id:'io_chemo_combo',label:'免疫+化療合併',              cat:'全身'},
-  {id:'io_mono',      label:'免疫單藥 (如 PD-L1≥50%)',    cat:'全身'},
-  {id:'maintenance',  label:'維持治療 (化療/免疫)',         cat:'全身'},
-  // ── 後線/其他 ──
-  {id:'chemo_2l',     label:'二線化療',                    cat:'後線'},
-  {id:'target_2l',    label:'後線標靶',                    cat:'後線'},
-  {id:'io_2l',        label:'後線免疫治療',                cat:'後線'},
-  {id:'palliative',   label:'最佳支持照護 (BSC)',          cat:'後線'},
+// ═══ 治療執行 — 依治療時間軸分組 ═══
+const TX_PHASES = [
+  {id:'neoadj', label:'① 前導治療', icon:'fa-solid fa-backward-step', items:[
+    {id:'neoadj_chemo',    label:'前導化療'},
+    {id:'neoadj_io_chemo', label:'前導 IO + 化療'},
+    {id:'neoadj_ccrt',     label:'前導化放療 (CCRT)'},
+  ]},
+  {id:'surgery', label:'② 手術', icon:'fa-solid fa-lungs', items:[
+    {id:'surgery',    label:'外科根除手術'},
+    {id:'re_surgery', label:'再手術'},
+  ]},
+  {id:'rt', label:'③ 放射治療（根治性）', icon:'fa-solid fa-radiation', items:[
+    {id:'sabr',    label:'SBRT'},
+    {id:'rt_alone',label:'單獨放療（根治性）'},
+    {id:'ccrt',    label:'同步化放療 (CCRT)', link:'ccrt'},
+    {id:'seq_crt', label:'序貫化放療'},
+  ]},
+  {id:'drug', label:'④ 藥物治療', icon:'fa-solid fa-pills', subs:[
+    {sub:'化療', items:[
+      {id:'chemo_alone',  label:'單用化療（鉑類雙藥）'},
+      {id:'drug_ccrt',    label:'同步化放療 (CCRT)', link:'ccrt'},
+    ]},
+    {sub:'免疫', items:[
+      {id:'io_chemo_combo',label:'免疫 + 化療'},
+      {id:'io_mono',       label:'免疫單藥'},
+    ]},
+    {sub:'標靶', items:[
+      {id:'target_1l',     label:'一線標靶 TKI'},
+      {id:'target_chemo',  label:'標靶 + 化療'},
+    ]},
+  ]},
+  {id:'adj', label:'⑤ 輔助治療', icon:'fa-solid fa-forward-step', items:[
+    {id:'adj_chemo',  label:'術後化療'},
+    {id:'adj_rt',     label:'術後放療'},
+    {id:'adj_ccrt',   label:'合併化放療 (CCRT)'},
+    {id:'adj_target', label:'術後標靶鞏固'},
+    {id:'adj_io',     label:'術後免疫鞏固'},
+    {id:'pci',        label:'PCI（預防性全腦照射）'},
+  ]},
+  {id:'maint', label:'⑥ 維持治療', icon:'fa-solid fa-rotate', items:[
+    {id:'maint_io',   label:'維持免疫'},
+    {id:'maint_chemo',label:'維持化療/標靶'},
+  ]},
+  {id:'later', label:'⑦ 後線治療', icon:'fa-solid fa-layer-group', items:[
+    {id:'chemo_2l',  label:'二線化療'},
+    {id:'target_2l', label:'後線標靶'},
+    {id:'io_2l',     label:'後線免疫'},
+  ]},
+  {id:'bsc', label:'⑧ 姑息/支持照護', icon:'fa-solid fa-hand-holding-heart', items:[
+    {id:'palliative_rt',label:'姑息性放療（骨/腦/症狀）'},
+    {id:'palliative',   label:'最佳支持照護 (BSC)'},
+  ]},
 ];
+
+// Flat lookup for label resolution (summary, CSV, edu)
+const TX_ALL_ITEMS = [];
+TX_PHASES.forEach(p=>{
+  if(p.items) p.items.forEach(it=>TX_ALL_ITEMS.push(it));
+  if(p.subs) p.subs.forEach(s=>s.items.forEach(it=>TX_ALL_ITEMS.push(it)));
+});
+// Compat alias
+const TX_EXEC_OPTIONS = TX_ALL_ITEMS;
+
+// CCRT link handling: ccrt and drug_ccrt share state
+const CCRT_LINK_IDS = ['ccrt','drug_ccrt'];
 
 A.toggleTxExec = function(id){
   if(!A.S.actualTx) A.S.actualTx = {};
-  if(A.S.actualTx[id]) delete A.S.actualTx[id];
-  else A.S.actualTx[id] = true;
+  if(A.S.actualTx[id]) {
+    delete A.S.actualTx[id];
+    // Unlink CCRT
+    if(CCRT_LINK_IDS.includes(id)) CCRT_LINK_IDS.forEach(lid=>delete A.S.actualTx[lid]);
+  } else {
+    A.S.actualTx[id] = true;
+    // Link CCRT: check one → check both
+    if(CCRT_LINK_IDS.includes(id)) CCRT_LINK_IDS.forEach(lid=>A.S.actualTx[lid]=true);
+  }
   renderTxExec();
 };
+
+A.togglePhase = function(phaseId){
+  const el = document.getElementById('phase-'+phaseId);
+  if(!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  // Update toggle button
+  const btn = document.querySelector(`[data-phase="${phaseId}"]`);
+  if(btn){
+    btn.querySelector('.phase-toggle-icon').className = 'fa-solid ' + (isOpen ? 'fa-plus' : 'fa-minus') + ' phase-toggle-icon';
+  }
+};
+
+function phaseHasChecked(phase, tx){
+  const items = phase.items || [];
+  const subItems = phase.subs ? phase.subs.flatMap(s=>s.items) : [];
+  return [...items,...subItems].some(it=>tx[it.id]);
+}
 
 function renderTxExec(){
   const el = document.getElementById('pw-tx-exec');
   if(!el) return;
   if(!A.S.type||!A.S.stage){ el.innerHTML=''; return; }
   const S = A.S;
+  if(!S.actualTx) S.actualTx = {};
+  const tx = S.actualTx;
+
   let h = '<div class="tx-exec-title"><i class="fa-solid fa-square-check" style="color:var(--primary)"></i> 實際執行治療策略</div>';
-  const cats = []; const catMap = {};
-  TX_EXEC_OPTIONS.forEach(tx => {
-    if(!catMap[tx.cat]){ catMap[tx.cat] = []; cats.push(tx.cat); }
-    catMap[tx.cat].push(tx);
-  });
   h += '<div class="tx-exec-wrap">';
-  cats.forEach(cat => {
-    h += `<div style="font-size:11px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-top:1px solid var(--border);margin-top:4px;text-transform:uppercase;letter-spacing:.5px">${cat}</div>`;
-    catMap[cat].forEach(tx => {
-      const done = S.actualTx?.[tx.id];
-      h += `<div class="tx-exec-item${done?' done':''}" onclick="APP.toggleTxExec('${tx.id}')">
-        <div class="tx-exec-check"><i class="fa-solid fa-check"></i></div>
-        <span class="tx-exec-label">${tx.label}</span>
-      </div>`;
-      // ── pTNM inline after surgery ──
-      if(tx.id==='surgery' && done){
-        h += buildPTNMInline(S);
-      }
-    });
+
+  TX_PHASES.forEach(phase=>{
+    const hasChecked = phaseHasChecked(phase, tx);
+    const isOpen = hasChecked; // auto-expand if has checked items
+    h += `<div class="tx-phase-hdr" data-phase="${phase.id}" onclick="APP.togglePhase('${phase.id}')">`;
+    h += `<div style="display:flex;align-items:center;gap:8px"><i class="${phase.icon}" style="color:var(--primary);width:18px;text-align:center"></i><span style="font-weight:700">${phase.label}</span>`;
+    if(hasChecked){
+      const allItems = phase.items || (phase.subs ? phase.subs.flatMap(s=>s.items) : []);
+      const cnt = allItems.filter(it=>tx[it.id]).length;
+      h += `<span style="font-size:11px;background:var(--primary);color:#fff;padding:1px 8px;border-radius:99px;font-weight:700">${cnt}</span>`;
+    }
+    h += `</div><i class="fa-solid ${isOpen?'fa-minus':'fa-plus'} phase-toggle-icon" style="color:var(--text3);font-size:12px"></i></div>`;
+
+    h += `<div id="phase-${phase.id}" style="display:${isOpen?'block':'none'}">`;
+    // Render items
+    if(phase.items){
+      phase.items.forEach(item=>{
+        const done = tx[item.id];
+        h += mkTxItem(item.id, item.label, done);
+        // pTNM after surgery
+        if(item.id==='surgery' && done) h += buildPTNMInline(S);
+      });
+    }
+    // Render sub-grouped items (drug phase)
+    if(phase.subs){
+      phase.subs.forEach(sub=>{
+        h += `<div style="font-size:11px;font-weight:700;color:var(--text3);padding:6px 16px 2px;letter-spacing:.3px">${sub.sub}</div>`;
+        sub.items.forEach(item=>{
+          const done = tx[item.id];
+          h += mkTxItem(item.id, item.label, done);
+        });
+      });
+    }
+    h += '</div>';
   });
+
   h += '</div>';
   el.innerHTML = h;
+}
+
+function mkTxItem(id, label, done){
+  return `<div class="tx-exec-item${done?' done':''}" onclick="APP.toggleTxExec('${id}')">
+    <div class="tx-exec-check"><i class="fa-solid fa-check"></i></div>
+    <span class="tx-exec-label">${label}</span>
+  </div>`;
 }
 
 // ── Consultation / Team Routing ──
@@ -2567,7 +2657,7 @@ function checkKPI(){
     if(broad === 'surgical'){
       if(!tx.surgery && !tx.sabr){ stratOk=false; stratDetail='建議手術或SABR'; }
     } else if(broad === 'chemoRT'){
-      if(!tx.surgery && !tx.ccrt && !tx.seq_crt && !tx.neoadj_io_chemo && !tx.neoadj_chemo){ stratOk=false; stratDetail='建議手術或化放療'; }
+      if(!tx.surgery && !tx.ccrt && !tx.adj_ccrt && !tx.neoadj_ccrt && !tx.seq_crt && !tx.neoadj_io_chemo && !tx.neoadj_chemo){ stratOk=false; stratDetail='建議手術或化放療'; }
     } else if(broad === 'systemic'){
       if(!tx.chemo_alone && !tx.target_1l && !tx.io_chemo_combo && !tx.io_mono && !tx.palliative){
         stratOk=false; stratDetail='建議全身治療';
