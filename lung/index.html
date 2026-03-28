@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v26</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v27</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -657,7 +657,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v26</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v27</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -945,7 +945,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v26</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v27</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1536,7 +1536,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v26</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v27</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1689,7 +1689,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v26 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v27 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1796,23 +1796,35 @@ function _warn(text){ return `<div class="alert-box warn" style="margin-top:8px"
 function _hdr(s,icon){ return `<div class="card-title"><i class="fa-solid ${icon}"></i> ${TYPE_LABEL[s.type]||'NSCLC'} — Stage ${s.stage} (${s.tstage}${s.nstage}${s.mstage})</div>`; }
 
 const _NSCLC = {
-  'I_periph': s => ({
-    tx: _hdr(s,'fa-hand-holding-medical') +
-      `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 外科切除 — 首選</h4>
-        <p>肺葉切除術 + 系統性縱膈腔淋巴結取樣／廓清</p>
-        <p>周邊 ≤2cm 可考慮肺段切除；微創 (VATS/RATS) 優先</p>
-        <div class="row"><span></span><span class="badge nhi">健保</span></div></div>` +
-      `<div class="tx-box amber"><h4>🔹 術後依病理分期決定輔助治療</h4>
+  'I_periph': s => {
+    const isTis = s.tstage==='Tis';
+    let tx = _hdr(s,'fa-hand-holding-medical');
+    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 外科切除 — 首選</h4>
+        <p>${isTis ? '楔狀切除或肺葉切除' : '肺葉切除術 + 系統性縱膈腔淋巴結取樣／廓清'}</p>
+        ${isTis ? '' : '<p>周邊 ≤2cm 可考慮肺段切除；微創 (VATS/RATS) 優先</p>'}
+        <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+    if(isTis){
+      tx += `<div class="tx-box amber"><h4>🔹 術後處置</h4>
+        <p><b>邊緣(−)：</b>定期追蹤觀察</p>
+        <p><b>邊緣(+)：</b>再手術切除 或 放射治療</p></div>`;
+    } else {
+      tx += `<div class="tx-box amber"><h4>🔹 術後依病理分期決定輔助治療</h4>
         <p><b>pStage 0 / IA：</b>邊緣(−) → 觀察；邊緣(+) → 再手術或放療</p>
         <p><b>pStage IB (T2aN0) / IIA：</b>邊緣(−) → 觀察或化療（高風險）；邊緣(+) → 再手術±化療 or 放療±化療</p>
         <p><b>pStage IIB (T1-2aN1, T3N0, T2bN1)：</b>邊緣(−) → 化療；邊緣(+) → 再手術+化療 or 合併化放療</p>
         <p><b>pStage IIIA (T1-2,N2 ; T3N1)：</b>邊緣(−) → 化療；邊緣(+) → 合併化放療</p>
-        <p><b>Upstage IIIB+ / IV：</b>評估 ECOG 及基因檢測後決定方向</p></div>` +
-      `<div class="tx-box blue"><h4>🔹 不適合手術 / 拒絕手術 — SBRT</h4>
+        <p><b>Upstage IIIB+ / IV：</b>評估 ECOG 及基因檢測後決定方向</p></div>`;
+      tx += `<div class="tx-box blue"><h4>🔹 不適合手術 / 拒絕手術 — SBRT</h4>
         <p>立體定位放射治療（SBRT）</p>
-        <div class="row"><span></span><span class="badge nhi">健保（條件見下方）</span></div></div>`,
-    cost:[{l:'肺葉切除 (VATS)',v:'健保全額'},{l:'達文西 (RATS) 差額',v:'15-25萬'},{l:'SBRT',v:'健保（條件）'},{l:'輔助化療',v:'健保全額'}]
-  }),
+        <div class="row"><span></span><span class="badge nhi">健保（條件）</span></div></div>`;
+    }
+    return {
+      tx,
+      cost: isTis
+        ? [{l:'楔狀/肺葉切除',v:'健保全額'},{l:'放療（邊緣+時）',v:'健保全額'}]
+        : [{l:'肺葉切除 (VATS)',v:'健保全額'},{l:'達文西 (RATS) 差額',v:'15-25萬'},{l:'SBRT',v:'健保（條件）'},{l:'輔助化療',v:'健保全額'}]
+    };
+  },
 
   'surgical': s => ({
     tx: _hdr(s,'fa-lungs') +
@@ -1998,7 +2010,7 @@ const PW = {
 };
 
 const _NSCLC_SUM = {
-  'I_periph': s => '手術切除 → 依病理分期決定輔助治療',
+  'I_periph': s => s.tstage==='Tis' ? '手術切除 → 邊緣確認 → 觀察或再手術' : '手術切除 → 依病理分期決定輔助治療',
   'surgical': s => '手術探查 → 輔助治療；不適合手術者放療±化療',
   'resect_adv': s => '手術 / 前導化放療 / 前導化療 → 再次手術評估',
   'N2': s => s.tstage==='T3'?'新輔助(IO+化療)→手術 or CCRT±標靶/免疫':'CCRT or 引導化療→評估手術',
