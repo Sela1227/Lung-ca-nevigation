@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v35</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 v36</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -671,7 +671,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v35</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">v36</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -958,7 +958,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v35</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">v36</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1549,7 +1549,7 @@ function updateTitle(){
   const label = A.S.code ? (A.S.name ? A.S.code+' '+A.S.name : A.S.code) : '';
   const tag = editId ? '<span style="font-size:12px;color:var(--amber);margin-left:6px">（編輯中）</span>' : draftId ? '<span style="font-size:12px;color:var(--text3);margin-left:6px">（草稿）</span>' : '';
   const base = `<i class="${CFG.icon}"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑`;
-  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v35</span>';
+  const ver = ' <span style="font-size:11px;font-weight:400;color:var(--text3)">v36</span>';
   const pt = label ? `<span style="margin-left:8px;font-size:13px;color:var(--primary);font-weight:700">${label}</span>` : '';
   t.innerHTML = base + ver + pt + tag;
 }
@@ -1702,7 +1702,7 @@ function restoreDT(){
 }
 
 // ═══════════════════════════════════════════
-//  PATHWAY TEMPLATES — 彰濱秀傳 v35 (2026)
+//  PATHWAY TEMPLATES — 彰濱秀傳 v36 (2026)
 // ═══════════════════════════════════════════
 function renderPW(){
   const S=A.S;
@@ -1988,12 +1988,13 @@ const _NSCLC = {
         <p><b>邊緣(−)：</b>定期追蹤觀察</p>
         <p><b>邊緣(+)：</b>再手術切除 或 放射治療</p></div>`;
     } else {
-      tx += `<div class="tx-box amber"><h4>🔹 術後依病理分期決定輔助治療</h4>
-        <p><b>pStage 0 / IA：</b>邊緣(−) → 觀察；邊緣(+) → 再手術或放療</p>
-        <p><b>pStage IB (T2aN0) / IIA：</b>邊緣(−) → 觀察或化療（高風險）；邊緣(+) → 再手術±化療 or 放療±化療</p>
-        <p><b>pStage IIB (T1-2aN1, T3N0, T2bN1)：</b>邊緣(−) → 化療；邊緣(+) → 再手術+化療 or 合併化放療</p>
-        <p><b>pStage IIIA (T1-2,N2 ; T3N1)：</b>邊緣(−) → 化療；邊緣(+) → 合併化放療</p>
-        <p><b>Upstage IIIB+ / IV：</b>評估 ECOG 及基因檢測後決定方向</p></div>`;
+      if(s.pstage){
+        tx += getAdjuvantHTML(s.pstage, s.type, s.pmargin, s.actualTx);
+      } else {
+        tx += `<div class="tx-box amber"><h4>🔹 術後依病理分期決定輔助治療</h4>
+          <p>手術後依病理報告 (pTNM) 及切緣狀態決定後續輔助方案</p>
+          <p style="font-size:12px;color:var(--text3)">請於「執行策略」勾選手術後填寫病理分期</p></div>`;
+      }
       tx += `<div class="tx-box blue"><h4>🔹 不適合手術 / 拒絕手術 — SBRT</h4>
         <p>立體定位放射治療（SBRT）</p>
         <div class="row"><span></span><span class="badge nhi">健保（條件）</span></div></div>`;
@@ -2009,9 +2010,14 @@ const _NSCLC = {
   'surgical': s => {
     const N = s.nstage||'';
     let tx = _hdr(s,'fa-lungs');
-    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 手術探查</h4>
-        <p>手術切除 → 依術後病理分期決定輔助治療（同 Stage I 輔助治療原則）</p>
+    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 手術探查</h4>`;
+    if(s.pstage){
+      tx += `<p>手術切除完成</p><div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+      tx += getAdjuvantHTML(s.pstage, s.type, s.pmargin, s.actualTx);
+    } else {
+      tx += `<p>手術切除 → 依術後病理分期決定輔助治療</p>
         <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+    }
     tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 臨床評估不適合手術 / 拒絕手術</h4>`;
     if(N==='N0') tx += `<p>放射治療；針對高風險 IB～IIB 考慮加化療</p>`;
     else if(N==='N1') tx += `<p>合併化放療（CCRT）</p>`;
@@ -2028,11 +2034,17 @@ const _NSCLC = {
   'resect_adv': s => {
     const isT4 = s.tstage==='T4';
     let tx = _hdr(s,'fa-radiation');
-    tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 可手術者 — 三種策略</h4>
-      <p><b>① 直接手術：</b>切除 → 依術後病理分期決定輔助治療</p>
-      <p><b>② 前導性同步化放療：</b>化放療後再次評估 → 手術 → 輔助治療</p>
-      <p><b>③ 前導性化療：</b>化療後再次評估 → 手術 → 輔助治療</p>
-      <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+    if(s.pstage){
+      tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 手術完成</h4>
+        <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+      tx += getAdjuvantHTML(s.pstage, s.type, s.pmargin, s.actualTx);
+    } else {
+      tx += `<div class="tx-box green" style="border:2px solid #a7f3d0"><h4>⭐ 可手術者 — 三種策略</h4>
+        <p><b>① 直接手術：</b>切除 → 依術後病理分期決定輔助治療</p>
+        <p><b>② 前導性同步化放療：</b>化放療後再次評估 → 手術 → 輔助治療</p>
+        <p><b>③ 前導性化療：</b>化療後再次評估 → 手術 → 輔助治療</p>
+        <div class="row"><span></span><span class="badge nhi">健保</span></div></div>`;
+    }
     if(isT4){
       tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4>🔹 T4 無法手術 (Unresectable)</h4>
         <p>合併化放療（CCRT）</p></div>`;
@@ -2882,13 +2894,15 @@ function renderSummary(){
   const tnm = [S.tstage,S.nstage,S.mstage].filter(Boolean).join('');
   const dTags = [{l:'組織',v:TYPE_LABEL[S.type]||'—'},{l:'臨床 TNM',v:tnm||'—'},{l:'臨床分期',v:S.stage?'Stage '+S.stage:'—'}];
   if(S.mutation&&S.mutation!=='N/A') dTags.push({l:'決策分子',v:S.mutation + (S.mutSite?' ('+S.mutSite+')':'')});
-  // Add pTNM if available
-  if(S.pstage){
-    const ptnm = [S.ptstage,S.pnstage,S.pmstage].filter(Boolean).join('');
-    dTags.push({l:'病理 TNM',v:ptnm},{l:'病理分期',v:'pStage '+S.pstage});
-  }
   let diagH = `<div class="st"><i class="fa-solid fa-microscope"></i> 診斷</div>` +
     `<div class="diag-row">${dTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v">${d.v}</span></span>`).join('')}</div>`;
+  // pTNM on its own row
+  if(S.pstage){
+    const ptnm = [S.ptstage,S.pnstage,S.pmstage].filter(Boolean).join('');
+    const pTags = [{l:'病理 TNM',v:ptnm},{l:'病理分期',v:'pStage '+S.pstage}];
+    if(S.pmargin) pTags.push({l:'切緣',v:S.pmargin==='neg'?'(−) 陰性':'(+) 陽性'});
+    diagH += `<div class="diag-row" style="margin-top:4px">${pTags.map(d=>`<span class="diag-tag"><span class="l">${d.l}</span><span class="v" style="color:${S.pmargin==='pos'?'var(--rose)':''}">${d.v}</span></span>`).join('')}</div>`;
+  }
   // Biomarker summary
   const bio = S.bio || {};
   const bioKeys = Object.keys(bio).filter(k => bio[k]?.s);
