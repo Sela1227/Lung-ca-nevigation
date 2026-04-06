@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>彰濱秀傳癌症中心 — 癌症臨床路徑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  /* Nordic misty blue palette */
+  --primary:#5B8FB9;--primary-hover:#4A7A9E;--primary-light:rgba(91,143,185,0.10);
+  --sidebar-bg:#37516b;
+  --bg:#F7F9FB;--bg-card:#FFFFFF;--bg-hover:#F1F4F8;
+  --border:#E2E8F0;--border-light:#EDF1F5;
+  --text:#2C3E50;--text-secondary:#5A6B7C;--text-hint:#8A9BAA;
+  --radius:16px;
+}
+body{
+  font-family:'Noto Sans TC',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;
+}
+
+/* ── Header ── */
+.header{
+  background:linear-gradient(135deg,#37516b 0%,#4A7A9E 55%,#5B8FB9 100%);
+  color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden;
+}
+.header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 15% 85%,rgba(255,255,255,.06) 0%,transparent 50%),
+             radial-gradient(circle at 85% 15%,rgba(255,255,255,.04) 0%,transparent 40%);
+}
+.header-inner{position:relative;z-index:1;max-width:800px;margin:0 auto}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:8px}
+.logo-icon{
+  width:60px;height:60px;background:rgba(255,255,255,.12);border-radius:18px;
+  display:flex;align-items:center;justify-content:center;font-size:30px;
+  backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);
+}
+.hospital-name{font-size:28px;font-weight:900;letter-spacing:1.5px;text-shadow:0 2px 8px rgba(0,0,0,.12)}
+.subtitle{font-size:13px;opacity:.82;font-weight:400;margin-top:6px;letter-spacing:1.5px}
+
+/* ── Main ── */
+.main{flex:1;max-width:1040px;width:100%;margin:-40px auto 0;padding:0 24px 48px;position:relative;z-index:2}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+
+/* ── Card ── */
+.card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px 20px 22px;text-align:center;position:relative;overflow:hidden;
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.card.active{cursor:pointer}
+.card.active:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 28px rgba(91,143,185,.14);
+  border-color:var(--primary);
+}
+.card.wip{opacity:.5;cursor:default}
+.card-icon{
+  width:64px;height:64px;border-radius:18px;margin:0 auto 18px;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  transition:transform .22s ease;
+  background:var(--primary-light);color:var(--primary);
+}
+.card.active:hover .card-icon{transform:scale(1.06)}
+.card-title{font-size:17px;font-weight:800;margin-bottom:4px;color:var(--text);letter-spacing:.3px}
+.card-sub{font-size:12px;color:var(--text-hint);line-height:1.5}
+.card-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:14px;padding:4px 12px;border-radius:99px;
+  font-size:11px;font-weight:700;letter-spacing:.3px;
+}
+.badge-active{background:var(--primary-light);color:var(--primary);border:1px solid rgba(91,143,185,.25)}
+.badge-wip{background:var(--bg-hover);color:var(--text-hint);border:1px solid var(--border-light)}
+
+/* ── Footer ── */
+.footer{
+  text-align:center;padding:28px 20px;font-size:12px;color:var(--text-hint);
+  border-top:1px solid var(--border-light);background:var(--bg-card);line-height:1.9;
+}
+.footer strong{color:var(--text-secondary);font-weight:600}
+
+/* ── Responsive ── */
+@media(max-width:640px){
+  .header{padding:36px 16px 52px}
+  .hospital-name{font-size:22px}
+  .logo-icon{width:48px;height:48px;font-size:24px;border-radius:14px}
+  .main{margin-top:-28px;padding:0 14px 32px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{padding:22px 14px 18px}
+  .card-icon{width:52px;height:52px;border-radius:14px;font-size:24px;margin-bottom:12px}
+  .card-title{font-size:15px}
+  .card-sub{font-size:11px}
+  .card-badge{font-size:10px;padding:3px 10px;margin-top:10px}
+}
+@media(max-width:380px){
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .card{padding:18px 10px 14px}
+  .card-icon{width:46px;height:46px;font-size:20px}
+  .card-title{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo-row">
+      <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
+      <div>
+        <div class="hospital-name">彰濱秀傳癌症中心</div>
+        <div class="subtitle">CANCER NAVIGATION SYSTEM</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="footer">
+  <strong>彰濱秀傳紀念醫院 癌症中心</strong><br>
+  Cancer Navigation V2.3.3 &nbsp;·&nbsp; 僅供院內臨床人員使用
+</div>
+
+<script>
+const CANCERS = [
+  {id:'lung',  name:'肺癌',     icon:'fa-solid fa-lungs',         url:'lung/', active:true},
+  {id:'breast',name:'乳癌',     icon:'fa-solid fa-ribbon',        url:'breast/'},
+  {id:'crc',   name:'大腸直腸癌',icon:'fa-solid fa-bacteria',     url:'crc/'},
+  {id:'esoph', name:'食道癌',    icon:'fa-solid fa-utensils',      url:'esoph/'},
+  {id:'hn',    name:'頭頸癌',    icon:'fa-solid fa-head-side-mask',url:'hn/'},
+  {id:'liver', name:'肝癌',      icon:'fa-solid fa-shield-virus',  url:'liver/'},
+  {id:'prost', name:'攝護腺癌',  icon:'fa-solid fa-mars',          url:'prost/'},
+  {id:'bladder',name:'膀胱癌',   icon:'fa-solid fa-droplet',       url:'bladder/'},
+];
+
+const grid = document.getElementById('grid');
+CANCERS.forEach(c=>{
+  const isActive = c.active;
+  const card = document.createElement('div');
+  card.className = `card ${isActive?'active':'wip'}`;
+  if(isActive) card.onclick = ()=> location.href = c.url;
+  card.innerHTML = `
+    <div class="card-icon">
+      <i class="${c.icon}"></i>
+    </div>
+    <div class="card-title">${c.name}</div>
+    <div class="card-sub">${isActive?'臨床路徑導航':'即將上線'}</div>
+    <div class="card-badge ${isActive?'badge-active':'badge-wip'}">
+      <i class="fa-solid ${isActive?'fa-circle-check':'fa-hammer'}" style="font-size:10px"></i>
+      ${isActive?'可使用':'建構中'}
+    </div>
+  `;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

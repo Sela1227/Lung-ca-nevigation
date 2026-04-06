@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>個人化照護導航手冊 — 彰濱秀傳癌症中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#5B8FB9;--primary-dark:#4A7A9E;--primary-light:#EAF1F7;--rose:#e11d48;--text:#2C3E50;--text2:#5A6B7C;--text3:#8A9BAA;--surface:#fff;--surface2:#F1F4F8;--border:#E2E8F0}
+body{font-family:'Noto Sans TC','Inter',system-ui,sans-serif;background:#F7F9FB;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.edu-handout{max-width:800px;width:100%;border:2px solid var(--primary);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.edu-hdr{background:var(--primary);color:#fff;padding:20px 28px;text-align:center}
+.edu-hdr h2{font-size:22px;font-weight:900;margin-bottom:4px}
+.edu-hdr p{font-size:14px;opacity:.85}
+.edu-body{padding:24px 28px}
+.edu-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;padding:14px 18px;background:var(--surface2);border-radius:10px;font-size:15px}
+.edu-info b{color:var(--text)}
+.edu-2col{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.edu-sh{font-size:16px;font-weight:800;margin:0 0 8px;display:flex;align-items:center;gap:8px;color:var(--primary-dark);border-bottom:2px solid var(--border);padding-bottom:6px}
+.edu-p{font-size:14px;line-height:1.8;color:var(--text);margin:0 0 16px}
+.edu-note{font-size:12px;color:var(--text3);margin:0 0 16px}
+.edu-team{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px}
+.edu-team td{padding:8px 12px;border-bottom:1px solid #e5e7eb}
+.edu-team td:first-child{font-weight:600;white-space:nowrap}
+.edu-emg{background:#fef2f2;border:2px solid var(--rose);border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.6;margin-top:12px}
+.edu-footer{margin-top:20px;padding:14px 18px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text3);text-align:center}
+.edu-error{max-width:480px;text-align:center;padding:60px 30px;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.edu-error i{font-size:48px;color:var(--text3);margin-bottom:16px;display:block}
+.edu-error h3{font-size:20px;font-weight:800;margin-bottom:8px}
+.edu-error p{font-size:14px;color:var(--text2);line-height:1.7}
+.page-footer{margin-top:20px;font-size:11px;color:var(--text3);text-align:center;line-height:1.6}
+@media(max-width:640px){
+  body{padding:10px}
+  .edu-info{grid-template-columns:1fr 1fr;font-size:13px;padding:10px 14px}
+  .edu-2col{grid-template-columns:1fr;gap:16px}
+  .edu-sh{font-size:14px}.edu-p{font-size:13px}
+  .edu-team{font-size:13px}.edu-team td{padding:6px 10px}
+  .edu-emg{font-size:12px;padding:10px 14px}
+}
+@media print{
+  body{background:#fff;padding:0}
+  .edu-handout{border:2px solid #000;border-radius:0;box-shadow:none;max-width:100%;min-height:95vh}
+  .edu-hdr{background:#333!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#fff!important;padding:20px 30px}
+  .edu-hdr h2{font-size:24px}
+  .edu-body{padding:24px 30px}
+  .edu-info{grid-template-columns:1fr 1fr 1fr!important;font-size:15px;background:#f9fafb!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border:1px solid #e5e7eb}
+  .edu-2col{grid-template-columns:1fr 1fr!important;gap:28px}
+  .edu-sh{font-size:16px;border-bottom:2px solid #e5e7eb}
+  .edu-p{font-size:14px;line-height:1.8}
+  .edu-emg{background:#fff5f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border:2px solid #666}
+  .page-footer{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="page-footer" id="page-footer"></div>
+<script>
+(function(){
+  const app = document.getElementById('app');
+  const footer = document.getElementById('page-footer');
+
+  // ── 查表資料：從 type code + stage 還原完整內容 ──
+  const TYPE_NAME = {NS:'非鱗狀非小細胞肺癌 (NSCLC)',SQ:'鱗狀非小細胞肺癌 (NSCLC)',SC:'小細胞肺癌 (SCLC)'};
+  const TEAM = [
+    {dept:'胸腔外科'},
+    {dept:'胸腔內科／血液腫瘤科'},
+    {dept:'放射腫瘤科'}
+  ];
+  // 治療目標查表（簡化版，依 type + stage 粗分）
+  function getGoal(t,s){
+    if(t==='SC'){
+      if(s.startsWith('IV')) return '化療＋免疫快速緩解，維持控制。';
+      return '利用化療高敏感度達成快速緩解，同步放療加強局部控制。';
+    }
+    if(s.startsWith('IV')) return '依基因檢測結果精準選擇標靶、免疫或化療。';
+    if(s.startsWith('III')) return '多模態策略：化放療 ± 手術 ± 免疫鞏固。';
+    return '以治癒為目標，手術清除病灶，輔以化療降低復發。';
+  }
+  function getTx(t,s,m){
+    if(t==='SC'){
+      if(s.startsWith('IV')) return '化療＋免疫治療（健保事審）± 鞏固放療';
+      return '化療＋放療 → 預防性全腦照射 (PCI)';
+    }
+    if(s.startsWith('IV')){
+      if(m==='EGFR') return 'EGFR 標靶藥物';
+      if(m==='ALK') return 'ALK 標靶藥物';
+      if(m==='OTHER_TKI') return '對應標靶藥物';
+      if(m==='PDL1_HIGH'||m==='PDL1_LOW'||m==='PDL1_NEG') return '免疫治療 ± 化療（依健保規範）';
+      return '依基因檢測結果決定';
+    }
+    if(s.startsWith('III')) return '化放療 ± 手術 ± 免疫/標靶治療';
+    return '手術切除 → 依病理分期決定輔助治療';
+  }
+
+  // Parse fragment
+  const frag = location.hash.substring(1);
+  if(!frag){ showError('找不到資料','此連結不包含照護資訊，請重新掃描 QR code。'); return; }
+
+  let d;
+  try {
+    const json = decodeURIComponent(escape(atob(frag)));
+    d = JSON.parse(json);
+  } catch(e){ showError('資料解析失敗','QR code 內容無法解讀，請確認連結完整。'); return; }
+
+  if(!d.t || !d.s){ showError('資料不完整','缺少診斷或分期資訊。'); return; }
+
+  render(d);
+
+  function render(d){
+    const typeName = TYPE_NAME[d.t]||d.t;
+    const goal = getGoal(d.t, d.s);
+    const tx = getTx(d.t, d.s, d.m);
+
+    let h = '<div class="edu-handout">';
+    h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 病患個人化照護導航手冊</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
+    h += '<div class="edu-body">';
+    h += '<div class="edu-info">';
+    h += `<div><b>姓名：</b>${d.n||'—'}</div>`;
+    h += `<div><b>診斷：</b>${typeName}</div>`;
+    h += `<div><b>分期：</b>Stage ${d.s}</div>`;
+    h += '</div>';
+    h += '<div class="edu-2col">';
+    // Left: team + emergency
+    h += '<div class="edu-col">';
+    h += '<h4 class="edu-sh"><i class="fa-solid fa-user-doctor"></i> 您的照護團隊</h4>';
+    h += '<table class="edu-team">';
+    TEAM.forEach((t,i)=>{
+      const doc = d.tm && d.tm[i] ? d.tm[i] : '';
+      const style = doc ? 'font-weight:700;color:#166534' : 'color:#999;font-style:italic';
+      h += `<tr><td>${t.dept}</td><td style="${style}">${doc ? doc+' 醫師' : '（待安排）'}</td></tr>`;
+    });
+    if(d.c) h += `<tr style="background:#f0fdfa"><td>個案管理師</td><td style="font-weight:700;color:#0891b2">${d.c}</td></tr>`;
+    h += '</table>';
+    h += '<div class="edu-emg"><b><i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
+    h += '</div>';
+    // Right: treatment
+    h += '<div class="edu-col">';
+    h += `<h4 class="edu-sh"><i class="fa-solid fa-bullseye"></i> 治療目標</h4><p class="edu-p">${goal}</p>`;
+    h += `<h4 class="edu-sh"><i class="fa-solid fa-flask"></i> 建議治療方案</h4><p class="edu-p">${tx}</p>`;
+    h += '<p class="edu-note">＊依本院診療指引標準建議，實際方案由主治醫師依您的狀況調整。</p>';
+    h += '<h4 class="edu-sh"><i class="fa-solid fa-shield-heart"></i> 副作用管理</h4>';
+    h += '<p class="edu-p">持續發燒、皮膚紅腫或皮疹、腹瀉不止、呼吸急促、嚴重疲倦無法進食 → 請聯繫個管師。</p>';
+    h += '</div></div>';
+    h += `<div class="edu-footer">如有任何疑問，請隨時聯繫您的個案管理師${d.c?'（'+d.c+'）':''}。</div>`;
+    h += '</div></div>';
+    app.innerHTML = h;
+    footer.innerHTML = `產生日期：${d.d||'—'}<br>此頁面為個人化照護內容，請勿分享他人。<br>彰濱秀傳紀念醫院 癌症中心`;
+  }
+
+  function showError(title, msg){
+    app.innerHTML = `<div class="edu-error"><i class="fa-solid fa-circle-exclamation"></i><h3>${title}</h3><p>${msg}</p></div>`;
+    footer.innerHTML = '彰濱秀傳紀念醫院 癌症中心';
+  }
+})();
+</script>
+</body>
+</html>
