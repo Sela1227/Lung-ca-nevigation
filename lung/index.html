@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.1.2</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.2.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -689,7 +689,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">V1.1.2 · System V2.3.3</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">V1.2.0 · System V2.4.0</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -980,7 +980,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">V1.1.2 · System V2.3.3</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">V1.2.0 · System V2.4.0</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1171,8 +1171,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.1.2';
-const SYSTEM_VERSION = 'V2.3.3';
+const MODULE_VERSION = 'V1.2.0';
+const SYSTEM_VERSION = 'V2.4.0';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1234,7 +1234,6 @@ const CFG = {
   checklist: [
     // phase:'basic' = 基礎檢查（分期前）, phase:'adv' = 進階檢查（分期後）
     // ── 01 初步評估 — 對齊本院指引 v12 初步評估 ──
-    {id:'c30',g:'01 — 初步評估',l:'病史及理學檢查（含體能狀況 + 體重減輕）', req:'all', phase:'basic'},
     {id:'c31',g:'01 — 初步評估',l:'胸部 X 光', req:'all', phase:'basic'},
     {id:'c1', g:'01 — 初步評估',l:'胸部電腦斷層，含腎上腺', req:'all', phase:'basic'},
     {id:'c14',g:'01 — 初步評估',l:'完全血球計數及血小板計數（CBC）', req:'all', phase:'basic'},
@@ -2092,8 +2091,8 @@ function getAdjuvantHTML(pstage, type, margin, actualTx){
   }
   function reOpChemoOrCCRT(){
     if(hasReSurg) return '再手術 + 化療';
-    if(hasCCRT) return '合併化放療';
-    return '再手術 + 化療 或 合併化放療';
+    if(hasCCRT) return '術後化放療';
+    return '再手術 + 化療 或 術後化放療';
   }
 
   if(s==='0' || s==='IA1' || s==='IA2' || s==='IA3'){
@@ -2124,11 +2123,11 @@ function getAdjuvantHTML(pstage, type, margin, actualTx){
   }
   if(s==='IIIA'){
     if(noMargin) return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> pStage ${s}</h4>
-      <p><b>邊緣(−)：</b>化療</p><p><b>邊緣(+)：</b>合併化放療</p><p style="font-size:12px;color:var(--text3)">← 請選擇切緣狀態</p></div>`;
+      <p><b>邊緣(−)：</b>化療</p><p><b>邊緣(+)：</b>術後化放療</p><p style="font-size:12px;color:var(--text3)">← 請選擇切緣狀態</p></div>`;
     if(isNeg) return `<div class="tx-box amber" style="margin:0"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> pStage ${s}，邊緣(−) — 輔助化療</h4>
       <p>建議術後輔助化療</p></div>`;
-    return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);margin-right:4px"></i> pStage ${s}，邊緣(+) — 合併化放療</h4>
-      <p>合併化放療 (CCRT)</p></div>`;
+    return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);margin-right:4px"></i> pStage ${s}，邊緣(+) — 術後化放療</h4>
+      <p>術後化放療 (CCRT)</p></div>`;
   }
   if(s==='IIIB' || s==='IIIC' || s==='IVA' || s==='IVB'){
     return `<div class="tx-box rose" style="border:2px solid var(--rose-border);margin:0"><h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);margin-right:4px"></i> Upstage pStage ${s}</h4>
@@ -2155,12 +2154,12 @@ function getAdjuvantSummary(pstage, margin, actualTx){
   }
   if(s==='IIB'){
     if(isNeg) return '術後輔助化療';
-    if(isPos) return hasReSurg?'再手術+化療':(tx.ccrt||tx.adj_ccrt)?'合併化放療':'再手術+化療 or CCRT';
+    if(isPos) return hasReSurg?'再手術+化療':(tx.ccrt||tx.adj_ccrt)?'術後化放療':'再手術+化療 or CCRT';
     return '化療';
   }
   if(s==='IIIA'){
     if(isNeg) return '術後輔助化療';
-    if(isPos) return '合併化放療 (CCRT)';
+    if(isPos) return '術後化放療 (CCRT)';
     return '化療';
   }
   if(s==='IIIB'||s==='IIIC'||s==='IVA'||s==='IVB') return `Upstage pStage ${s} — 重新評估`;
@@ -2503,8 +2502,9 @@ const TX_PHASES = [
       {id:'drug_ccrt',    label:'同步化放療 (CCRT)', link:'ccrt'},
     ]},
     {sub:'免疫', excl:true, items:[
-      {id:'io_chemo_combo',label:'免疫 + 化療'},
-      {id:'io_mono',       label:'免疫單藥'},
+      {id:'io_chemo_combo',     label:'免疫 + 化療'},
+      {id:'io_chemo_target',    label:'免疫 + 化療 + 標靶'},
+      {id:'io_mono',            label:'免疫單藥'},
     ]},
     {sub:'標靶', excl:true, items:[
       {id:'target_1l',     label:'一線標靶 TKI'},
@@ -2902,7 +2902,7 @@ function checkKPI(){
     } else if(broad === 'chemoRT'){
       if(!tx.surgery && !tx.ccrt && !tx.adj_ccrt && !tx.neoadj_ccrt && !tx.seq_crt && !tx.neoadj_io_chemo && !tx.neoadj_chemo){ stratOk=false; stratDetail='建議手術或化放療'; }
     } else if(broad === 'systemic'){
-      if(!tx.chemo_alone && !tx.target_1l && !tx.io_chemo_combo && !tx.io_mono && !tx.palliative){
+      if(!tx.chemo_alone && !tx.target_1l && !tx.target_chemo && !tx.io_chemo_combo && !tx.io_chemo_target && !tx.io_mono && !tx.palliative){
         stratOk=false; stratDetail='建議全身治療';
       }
     }
