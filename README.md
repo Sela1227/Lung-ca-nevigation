@@ -1,4 +1,19 @@
-# Cancer Navigation V2.8.2 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.3 — 彰濱秀傳癌症中心
+
+## V2.8.3 — 2026-04-29
+**QR 修復 + 健保藥物總整理頁**
+- **QR 產生失敗修復**：之前用 `qrcodejs@1.0.0`（davidshimjs），中文超過某長度就「QR 產生失敗」（lib 內部沒處理多位元組）
+  - 換成 `qrcode-generator@2.0.4`（kazuhikoarase）
+  - 中文先 `unescape(encodeURIComponent(text))` 轉 UTF-8 byte string，再用 Byte mode 編碼
+  - 改用 `createImgTag()` 而非 canvas（更兼容）
+- **新增 `lung/drugs.html`**：健保肺癌藥物總整理頁
+  - 28 種藥物全收（標靶 / 免疫 / 化療 / 其他）
+  - 即時搜尋（中英文藥名 + 適應症 + 規範文字）
+  - 篩選 chips：類別 / 健保 vs 自費
+  - 每張卡顯示：英中文名 / 標籤 badge / 適應症 / 線數 / 健保規範摘要
+  - 資料來源：健保第 9 章 + 附件 2 修訂對照表 + lung.html 既有 DRUGS 物件
+- **portal 加「快速工具」入口**：在角色選擇下方新增區塊，連到 drugs.html
+- **模組**：lung V1.6.2 → V1.6.3；系統 V2.8.2 → V2.8.3
 
 ## V2.8.2 — 2026-04-29
 **民眾版補回照護團隊選擇 + QR 識別碼**

@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
 <title>肺癌路徑查詢 — 彰濱秀傳癌症中心</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/qrcode.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -1044,9 +1044,20 @@ function openQR(){
   const payload = buildQRPayload();
   document.getElementById('qr-meta').textContent = payload;
   try{
-    new QRCode(canvas, { text: payload, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+    // qrcode-generator 2.0.4: 中文需先轉 UTF-8 bytes 才能正確編碼
+    // 用 unescape(encodeURIComponent(...)) 將 UTF-8 string 轉成 byte string
+    const utf8 = unescape(encodeURIComponent(payload));
+    const qr = qrcode(0, 'M');  // typeNumber=0 自動偵測尺寸；correction level M
+    qr.addData(utf8, 'Byte');
+    qr.make();
+    // cellSize=5 → 約 200px (依 QR version 不同可能略小或大)
+    canvas.innerHTML = qr.createImgTag(5, 8);
+    // 強制 img max-width 適應 modal
+    const img = canvas.querySelector('img');
+    if(img){ img.style.maxWidth = '100%'; img.style.height = 'auto'; img.style.imageRendering = 'pixelated'; }
   } catch(e){
-    canvas.textContent = 'QR 產生失敗';
+    console.error('QR generate error:', e);
+    canvas.innerHTML = '<div style="padding:20px;color:var(--red);font-size:12px">QR 產生失敗：'+escapeHtml(e.message||String(e))+'</div>';
   }
 }
 function closeQR(){ document.getElementById('qr-modal').style.display='none'; }

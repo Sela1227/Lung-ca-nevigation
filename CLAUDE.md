@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.2"
+VERSION="2.8.3"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -26,6 +26,7 @@ cp portal.html "${WORK}/${NAME}/index.html"
 cp lung.html "${WORK}/${NAME}/lung/index.html"
 cp edu.html "${WORK}/${NAME}/lung/edu.html"
 cp patient.html "${WORK}/${NAME}/lung/patient.html"
+cp drugs.html "${WORK}/${NAME}/lung/drugs.html"
 cp README.md CLAUDE.md "${WORK}/${NAME}/"
 
 cd "${WORK}"
@@ -121,12 +122,14 @@ node --check /tmp/j.js
 | QR 掃碼頁 | `lung/edu.html` |
 | Portal 角色選擇+癌別列表 | `portal.html` 的 `CANCERS` 陣列 + `selectRole()` |
 | 民眾版健保藥物清單 | `patient.html` 的 `DRUGS` 物件 |
+| 健保藥物總整理頁（V2.8.3+） | `lung/drugs.html` 的 `ALL_DRUGS` 陣列 |
 | 民眾版治療路徑邏輯 | `patient.html` 的 `buildPath()` 函式 |
 | 民眾版 TNM 計算（V2.8.0+） | `patient.html` 的 `computeAJCC()` 與 `stageToCategory()` |
 | 民眾版 TNM 簡化/進階按鈕組 | `patient.html` 第 250 行 `#p-q2` 區塊 + `pickTNM()` / `toggleTNMMode()` |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容 | `patient.html` 的 `buildQRPayload()` 函式 |
+| QR 編碼方式（V2.8.3+） | `patient.html` 的 `openQR()` 函式（用 qrcode-generator + UTF-8 byte mode）|
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -180,16 +183,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.3 | V1.6.3 | 2026-04-29 | QR 中文 fail 修復（換 qrcode-generator + UTF-8 byte mode）+ drugs.html 健保藥物總整理頁 BUG-19 |
 | V2.8.2 | V1.6.2 | 2026-04-29 | 民眾版補回照護團隊可選（同步 CFG.team.depts）+ QR modal（hero 按鈕觸發）BUG-18 |
 | V2.8.1 | V1.6.1 | 2026-04-29 | 民眾版徹底改成真一頁式（100dvh + flex 鎖屏）；header/Q1/Q2/Q3/總覽全面重構排版 BUG-17 |
 | V2.8.0 | V1.6.0 | 2026-04-29 | 民眾版 Q2 改 TNM 輸入(簡化+進階) + 藥物視覺從附註升級為主角 BUG-16 |
 | V2.7.0 | V1.5.0 | 2026-04-29 | 民眾版重寫(一問一頁) + 健保藥物資料庫整合 + Chart.js 語法錯修復 + rAF 卡頓優化 BUG-14、BUG-15 |
 | V2.6.1 | V1.4.1 | 2026-04-07 | computeAJCC N2a/N2b 修正（AJCC 9th 對齊 NCCN v3.2026）BUG-13 |
-| V2.6.0 | V1.4.0 | 2026-04-07 | 民眾版改為下拉式路徑查詢器（已被 V2.7.0 取代）|
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-18）
+## 六、踩過的坑（BUG-01 ~ BUG-19）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -297,6 +300,17 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
   5. 選醫師為「選填」— 民眾不一定回診過，不該強制
 - 教訓：**鎖屏 layout 不能藉口砍功能**。漸進式揭露（accordion / modal）是兼顧「畫面緊湊」與「資訊完整」的標準做法。下次再做類似重構，先列「不能砍」的功能清單再開始
 
+### #19 (lung V1.6.3 / V2.8.3)：QR 中文超出長度時 fail
+- 症狀：Sela 截圖顯示 QR modal 出現「QR 產生失敗」字樣，payload 是中英混合 ~73 字元
+- 原因：原本用 `qrcodejs@1.0.0`（davidshimjs/qrcodejs），這 lib 對多位元組字元（中文每字 3 byte）處理不完整，超過某長度時 silent fail 然後我們的 try/catch 顯示「QR 產生失敗」
+- 做法：
+  1. CDN 換成 `qrcode-generator@2.0.4`（kazuhikoarase）— 廣泛使用且穩定，315 dependents
+  2. API 改：`const qr = qrcode(0, 'M'); qr.addData(utf8, 'Byte'); qr.make(); el.innerHTML = qr.createImgTag(5, 8);`
+  3. **關鍵**：中文要先 `unescape(encodeURIComponent(text))` 轉成 UTF-8 byte string，再用 `'Byte'` mode 指定。否則中文會被當成 Latin-1 編碼出亂碼或 fail
+  4. 用 `createImgTag()` 直接產 `<img>` element（base64 GIF）而非 canvas — 兼容性更好，列印也能保留
+- QR 容量：Version 15 (77x77) M-level 容量 535 bytes；115 byte 的 payload 完全不是問題（先前 fail 是 lib bug 不是容量問題）
+- 教訓：**選 JS lib 看 dependents 數，不是 npm 名稱看起來像哪個**。`qrcodejs` (davidshimjs) 跟 `qrcode-generator` (kazuhikoarase) 名字相似但維護完全不同。下次選 cdn lib 先 web_search 看現代版本與下載量
+
 ---
 
 ## 七、擴充新癌別
@@ -314,14 +328,14 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證** — V2.8.2 動了總覽頁 layout（hero 加 QR 按鈕、團隊變成 accordion、QR 變 modal）。Sela 應在手機 + iPad + 桌機都試一輪：(a) 總覽頁是否仍能一屏裝下 (b) 三科展開時 strip 是否優雅捲動 (c) QR modal 在小螢幕關得掉嗎 (d) 醫師選了之後 row 收合的動畫順暢嗎
-2. 民眾版藥物步驟 — Sela 逐條 review `DRUGS` 物件每個 step 的中英文藥名與 note 文字
+1. **GitHub Pages 部署實機驗證** — V2.8.3 修了 QR + 加了 drugs.html。Sela 應在手機 + iPad + 桌機都試一輪：(a) QR 中英混合 payload 能正確掃描 (b) drugs.html 搜尋與篩選順暢嗎 (c) drugs.html 在小螢幕排版正常嗎
+2. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字，特別是健保事審條件（健保署公告隨時可能調整）
 3. 新增第二個癌別（頭頸或食道）— 模板已穩定，可開始
-4. 民眾版 TEAM 同步機制 — 目前 `patient.html` 的 `TEAM` 是手動從 `lung.html` `CFG.team.depts` 抄過來，未來 lung 改了得記得同步。可考慮兩個檔案共用一個 `team.js`（但會破壞「單一 HTML」原則，先記在這裡）
+4. 民眾版 TEAM 同步機制觀察（patient.html 手動同步 lung CFG.team.depts；如果 lung 改名單就要記得跟）
 5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
 
 ---
 
 ## 九、一句話總結
 
-V2.8.2 補回兩件 V2.8.1 重構時砍掉的東西：照護團隊（同步 lung.html `CFG.team.depts`，三科各自展開選醫師）+ QR 識別碼（hero 右上按鈕 → modal 全屏）。設計用「漸進式揭露」處理新增功能，不增高總覽頁。14/14 ajcc 測試保持綠。下版第一優先還是 Sela 在實機驗收。
+V2.8.3 兩件事：QR 中文 fail bug 修復（換 `qrcode-generator@2.0.4` + UTF-8 byte mode）；新增 `lung/drugs.html` 健保肺癌藥物總整理頁（28 種藥可搜尋與篩選）。portal 加快速工具入口連到藥物總整理。下版第一優先還是實機驗收 + Sela 逐條 review drugs 資料。
