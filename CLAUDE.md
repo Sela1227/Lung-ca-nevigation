@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.1"
+VERSION="2.8.2"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -125,6 +125,8 @@ node --check /tmp/j.js
 | 民眾版 TNM 計算（V2.8.0+） | `patient.html` 的 `computeAJCC()` 與 `stageToCategory()` |
 | 民眾版 TNM 簡化/進階按鈕組 | `patient.html` 第 250 行 `#p-q2` 區塊 + `pickTNM()` / `toggleTNMMode()` |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
+| 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
+| 民眾版 QR 內容 | `patient.html` 的 `buildQRPayload()` 函式 |
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -178,16 +180,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.2 | V1.6.2 | 2026-04-29 | 民眾版補回照護團隊可選（同步 CFG.team.depts）+ QR modal（hero 按鈕觸發）BUG-18 |
 | V2.8.1 | V1.6.1 | 2026-04-29 | 民眾版徹底改成真一頁式（100dvh + flex 鎖屏）；header/Q1/Q2/Q3/總覽全面重構排版 BUG-17 |
 | V2.8.0 | V1.6.0 | 2026-04-29 | 民眾版 Q2 改 TNM 輸入(簡化+進階) + 藥物視覺從附註升級為主角 BUG-16 |
 | V2.7.0 | V1.5.0 | 2026-04-29 | 民眾版重寫(一問一頁) + 健保藥物資料庫整合 + Chart.js 語法錯修復 + rAF 卡頓優化 BUG-14、BUG-15 |
 | V2.6.1 | V1.4.1 | 2026-04-07 | computeAJCC N2a/N2b 修正（AJCC 9th 對齊 NCCN v3.2026）BUG-13 |
 | V2.6.0 | V1.4.0 | 2026-04-07 | 民眾版改為下拉式路徑查詢器（已被 V2.7.0 取代）|
-| V2.5.1 | V1.3.1 | 2026-04-07 | 全系統正黑體；民眾版姓名可跳；FA→SVG |
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-17）
+## 六、踩過的坑（BUG-01 ~ BUG-18）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -284,6 +286,17 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
   9. 移除 patient footer（佔版面又多餘）
 - 教訓：**「一問一頁」不等於「一屏放得下」**。要鎖屏，必須 (a) `100dvh` + `overflow:hidden` (b) 每層都 `flex:1+min-height:0`（少了 min-height:0，flex child 會被內容撐爆） (c) 唯一允許 scroll 的地方要刻意設計（這版只有藥物清單）。下次新癌別模組複製時，這個「鎖屏 layout」要保留
 
+### #18 (lung V1.6.2 / V2.8.2)：V2.8.1 重構時把醫師選擇與 QR 砍掉
+- 症狀：Sela 反映「民眾版的照護團隊沒地方可以選」「應該要生 QR」
+- 原因：V2.8.1 只想著「鎖屏不要滾」就砍了功能，忘了原本 V2.7.0 有 QR 區塊（雖然視覺位置不對）；醫師選擇從來沒做過
+- 做法：
+  1. 同步 `lung.html` 的 `CFG.team.depts` 到 `patient.html` 的 `TEAM` 常數（手動，無外部依賴）
+  2. 團隊改成「漸進式揭露」— 三科各一個 dept-head，預設只展開第一科。選了之後 row 收合並顯示醫師名
+  3. QR 不增高總覽頁：放成 hero 右上的小按鈕 → modal 全屏顯示
+  4. QR payload 帶完整資訊（Stage/TNM/突變/治療方向/各科主治），沒選的欄位自動省略
+  5. 選醫師為「選填」— 民眾不一定回診過，不該強制
+- 教訓：**鎖屏 layout 不能藉口砍功能**。漸進式揭露（accordion / modal）是兼顧「畫面緊湊」與「資訊完整」的標準做法。下次再做類似重構，先列「不能砍」的功能清單再開始
+
 ---
 
 ## 七、擴充新癌別
@@ -301,14 +314,14 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證** — V2.8.0 改了民眾版 Q2 整頁 + 藥物視覺。Sela 應在手機 + iPad + 桌機都試一輪：(a) TNM 簡化模式跑一遍 (b) 切到進階模式選 N2a/N2b 確認 stage 跟著變 (c) 「我不知道 TNM」fallback 是否合理 (d) 總覽頁的藥物清單是不是「看得到」
-2. 民眾版藥物步驟 — Sela 逐條 review `DRUGS` 物件每個 step 的中英文藥名與 note 文字（健保事審條件可能跟想像中有出入）
+1. **GitHub Pages 部署實機驗證** — V2.8.2 動了總覽頁 layout（hero 加 QR 按鈕、團隊變成 accordion、QR 變 modal）。Sela 應在手機 + iPad + 桌機都試一輪：(a) 總覽頁是否仍能一屏裝下 (b) 三科展開時 strip 是否優雅捲動 (c) QR modal 在小螢幕關得掉嗎 (d) 醫師選了之後 row 收合的動畫順暢嗎
+2. 民眾版藥物步驟 — Sela 逐條 review `DRUGS` 物件每個 step 的中英文藥名與 note 文字
 3. 新增第二個癌別（頭頸或食道）— 模板已穩定，可開始
-4. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-5. 民眾版新增「我的藥物 vs 健保條件對照表」獨立頁（Sela 沒明確要求，但若實機驗收時發現需要可補）
+4. 民眾版 TEAM 同步機制 — 目前 `patient.html` 的 `TEAM` 是手動從 `lung.html` `CFG.team.depts` 抄過來，未來 lung 改了得記得同步。可考慮兩個檔案共用一個 `team.js`（但會破壞「單一 HTML」原則，先記在這裡）
+5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
 
 ---
 
 ## 九、一句話總結
 
-V2.8.1 處理 Sela 「還在滑動」的回報：徹底改成真一頁式（`100dvh` 鎖屏 + 多層 `flex:1; min-height:0`），Q1 改 2×2 grid、Q2 三 row 水平壓扁、Q3 改 3 欄 grid、總覽分三區（hero/藥物可捲/底部 strip），header 把 progress 收進去省一行。每頁高度一致、桌機手機都不需要滾。功能無動，14/14 ajcc 測試保持綠。下版第一優先還是 Sela 在實機驗收 — 這次「真的不用滑了」嗎。
+V2.8.2 補回兩件 V2.8.1 重構時砍掉的東西：照護團隊（同步 lung.html `CFG.team.depts`，三科各自展開選醫師）+ QR 識別碼（hero 右上按鈕 → modal 全屏）。設計用「漸進式揭露」處理新增功能，不增高總覽頁。14/14 ajcc 測試保持綠。下版第一優先還是 Sela 在實機驗收。

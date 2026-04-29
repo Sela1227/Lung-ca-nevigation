@@ -174,19 +174,39 @@ body{
 .sum-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
 
 /* hero band: 2-col on desktop, stacked on mobile */
-.sum-hero{flex-shrink:0;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;border-radius:13px;padding:11px 14px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.sum-hero{flex-shrink:0;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;border-radius:13px;padding:11px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
 @media(max-width:380px){
-  .sum-hero{grid-template-columns:1fr;gap:6px;text-align:center}
+  .sum-hero{grid-template-columns:auto 1fr auto;gap:8px;padding:9px 10px}
+  .sum-hero .stage-val{font-size:24px}
 }
 .sum-hero .l-stage{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border-right:1px solid rgba(255,255,255,.22);padding-right:14px}
 @media(max-width:380px){
-  .sum-hero .l-stage{border-right:none;border-bottom:1px solid rgba(255,255,255,.22);padding-right:0;padding-bottom:6px;align-items:center}
+  .sum-hero .l-stage{padding-right:8px}
 }
 .sum-hero .stage-lbl{font-size:9.5px;opacity:.85;letter-spacing:1.5px;font-weight:700}
 .sum-hero .stage-val{font-size:30px;font-weight:900;letter-spacing:.5px;line-height:1}
 .sum-hero .r-info{display:flex;flex-direction:column;gap:3px;min-width:0}
 .sum-hero .pw-lbl{font-size:13px;font-weight:800;line-height:1.3}
-.sum-hero .meta{font-size:10.5px;opacity:.85;line-height:1.4}
+.sum-hero .meta{font-size:10.5px;opacity:.85;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qr-btn{
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);color:#fff;
+  border-radius:10px;padding:7px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;
+  font-family:inherit;font-size:9.5px;font-weight:800;letter-spacing:1px;line-height:1.1;
+  transition:background .2s,transform .12s;flex-shrink:0;
+}
+.qr-btn:hover{background:rgba(255,255,255,.28)}
+.qr-btn:active{transform:scale(.94)}
+
+/* QR modal */
+.qr-modal{position:fixed;inset:0;background:rgba(15,30,40,.55);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:20px;animation:fadeIn .2s ease}
+.qr-modal-box{background:#fff;border-radius:16px;padding:18px 18px 14px;max-width:300px;width:100%;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center}
+.qr-close{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;color:var(--tx2);display:flex;align-items:center;justify-content:center}
+.qr-close:hover{background:var(--bdr)}
+.qr-title{font-size:14px;font-weight:900;color:var(--tx);letter-spacing:.5px;margin-bottom:10px}
+.qr-canvas-wrap{padding:10px;background:var(--bg);border-radius:10px;display:flex;justify-content:center;margin-bottom:10px}
+.qr-canvas-wrap canvas,.qr-canvas-wrap img{border-radius:6px;background:#fff;padding:6px}
+.qr-meta{font-size:11px;color:var(--tx2);font-weight:700;line-height:1.5;margin-bottom:6px;word-break:break-all}
+.qr-foot{font-size:10px;color:var(--tx3);line-height:1.5}
 
 /* Drug list — main scrollable area */
 .sum-drugs{
@@ -224,10 +244,34 @@ body{
 @media(max-width:480px){
   .sum-strip{grid-template-columns:1fr}
 }
-.strip-card{background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:9px 11px;display:flex;flex-direction:column;gap:5px;min-height:0}
+.strip-card{background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:9px 11px;display:flex;flex-direction:column;gap:5px;min-height:0;max-height:100%;overflow-y:auto}
+.strip-card::-webkit-scrollbar{width:5px}
+.strip-card::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:99px}
 .strip-hd{font-size:11px;font-weight:900;color:var(--tx);letter-spacing:.3px;display:flex;align-items:center;gap:6px;padding-bottom:5px;border-bottom:1px solid var(--bdr2)}
 .strip-hd .ic{width:18px;height:18px;border-radius:6px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .strip-hd.warn-hd .ic{background:var(--amber-bg);color:var(--amber)}
+.strip-hd-hint{font-size:9.5px;color:var(--tx3);font-weight:600;letter-spacing:0;margin-left:auto}
+
+/* Team rows — collapsible per dept */
+.tm-dept{border-bottom:1px dashed var(--bdr2)}
+.tm-dept:last-of-type{border-bottom:none}
+.tm-dept-head{display:flex;justify-content:space-between;align-items:center;padding:6px 0;cursor:pointer;font-size:11px;gap:6px}
+.tm-dept-head:hover{color:var(--teal-d)}
+.tm-dept-head .l{color:var(--tx2);flex:1;min-width:0}
+.tm-dept-head .l b{color:var(--tx);font-weight:800}
+.tm-dept-head .l .h{color:var(--tx3);font-weight:600;font-size:10px;margin-left:4px}
+.tm-dept-head .v{font-weight:800;color:var(--teal-d);font-size:11px}
+.tm-dept-head .v.empty{color:var(--tx3);font-weight:600}
+.tm-dept-head .chev{width:14px;height:14px;color:var(--tx3);transition:transform .2s;flex-shrink:0}
+.tm-dept.open .tm-dept-head .chev{transform:rotate(90deg);color:var(--teal)}
+.tm-doctors{display:none;flex-wrap:wrap;gap:4px;padding:4px 0 8px}
+.tm-dept.open .tm-doctors{display:flex}
+.tm-doc-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--tx);transition:all .12s}
+.tm-doc-btn:hover{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-d)}
+.tm-doc-btn.selected{background:var(--teal);border-color:var(--teal);color:#fff}
+.tm-doc-btn.clear{border-style:dashed;color:var(--tx3);font-weight:600}
+.tm-doc-btn.clear:hover{color:var(--red);border-color:var(--red);background:var(--red-bg)}
+
 .strip-tm-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
 .strip-tm-row .l{color:var(--tx2)}
 .strip-tm-row .v{font-weight:800;color:var(--tx)}
@@ -524,6 +568,10 @@ body{
         <div class="pw-lbl" id="sum-pw">—</div>
         <div class="meta" id="sum-meta">—</div>
       </div>
+      <button class="qr-btn" onclick="openQR()" title="顯示 QR 識別碼">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14h-1M14 21h7M17 18v3"/></svg>
+        <span>QR</span>
+      </button>
     </div>
 
     <!-- drug list (scrollable area) -->
@@ -546,13 +594,12 @@ body{
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.4"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M14 19a4 4 0 0 1 7 0"/></svg>
           </span>
           照護團隊
+          <span class="strip-hd-hint">點科別選主治</span>
         </div>
-        <div class="strip-tm-row"><span class="l">胸腔外科</span><span class="v">主治醫師</span></div>
-        <div class="strip-tm-row"><span class="l">胸腔內科</span><span class="v">主治醫師</span></div>
-        <div class="strip-tm-row"><span class="l">放射腫瘤科</span><span class="v">主治醫師</span></div>
+        <div id="team-list"></div>
         <div class="strip-cm">
           <span class="l">個案管理師</span>
-          <span class="v">郭美伶</span>
+          <span class="v" id="cm-name">—</span>
         </div>
       </div>
 
@@ -570,6 +617,21 @@ body{
   </div>
 </div>
 
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- QR Modal (shown on demand from summary)      -->
+<!-- ════════════════════════════════════════════ -->
+<div class="qr-modal" id="qr-modal" onclick="closeQRBackdrop(event)" style="display:none">
+  <div class="qr-modal-box">
+    <button class="qr-close" onclick="closeQR()" title="關閉">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="qr-title">您的隨身識別</div>
+    <div class="qr-canvas-wrap"><div id="qr-canvas"></div></div>
+    <div class="qr-meta" id="qr-meta">—</div>
+    <div class="qr-foot">掃描可在他處快速查閱您的治療路徑摘要</div>
+  </div>
 </div>
 
 <!-- ════════════════════════════════════════════ -->
@@ -596,7 +658,7 @@ body{
 /* ═══════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════ */
-const S = { type:'', t:'', n:'', m:'', stage:'', stageCat:'', mut:'', code:'', name:'' };
+const S = { type:'', t:'', n:'', m:'', stage:'', stageCat:'', mut:'', code:'', name:'', consult:{} };
 let stepIdx = 0;
 let tnmAdv = false;
 const PAGES = ['p-q1','p-q2','p-q3','p-sum'];
@@ -649,6 +711,19 @@ function stageToCategory(stage){
 function mutNeeded(){
   return (S.type==='NSCLC_NS' || S.type==='NSCLC_SQ') && (S.stageCat==='LOCAL' || S.stageCat==='META');
 }
+
+/* ═══════════════════════════════════════════════════
+   CARE TEAM — 同步 lung.html CFG.team.depts
+   注意：胸腔內科 / 血腫科 在 lung 是合在一個 dept，醫師混排
+═══════════════════════════════════════════════════ */
+const TEAM = {
+  depts: [
+    {id:'surgery',  name:'胸腔外科',         hint:'手術評估', doctors:['李佳穎','黃榆涵']},
+    {id:'medicine', name:'胸腔內科 / 血腫科', hint:'擇一即可', doctors:['張竣期','張正雄','吳敬炫','劉大智']},
+    {id:'radonc',   name:'放射腫瘤科',       hint:'放療評估', doctors:['熊敬業','劉育昌','林伯儒']},
+  ],
+  caseManager: { name:'郭美伶', title:'個案管理師' },
+};
 
 /* ═══════════════════════════════════════════════════
    NHI DRUG DATABASE
@@ -894,6 +969,89 @@ function renderSummary(){
   } else {
     warnEl.innerHTML = r.warns.map(w=>`<div class="strip-warn">${escapeHtml(w)}</div>`).join('');
   }
+
+  // team + case manager
+  renderTeam();
+  document.getElementById('cm-name').textContent = TEAM.caseManager.name;
+}
+
+/* ─── Team picker ─── */
+function renderTeam(){
+  const el = document.getElementById('team-list');
+  if(!el) return;
+  const html = TEAM.depts.map((d,i)=>{
+    const picked = S.consult[d.id] || '';
+    // 預設第一科展開（其他科收合，避免撐爆版面）
+    const open = !picked && i===0;
+    const docBtns = d.doctors.map(name=>
+      `<button type="button" class="tm-doc-btn${name===picked?' selected':''}" onclick="pickDoctor('${d.id}','${escapeHtml(name)}')">${escapeHtml(name)}</button>`
+    ).join('');
+    const clearBtn = picked
+      ? `<button type="button" class="tm-doc-btn clear" onclick="pickDoctor('${d.id}','')">清除</button>`
+      : '';
+    return `<div class="tm-dept${open?' open':''}" data-id="${d.id}">
+      <div class="tm-dept-head" onclick="toggleDept('${d.id}')">
+        <span class="l"><b>${escapeHtml(d.name)}</b><span class="h">${escapeHtml(d.hint||'')}</span></span>
+        <span class="v ${picked?'':'empty'}">${picked ? escapeHtml(picked) : '尚未選擇'}</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div class="tm-doctors">${docBtns}${clearBtn}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function toggleDept(id){
+  const el = document.querySelector(`.tm-dept[data-id="${id}"]`);
+  if(el) el.classList.toggle('open');
+}
+function pickDoctor(deptId, name){
+  if(name) S.consult[deptId] = name;
+  else delete S.consult[deptId];
+  renderTeam();
+  // 收合該科展開區（讓使用者看到結果，不浪費版面）
+  if(name){
+    setTimeout(()=>{
+      const el = document.querySelector(`.tm-dept[data-id="${deptId}"]`);
+      if(el) el.classList.remove('open');
+    }, 200);
+  }
+}
+
+/* ─── QR (always-on, modal triggered) ─── */
+function buildQRPayload(){
+  const r = buildPath();
+  const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
+  const parts = ['肺癌路徑'];
+  if(S.code) parts.push(S.code);
+  if(S.name) parts.push(S.name);
+  parts.push('Stage ' + stageDisplay());
+  if(tnmStr) parts.push(tnmStr);
+  if(S.mut && S.mut!=='NONE') parts.push(mutDisplay(S.mut));
+  parts.push(r.pwTxt);
+  // Doctors
+  const doctors = TEAM.depts
+    .filter(d=>S.consult[d.id])
+    .map(d=>`${d.name}:${S.consult[d.id]}`);
+  if(doctors.length) parts.push(...doctors);
+  return parts.join(' | ');
+}
+function openQR(){
+  const modal = document.getElementById('qr-modal');
+  modal.style.display = 'flex';
+  const canvas = document.getElementById('qr-canvas');
+  canvas.innerHTML = '';
+  const payload = buildQRPayload();
+  document.getElementById('qr-meta').textContent = payload;
+  try{
+    new QRCode(canvas, { text: payload, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  } catch(e){
+    canvas.textContent = 'QR 產生失敗';
+  }
+}
+function closeQR(){ document.getElementById('qr-modal').style.display='none'; }
+function closeQRBackdrop(ev){
+  if(ev.target.id === 'qr-modal') closeQR();
 }
 
 function stageDisplay(){
@@ -1048,7 +1206,7 @@ function goPrev(){
 }
 
 function restart(){
-  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.code=''; S.name='';
+  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.code=''; S.name=''; S.consult={};
   stepIdx=0; tnmAdv=false;
   document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn').forEach(b=>b.classList.remove('selected'));
   document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display='');
