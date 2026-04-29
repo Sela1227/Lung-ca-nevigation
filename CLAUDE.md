@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.7.0"
+VERSION="2.8.0"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -122,6 +122,9 @@ node --check /tmp/j.js
 | Portal 角色選擇+癌別列表 | `portal.html` 的 `CANCERS` 陣列 + `selectRole()` |
 | 民眾版健保藥物清單 | `patient.html` 的 `DRUGS` 物件 |
 | 民眾版治療路徑邏輯 | `patient.html` 的 `buildPath()` 函式 |
+| 民眾版 TNM 計算（V2.8.0+） | `patient.html` 的 `computeAJCC()` 與 `stageToCategory()` |
+| 民眾版 TNM 簡化/進階按鈕組 | `patient.html` 第 250 行 `#p-q2` 區塊 + `pickTNM()` / `toggleTNMMode()` |
+| 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -175,16 +178,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.0 | V1.6.0 | 2026-04-29 | 民眾版 Q2 改 TNM 輸入(簡化+進階) + 藥物視覺從附註升級為主角 BUG-16 |
 | V2.7.0 | V1.5.0 | 2026-04-29 | 民眾版重寫(一問一頁) + 健保藥物資料庫整合 + Chart.js 語法錯修復 + rAF 卡頓優化 BUG-14、BUG-15 |
 | V2.6.1 | V1.4.1 | 2026-04-07 | computeAJCC N2a/N2b 修正（AJCC 9th 對齊 NCCN v3.2026）BUG-13 |
 | V2.6.0 | V1.4.0 | 2026-04-07 | 民眾版改為下拉式路徑查詢器（已被 V2.7.0 取代）|
 | V2.5.1 | V1.3.1 | 2026-04-07 | 全系統正黑體；民眾版姓名可跳；FA→SVG |
 | V2.5.0 | V1.3.0 | 2026-04-07 | Portal 分版（醫護 vs 民眾）|
-| V2.4.0 | V1.2.0 | 2026-04-06 | 檢查移除病史；輔助→術後化放療；IO+化療+標靶 |
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-15）
+## 六、踩過的坑（BUG-01 ~ BUG-16）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -256,6 +259,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
   6. `dots` 改靜態 7 點 + class toggle，不再每次 innerHTML 重建
 - 教訓：**單檔 250KB+ 純前端，重渲染必須跨 frame 拆**。下次新癌別模組拷貝肺癌時要保留這個模式
 
+### #16 (lung V1.6.0 / V2.8.0)：藥物視覺被當配角，民眾以為「沒有藥物清單」
+- 症狀：Sela 看 V2.7.0 民眾版總覽頁，回報「沒有看到藥物」。實測 `DRUGS` 物件、`buildPath()`、`renderTreatmentSteps()` 全都有跑、`#sum-tx` 也有 innerHTML
+- 原因：藥物 12.5px 灰色，跟「治療方向」14px 黑色擺一起，視覺上像附註不像主角；早期/局晚分支沒給 `s.line`，視覺斷裂
+- 做法（V2.8.0 完整套）：
+  1. 藥物獨立成 `.tx-drugs-box` 卡（淺青底 + 邊框 + 「適用藥物」標籤）
+  2. 英文名 14.5px 深青加粗、中文名獨立行 12.5px 灰
+  3. 早期/局晚/SCLC 三大分支補 `line` 屬性（線數標記）
+  4. 健保 badge 加粗放在 step title 開頭（從尾巴搬到前面）
+- 教訓：**民眾版的視覺層級跟醫護版不一樣**。醫護看到 12.5px 藥名是「正常的細節」，民眾看到 12.5px 是「不重要的附註」。對民眾，藥物清單必須是視覺主角、不能跟說明文字混在一起。下次再加任何「健保 / 自費 / 藥名」資訊到民眾版，都要套 `.tx-drugs-box` 模式
+
 ---
 
 ## 七、擴充新癌別
@@ -273,14 +286,14 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證** — V2.7.0 改了民眾版 + lung.html 渲染流程，必須在真實裝置上測。Sela 應在手機 + iPad + 桌機都試一輪：(a) 民眾版 4 階段流程 (b) 醫護版切換 pathway/summary 的卡頓有沒有改善 (c) 統計頁的 chart 有沒有真的渲染（因為 #14 修了之後是「第一次能渲染」而不是「修好渲染」）
+1. **GitHub Pages 部署實機驗證** — V2.8.0 改了民眾版 Q2 整頁 + 藥物視覺。Sela 應在手機 + iPad + 桌機都試一輪：(a) TNM 簡化模式跑一遍 (b) 切到進階模式選 N2a/N2b 確認 stage 跟著變 (c) 「我不知道 TNM」fallback 是否合理 (d) 總覽頁的藥物清單是不是「看得到」
 2. 民眾版藥物步驟 — Sela 逐條 review `DRUGS` 物件每個 step 的中英文藥名與 note 文字（健保事審條件可能跟想像中有出入）
-3. 新增第二個癌別（頭頸或食道）
-4. 民眾版 NSCLC 早期/局晚分支再切細：Stage I 跟 II 的手術範圍、IB 的高風險因子是否輔助化療，目前都打包在「早期」一條
-5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+3. 新增第二個癌別（頭頸或食道）— 模板已穩定，可開始
+4. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+5. 民眾版新增「我的藥物 vs 健保條件對照表」獨立頁（Sela 沒明確要求，但若實機驗收時發現需要可補）
 
 ---
 
 ## 九、一句話總結
 
-V2.7.0 三件大事：民眾版徹底重寫成「一問一頁、按鈕選取」並整合健保藥物資料庫；lung.html 修了 Chart.js 字串連寫的隱性語法錯（很可能就是「部分字消失」的元凶）；切頁渲染流程全面 rAF 化以解卡頓。下版第一優先是讓 Sela 在實機環境驗收 V2.7.0 的卡頓改善與民眾版 UX。
+V2.8.0 兩件事：民眾版 Q2 從「分期三選一」升級成完整 TNM 輸入（簡化按鈕 + 進階展開、即時算分期、全套搬移 BUG-13 修正）；藥物視覺從 12.5px 灰色附註升級成淺青底卡片 + 14.5px 加粗英文名（Sela V2.7.0 反映「看不到藥物」的根本問題其實是視覺層級）。下版第一優先是 Sela 在實機環境驗收 TNM 流程與藥物可見性。

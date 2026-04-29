@@ -72,6 +72,24 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,
 .btn-mini.selected b{color:var(--teal-d)}
 .btn-mini i{font-size:11px;color:var(--tx3);font-style:normal}
 
+/* ── TNM input rows ── */
+.tnm-block{margin-bottom:14px}
+.tnm-block:last-of-type{margin-bottom:8px}
+.tnm-lbl{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-left:2px}
+.tnm-lbl .tnm-letter{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--teal);color:#fff;font-size:13px;font-weight:900;letter-spacing:0;flex-shrink:0}
+.tnm-lbl .tnm-name{font-size:14px;font-weight:800;color:var(--tx)}
+.tnm-lbl .tnm-hint{font-size:11.5px;color:var(--tx3);margin-left:auto}
+
+/* Mini button override for TNM (smaller padding, label below) */
+.tnm-btn{padding:9px 4px}
+.tnm-btn b{font-size:13.5px;letter-spacing:.3px}
+.tnm-btn i{font-size:10.5px;line-height:1.3;display:block;margin-top:1px}
+
+/* Stage preview box */
+.stage-preview{background:var(--teal-bg);border:1.5px solid var(--teal-bdr);border-radius:11px;padding:10px 14px;margin-top:6px;display:flex;align-items:center;justify-content:space-between}
+.stage-pv-lbl{font-size:12px;font-weight:700;color:var(--teal-d);letter-spacing:1.5px}
+.stage-pv-val{font-size:22px;font-weight:900;color:var(--teal-d);letter-spacing:1px}
+
 /* ── Optional name/ID input row ── */
 .opt-fld{margin-top:14px;background:var(--bg);border:1px dashed var(--bdr);border-radius:10px;padding:10px 12px}
 .opt-fld-hint{font-size:11px;color:var(--tx3);margin-bottom:6px}
@@ -114,14 +132,21 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,
 .sum-card h3 .ico{width:26px;height:26px;border-radius:8px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
 /* Treatment steps (with NHI badges) */
-.tx-step{display:flex;gap:10px;padding:11px 0;border-bottom:1px dashed var(--bdr2);align-items:flex-start}
+.tx-step{padding:14px 0;border-bottom:1px dashed var(--bdr2)}
 .tx-step:last-child{border-bottom:none;padding-bottom:2px}
-.tx-step-n{width:24px;height:24px;border-radius:50%;background:var(--teal-bg);color:var(--teal);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid var(--teal-bdr);margin-top:1px}
-.tx-step-body{flex:1;min-width:0}
-.tx-step-title{font-size:14px;font-weight:700;color:var(--tx);line-height:1.5}
-.tx-step-drugs{font-size:12.5px;color:var(--tx2);margin-top:4px;line-height:1.7}
-.tx-step-note{font-size:11.5px;color:var(--tx3);margin-top:4px;line-height:1.5;background:var(--bg);padding:6px 9px;border-radius:7px;border-left:2px solid var(--teal)}
-.tx-step-line{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--teal);background:var(--teal-bg);padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.tx-step-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.tx-step-n{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tx-step-title{flex:1;font-size:14.5px;font-weight:800;color:var(--tx);line-height:1.5}
+/* The drug list — the star of the show */
+.tx-drugs-box{background:var(--teal-soft);border:1px solid var(--teal-bdr);border-radius:11px;padding:10px 12px;margin-top:6px}
+.tx-drugs-head{font-size:11px;font-weight:800;color:var(--teal-d);letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.tx-drug-item{padding:6px 0;border-bottom:1px dotted rgba(13,148,136,.2);display:flex;flex-direction:column;gap:1px}
+.tx-drug-item:last-child{border-bottom:none;padding-bottom:0}
+.tx-drug-item:first-child{padding-top:0}
+.tx-drug-en{font-size:14.5px;font-weight:800;color:var(--teal-d);letter-spacing:.2px;line-height:1.35}
+.tx-drug-zh{font-size:12.5px;color:var(--tx2);font-weight:600}
+.tx-step-note{font-size:12px;color:var(--tx2);margin-top:8px;line-height:1.6;background:#fff8eb;padding:7px 10px;border-radius:7px;border-left:3px solid var(--amber)}
+.tx-step-line{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--teal);background:#fff;padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:1px;border:1px solid var(--teal-bdr)}
 
 .b-nhi{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;background:var(--teal);color:#fff;padding:1px 6px;border-radius:4px;margin-right:4px;vertical-align:1px}
 .b-self{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;background:var(--self-bg);color:var(--self);padding:1px 6px;border-radius:4px;margin-right:4px;vertical-align:1px;border:1px solid #e6d3a7}
@@ -249,50 +274,94 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,
 <div class="page" id="p-q2">
   <div class="cd">
     <div class="cd-step">第 2 步</div>
-    <div class="cd-q">目前的疾病分期？</div>
-    <div class="cd-sub">主治醫師會告訴您屬於哪一期</div>
+    <div class="cd-q">您的 TNM 分期？</div>
+    <div class="cd-sub">主治醫師會告訴您 T、N、M 的數字。<a href="javascript:void(0)" onclick="toggleTNMMode()" id="tnm-toggle" style="color:var(--teal);font-weight:700;text-decoration:underline">切換進階模式</a></div>
 
-    <div class="btns" id="opt-stage">
-      <button type="button" class="btn-opt" data-val="EARLY" onclick="pick('stage', this)">
-        <span class="btn-opt-icon" style="background:#dcfce7;color:#15803d">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-        </span>
-        <span class="btn-opt-text">
-          <span class="btn-opt-title">早期（第 I — II 期）</span>
-          <span class="btn-opt-sub">腫瘤侷限於肺部，未或僅近處淋巴轉移</span>
-        </span>
-      </button>
-
-      <button type="button" class="btn-opt" data-val="LOCAL" onclick="pick('stage', this)">
-        <span class="btn-opt-icon" style="background:#fef3c7;color:#a16207">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="10" stroke-dasharray="2 2"/></svg>
-        </span>
-        <span class="btn-opt-text">
-          <span class="btn-opt-title">局部晚期（第 III 期）</span>
-          <span class="btn-opt-sub">擴及縱膈或對側淋巴，多以化放療為主</span>
-        </span>
-      </button>
-
-      <button type="button" class="btn-opt" data-val="META" onclick="pick('stage', this)">
-        <span class="btn-opt-icon" style="background:#fee2e2;color:#b91c1c">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><circle cx="6" cy="6" r="1.4"/><circle cx="18" cy="6" r="1.4"/><circle cx="5" cy="14" r="1.4"/><circle cx="18" cy="17" r="1.4"/><circle cx="9" cy="19" r="1.4"/><path d="m12 12-6-6M12 12l6-6M12 12l-7 2M12 12l6 5M12 12l-3 7" stroke-width="1.2"/></svg>
-        </span>
-        <span class="btn-opt-text">
-          <span class="btn-opt-title">轉移期（第 IV 期）</span>
-          <span class="btn-opt-sub">有遠端轉移，常以全身性藥物為主</span>
-        </span>
-      </button>
-
-      <button type="button" class="btn-opt muted" data-val="UNKNOWN" onclick="pick('stage', this)">
-        <span class="btn-opt-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-1.5 2-2.5 3.5"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
-        </span>
-        <span class="btn-opt-text">
-          <span class="btn-opt-title">不確定</span>
-          <span class="btn-opt-sub">會帶您看一般原則</span>
-        </span>
-      </button>
+    <!-- T row -->
+    <div class="tnm-block">
+      <div class="tnm-lbl">
+        <span class="tnm-letter">T</span>
+        <span class="tnm-name">原發腫瘤</span>
+        <span class="tnm-hint">腫瘤大小與侵犯範圍</span>
+      </div>
+      <!-- 簡化模式 -->
+      <div class="btns-grid4 tnm-simple" data-axis="t">
+        <button type="button" class="btn-mini tnm-btn" data-val="T1" onclick="pickTNM('t', this)"><b>T1</b><i>≤ 3 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T2" onclick="pickTNM('t', this)"><b>T2</b><i>3-5 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T3" onclick="pickTNM('t', this)"><b>T3</b><i>5-7 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T4" onclick="pickTNM('t', this)"><b>T4</b><i>&gt; 7 cm</i></button>
+      </div>
+      <!-- 進階模式 -->
+      <div class="btns-grid4 tnm-adv" data-axis="t" style="display:none">
+        <button type="button" class="btn-mini tnm-btn" data-val="Tis" onclick="pickTNM('t', this)"><b>Tis</b><i>原位</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T1mi" onclick="pickTNM('t', this)"><b>T1mi</b><i>微浸潤</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T1a" onclick="pickTNM('t', this)"><b>T1a</b><i>≤ 1 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T1b" onclick="pickTNM('t', this)"><b>T1b</b><i>1-2 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T1c" onclick="pickTNM('t', this)"><b>T1c</b><i>2-3 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T2a" onclick="pickTNM('t', this)"><b>T2a</b><i>3-4 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T2b" onclick="pickTNM('t', this)"><b>T2b</b><i>4-5 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T3" onclick="pickTNM('t', this)"><b>T3</b><i>5-7 cm</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="T4" onclick="pickTNM('t', this)"><b>T4</b><i>&gt; 7 cm</i></button>
+      </div>
     </div>
+
+    <!-- N row -->
+    <div class="tnm-block">
+      <div class="tnm-lbl">
+        <span class="tnm-letter">N</span>
+        <span class="tnm-name">淋巴結</span>
+        <span class="tnm-hint">淋巴轉移範圍</span>
+      </div>
+      <div class="btns-grid4 tnm-simple" data-axis="n">
+        <button type="button" class="btn-mini tnm-btn" data-val="N0" onclick="pickTNM('n', this)"><b>N0</b><i>無轉移</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N1" onclick="pickTNM('n', this)"><b>N1</b><i>同側肺門</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N2" onclick="pickTNM('n', this)"><b>N2</b><i>同側縱膈</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N3" onclick="pickTNM('n', this)"><b>N3</b><i>對側</i></button>
+      </div>
+      <div class="btns-grid4 tnm-adv" data-axis="n" style="display:none">
+        <button type="button" class="btn-mini tnm-btn" data-val="N0" onclick="pickTNM('n', this)"><b>N0</b><i>無轉移</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N1" onclick="pickTNM('n', this)"><b>N1</b><i>同側肺門</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N2a" onclick="pickTNM('n', this)"><b>N2a</b><i>單站縱膈</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N2b" onclick="pickTNM('n', this)"><b>N2b</b><i>多站縱膈</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="N3" onclick="pickTNM('n', this)"><b>N3</b><i>對側 / 鎖骨上</i></button>
+      </div>
+    </div>
+
+    <!-- M row -->
+    <div class="tnm-block">
+      <div class="tnm-lbl">
+        <span class="tnm-letter">M</span>
+        <span class="tnm-name">遠端轉移</span>
+        <span class="tnm-hint">是否轉移到其他器官</span>
+      </div>
+      <div class="btns-grid4 tnm-simple" data-axis="m">
+        <button type="button" class="btn-mini tnm-btn" data-val="M0" onclick="pickTNM('m', this)"><b>M0</b><i>無</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="M1" onclick="pickTNM('m', this)"><b>M1</b><i>有轉移</i></button>
+      </div>
+      <div class="btns-grid4 tnm-adv" data-axis="m" style="display:none">
+        <button type="button" class="btn-mini tnm-btn" data-val="M0" onclick="pickTNM('m', this)"><b>M0</b><i>無</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="M1a" onclick="pickTNM('m', this)"><b>M1a</b><i>胸內</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="M1b" onclick="pickTNM('m', this)"><b>M1b</b><i>單一遠端</i></button>
+        <button type="button" class="btn-mini tnm-btn" data-val="M1c" onclick="pickTNM('m', this)"><b>M1c</b><i>多處遠端</i></button>
+      </div>
+    </div>
+
+    <!-- Stage preview (顯示計算結果) -->
+    <div class="stage-preview" id="stage-preview" style="display:none">
+      <div class="stage-pv-lbl">推算分期</div>
+      <div class="stage-pv-val" id="stage-pv-val">—</div>
+    </div>
+
+    <!-- 不確定 fallback -->
+    <button type="button" class="btn-opt muted" style="margin-top:14px" onclick="setStageUnknown()">
+      <span class="btn-opt-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-1.5 2-2.5 3.5"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+      </span>
+      <span class="btn-opt-text">
+        <span class="btn-opt-title">不確定 TNM</span>
+        <span class="btn-opt-sub">先看一般治療原則</span>
+      </span>
+    </button>
   </div>
 </div>
 
@@ -463,7 +532,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,
   </button>
 </div>
 
-<div class="footer">彰濱秀傳紀念醫院 癌症中心 · Cancer Navigation V2.7.0</div>
+<div class="footer">彰濱秀傳紀念醫院 癌症中心 · Cancer Navigation V2.8.0</div>
 
 <script>
 'use strict';
@@ -471,12 +540,60 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,
 /* ═══════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════ */
-const S = { type:'', stage:'', mut:'', code:'', name:'' };
+const S = { type:'', t:'', n:'', m:'', stage:'', stageCat:'', mut:'', code:'', name:'' };
 let stepIdx = 0;
+let tnmAdv = false;
 const PAGES = ['p-q1','p-q2','p-q3','p-sum'];
-// "skipMut": when type=SCLC or stage=EARLY, mut step is unnecessary
+
+// AJCC 9th — same logic as lung.html (含 BUG-13 N2a/N2b 修正)
+function computeAJCC(t, n, m){
+  if(!t || !n || !m) return '';
+  // M1 dominates everything
+  if(m !== 'M0'){
+    if(m === 'M1a' || m === 'M1b') return 'IVA';
+    return 'IVB'; // M1, M1c
+  }
+  const isT1 = /^T1/.test(t), isT2 = /^T2/.test(t), isN2 = /^N2/.test(n);
+  if(n === 'N0'){
+    if(t === 'Tis') return '0';
+    if(t === 'T1mi' || t === 'T1a') return 'IA1';
+    if(t === 'T1b') return 'IA2';
+    if(t === 'T1c') return 'IA3';
+    if(t === 'T1') return 'IA';            // 簡化模式
+    if(t === 'T2a') return 'IB';
+    if(t === 'T2b') return 'IIA';
+    if(t === 'T2') return 'IB';            // 簡化模式（保守）
+    if(t === 'T3') return 'IIB';
+    if(t === 'T4') return 'IIIA';
+  }
+  if(n === 'N1'){
+    if(isT1 || isT2) return 'IIB';
+    if(t === 'T3' || t === 'T4') return 'IIIA';
+  }
+  if(n === 'N2a'){ if(isT1) return 'IIB'; if(isT2 || t==='T3') return 'IIIA'; if(t==='T4') return 'IIIB'; }
+  if(n === 'N2b'){ if(isT1) return 'IIIA'; if(isT2 || t==='T3') return 'IIIB'; if(t==='T4') return 'IIIB'; }
+  if(isN2){ // N2 fallback (簡化模式)
+    if(isT1 || isT2) return 'IIIA';
+    if(t === 'T3' || t === 'T4') return 'IIIB';
+  }
+  if(n === 'N3'){
+    if(isT1 || isT2) return 'IIIB';
+    if(t === 'T3' || t === 'T4') return 'IIIC';
+  }
+  return '';
+}
+
+// Stage → coarse category (drives buildPath logic which already uses EARLY/LOCAL/META)
+function stageToCategory(stage){
+  if(!stage) return '';
+  if(/^IV/.test(stage)) return 'META';
+  if(/^III/.test(stage)) return 'LOCAL';
+  if(/^(0|I|II)/.test(stage)) return 'EARLY';
+  return '';
+}
+
 function mutNeeded(){
-  return (S.type==='NSCLC_NS' || S.type==='NSCLC_SQ') && (S.stage==='LOCAL' || S.stage==='META');
+  return (S.type==='NSCLC_NS' || S.type==='NSCLC_SQ') && (S.stageCat==='LOCAL' || S.stageCat==='META');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -605,7 +722,7 @@ const DRUGS = {
    Returns:  {stage, pw, steps: [...], warns: [...]}
 ═══════════════════════════════════════════════════ */
 function buildPath(){
-  const t = S.type, st = S.stage, m = S.mut;
+  const t = S.type, st = S.stageCat, m = S.mut;
   // SCLC special handling
   if(t==='SCLC'){
     if(st==='META'){
@@ -613,7 +730,7 @@ function buildPath(){
         stageTxt:'SCLC 擴散期', pwTxt:'全身性化療 + 免疫治療',
         steps:[
           { title:'第一線：化療 + 免疫治療', nhi:'NHI', drugs: DRUGS.SCLC_ES.list, note: DRUGS.SCLC_ES.note, line:DRUGS.SCLC_ES.line },
-          { title:'CR/PR 反應佳：可考慮預防性全腦照射 (PCI)', note:'放射治療科會診評估' },
+          { title:'CR/PR 反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'放射治療科會診評估' },
           { title:'治療失敗或復發：二線', nhi:'NHI', drugs: DRUGS.SCLC_2L.list, note: DRUGS.SCLC_2L.note, line:DRUGS.SCLC_2L.line },
         ],
         warns:[
@@ -627,8 +744,8 @@ function buildPath(){
         stageTxt:'SCLC 侷限期', pwTxt:'同步化放療為主',
         steps:[
           { title:'同步化放療 (CCRT) — 主要治療', nhi:'NHI', drugs: DRUGS.SCLC_LS_CCRT.list, note: DRUGS.SCLC_LS_CCRT.note, line:DRUGS.SCLC_LS_CCRT.line },
-          { title:'極早期（T1-2 N0）可考慮先手術切除', note:'肺葉切除 + 淋巴結廓清' },
-          { title:'治療反應佳：預防性全腦照射 (PCI)', note:'25-30 Gy' },
+          { title:'極早期（T1-2 N0）可考慮先手術切除', line:'替代方案', note:'肺葉切除 + 淋巴結廓清' },
+          { title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'25-30 Gy' },
         ],
         warns:['年齡 ≥70 或 PS≥2：CCRT 可調整為序貫治療'],
       };
@@ -649,13 +766,13 @@ function buildPath(){
     return {
       stageTxt:`${typeLabel} 早期 (I-II)`, pwTxt:'手術切除為主',
       steps:[
-        { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清術', note:'NSCLC 早期治療首選' },
-        { title:'不適合手術：立體定位放射治療 (SBRT)', note:'限 T1-2 N0；70 歲以上或心肺功能不佳者考慮' },
-        { title:'術後輔助化療（若為 II 期或高風險 IB）', nhi:'NHI', drugs:[
+        { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清術', line:'主要治療', note:'NSCLC 早期治療首選' },
+        { title:'不適合手術：立體定位放射治療 (SBRT)', line:'替代手術', note:'限 T1-2 N0；70 歲以上或心肺功能不佳者考慮' },
+        { title:'術後輔助化療（若為 II 期或高風險 IB）', line:'術後輔助', nhi:'NHI', drugs:[
             {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
             {n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'},
           ], note:'4 個療程；高齡可改 Carboplatin。' },
-        ...(isNS ? [{ title:'EGFR 陽性者（IB-IIIA 術後）：Osimertinib 鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'術後鞏固至多 3 年（ADAURA 模式）。' }] : []),
+        ...(isNS ? [{ title:'EGFR 陽性者（IB-IIIA 術後）：Osimertinib 鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'術後鞏固至多 3 年（ADAURA 模式）。' }] : []),
       ],
       warns:[
         'IB 期具高風險因子（腫瘤≥4cm、血管侵犯、臟層肋膜侵犯）建議輔助化療',
@@ -666,12 +783,12 @@ function buildPath(){
 
   if(st==='LOCAL'){
     const baseSteps = [
-      { title:'同步化放療 (CCRT) — 主要治療', nhi:'NHI', drugs:[
+      { title:'同步化放療 (CCRT) — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
           {n:'Cisplatin + Etoposide + 胸部放療',z:'鉑類 + 滅必治 + RT'},
           {n:'Carboplatin + Paclitaxel + 胸部放療',z:'鉑類 + 紫杉醇 + RT'},
         ], note:'每次 2 Gy，總劑量 60–66 Gy' },
       { title:'CCRT 後無惡化：Durvalumab 免疫鞏固', nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note, line:DRUGS.CONSOLIDATION.line },
-      { title:'部分病人可考慮先手術 + 術後輔助治療', note:'手術評估須由胸腔外科決定' },
+      { title:'部分病人可考慮先手術 + 術後輔助治療', line:'替代方案', note:'手術評估須由胸腔外科決定' },
     ];
     return {
       stageTxt:`${typeLabel} 局部晚期 (III)`, pwTxt:'同步化放療為主，再加免疫鞏固',
@@ -766,19 +883,28 @@ function renderTreatmentSteps(steps){
     if(s.nhi==='NHI') badge = '<span class="b-nhi">健保</span>';
     else if(s.nhi==='SELF') badge = '<span class="b-self">自費</span>';
     let line = s.line ? `<span class="tx-step-line">${escapeHtml(s.line)}</span>` : '';
-    let drugs = '';
+    let drugsBox = '';
     if(s.drugs && s.drugs.length){
-      drugs = '<div class="tx-step-drugs">'
-        + s.drugs.map(d=>`• <b>${escapeHtml(d.n)}</b>${d.z?` <span style="color:var(--tx3);font-size:11.5px">（${escapeHtml(d.z)}）</span>`:''}`).join('<br>')
-        + '</div>';
+      const items = s.drugs.map(d=>{
+        const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
+        const zh = d.z ? `<div class="tx-drug-zh">${escapeHtml(d.z)}</div>` : '';
+        return `<div class="tx-drug-item">${en}${zh}</div>`;
+      }).join('');
+      drugsBox = `<div class="tx-drugs-box">
+        <div class="tx-drugs-head">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+          適用藥物
+        </div>
+        ${items}
+      </div>`;
     }
     let note = s.note ? `<div class="tx-step-note">${escapeHtml(s.note)}</div>` : '';
     return `<div class="tx-step">
-      <div class="tx-step-n">${i+1}</div>
-      <div class="tx-step-body">
+      <div class="tx-step-head">
+        <div class="tx-step-n">${i+1}</div>
         <div class="tx-step-title">${badge}${escapeHtml(s.title)}${line}</div>
-        ${drugs}${note}
       </div>
+      ${drugsBox}${note}
     </div>`;
   }).join('');
 }
@@ -802,6 +928,8 @@ function renderSummary(){
   document.getElementById('sum-pw').textContent = r.pwTxt;
   // meta line
   let meta = r.stageTxt;
+  const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
+  if(tnmStr) meta += ' · ' + tnmStr;
   if(S.mut && S.mut!=='NONE') meta += ' · ' + mutDisplay(S.mut);
   if(S.code) meta += ' · ' + S.code;
   if(S.name) meta += ' ' + S.name;
@@ -826,9 +954,10 @@ function renderSummary(){
 }
 
 function stageDisplay(){
-  if(S.stage==='EARLY') return 'I-II';
-  if(S.stage==='LOCAL') return 'III';
-  if(S.stage==='META')  return 'IV';
+  if(S.stage) return S.stage;                  // 完整分期，例如 IIIA
+  if(S.stageCat==='EARLY') return 'I-II';
+  if(S.stageCat==='LOCAL') return 'III';
+  if(S.stageCat==='META')  return 'IV';
   return '?';
 }
 function mutDisplay(m){
@@ -886,19 +1015,20 @@ function updateActBar(){
   // Back
   back.style.display = (stepIdx>0) ? '' : 'none';
 
-  // Skip — only visible on q1 (allow proceed without picking type if user really doesn't know)
-  // and on q3 (mut step is genuinely optional)
-  skip.style.display = (stepIdx===2) ? '' : 'none';
+  // Skip — q2 (TNM 全部不確定 → fallback) and q3 (mut optional)
+  skip.style.display = (stepIdx===1 || stepIdx===2) ? '' : 'none';
+  if(stepIdx===1) skip.textContent = '我不知道 TNM';
+  else if(stepIdx===2) skip.textContent = '略過此題';
 
-  // Next button: enabled when current step has answer, or when on q3 (skippable)
+  // Next button: enabled when current step has answer
   let canNext = false;
   if(stepIdx===0) canNext = !!S.type;
-  else if(stepIdx===1) canNext = !!S.stage;
+  else if(stepIdx===1) canNext = !!S.stageCat; // 任何方式：完整 TNM 算出 stage 或 fallback
   else if(stepIdx===2) canNext = !!S.mut;
 
   next.disabled = !canNext;
-  // On q3 (last step before summary), label changes to "看治療路徑"
-  const isLast = (stepIdx===2) || (stepIdx===1 && !mutNeeded());
+  // last step before summary
+  const isLast = (stepIdx===2) || (stepIdx===1 && !mutNeeded() && S.stageCat);
   next.innerHTML = isLast
     ? '看我的治療路徑 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>'
     : '下一題 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
@@ -906,9 +1036,8 @@ function updateActBar(){
 
 function pick(field, btn){
   const val = btn.dataset.val;
-  // Map field → state key
+  // Map field → state key (V2.8.0: stage 改由 pickTNM 處理)
   if(field==='type') S.type = val;
-  else if(field==='stage') S.stage = val;
   else if(field==='mut') S.mut = val;
   // Highlight selected within this question's group
   btn.parentElement.querySelectorAll('.btn-opt').forEach(b=>b.classList.remove('selected'));
@@ -922,14 +1051,65 @@ function pick(field, btn){
   setTimeout(()=>{ goNext(); }, 220);
 }
 
+// V2.8.0: TNM picker — toggle button selection, recompute stage, show preview
+function pickTNM(axis, btn){
+  const val = btn.dataset.val;
+  S[axis] = val;
+  // Highlight selected within both simple AND advanced rows for this axis
+  document.querySelectorAll(`.tnm-btn[data-axis-set]`); // (no-op selector to keep tools happy)
+  document.querySelectorAll(`[data-axis="${axis}"] .tnm-btn`).forEach(b=>{
+    b.classList.toggle('selected', b.dataset.val===val);
+  });
+  recomputeStage();
+}
+
+function recomputeStage(){
+  const stage = computeAJCC(S.t, S.n, S.m);
+  S.stage = stage;
+  S.stageCat = stageToCategory(stage);
+  const pv = document.getElementById('stage-preview');
+  const pvVal = document.getElementById('stage-pv-val');
+  if(stage){
+    pv.style.display = '';
+    pvVal.textContent = 'Stage ' + stage;
+  } else {
+    pv.style.display = 'none';
+  }
+  updateActBar();
+}
+
+function toggleTNMMode(){
+  tnmAdv = !tnmAdv;
+  document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display = tnmAdv ? 'none' : '');
+  document.querySelectorAll('.tnm-adv').forEach(el=>el.style.display = tnmAdv ? '' : 'none');
+  document.getElementById('tnm-toggle').textContent = tnmAdv ? '切換簡化模式' : '切換進階模式';
+  // Re-apply current selection highlights to whichever rows are now visible
+  ['t','n','m'].forEach(axis=>{
+    const v = S[axis];
+    if(!v) return;
+    document.querySelectorAll(`[data-axis="${axis}"] .tnm-btn`).forEach(b=>{
+      b.classList.toggle('selected', b.dataset.val===v);
+    });
+  });
+}
+
+function setStageUnknown(){
+  // Fallback path — clear T/N/M, mark stageCat as 'EARLY' (safest default; will show generic guidance)
+  S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat='EARLY';
+  document.querySelectorAll('.tnm-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('stage-preview').style.display='none';
+  updateActBar();
+  setTimeout(()=>goNext(), 200);
+}
+
 function goNext(){
   // capture optional name/id when leaving q1
   if(stepIdx===0){
     S.code = (document.getElementById('pt-code').value||'').trim();
     S.name = (document.getElementById('pt-name').value||'').trim();
   }
+  // Leaving q2 (TNM) → if mut not needed, skip to summary
   if(stepIdx===1 && !mutNeeded()){
-    // jump straight to summary
     stepIdx = 3;
     showPage(3);
     return;
@@ -946,11 +1126,17 @@ function goPrev(){
 }
 
 function goSkip(){
-  // only valid on q3
-  if(stepIdx!==2) return;
-  S.mut = 'NONE';
-  stepIdx = 3;
-  showPage(3);
+  if(stepIdx===1){
+    // user doesn't know TNM — go through fallback
+    setStageUnknown();
+    return;
+  }
+  if(stepIdx===2){
+    S.mut = 'NONE';
+    stepIdx = 3;
+    showPage(3);
+    return;
+  }
 }
 
 // init
