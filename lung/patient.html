@@ -3,292 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>我的肺癌治療計畫 — 彰濱秀傳癌症中心</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<title>肺癌路徑查詢 — 彰濱秀傳癌症中心</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --teal:#0d9488;--teal-dark:#0f766e;--teal-light:rgba(13,148,136,0.08);--teal-border:rgba(13,148,136,0.20);
-  --bg:#F7F9FB;--bg-card:#FFFFFF;--border:#E2E8F0;
-  --text:#2C3E50;--text2:#5A6B7C;--text3:#8A9BAA;
-  --rose:#dc2626;--amber:#d97706;
+  --pri:#5B8FB9;--pri2:#4A7A9E;--pri-bg:rgba(91,143,185,.07);--pri-bdr:rgba(91,143,185,.22);
+  --bg:#F7F9FB;--card:#FFF;--bdr:#E2E8F0;--bdr2:#EDF1F5;
+  --tx:#2C3E50;--tx2:#5A6B7C;--tx3:#8A9BAA;
+  --red:#dc2626;--red-bg:#FEF2F2;--amber:#d97706;--green:#059669;--green-bg:rgba(5,150,105,.07);
 }
-body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column}
 
-/* Header */
-.hdr{background:linear-gradient(135deg,#0f766e 0%,#0d9488 60%,#14b8a6 100%);color:#fff;padding:32px 20px 48px;text-align:center;position:relative}
-.hdr-icon{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px;border:1px solid rgba(255,255,255,.20)}
-.hdr h1{font-size:22px;font-weight:900;letter-spacing:1px}
-.hdr p{font-size:13px;opacity:.82;margin-top:4px}
+.hdr{background:linear-gradient(135deg,#37516b 0%,#4A7A9E 55%,#5B8FB9 100%);color:#fff;padding:28px 20px 44px;text-align:center;position:relative}
+.hdr h1{font-size:20px;font-weight:900;letter-spacing:1px}
+.hdr p{font-size:12px;opacity:.78;margin-top:4px}
+.main{flex:1;max-width:560px;width:100%;margin:-20px auto 0;padding:0 14px 40px;position:relative;z-index:2}
 
-/* Main */
-.main{flex:1;max-width:640px;width:100%;margin:-24px auto 0;padding:0 16px 40px;position:relative;z-index:2}
+/* Cards */
+.cd{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:20px 18px;margin-bottom:14px}
+.cd-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:15px;font-weight:800;color:var(--tx)}
+.cd-hdr svg{color:var(--pri);flex-shrink:0}
 
-/* Step cards */
-.step{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px 20px;margin-bottom:16px;display:none}
-.step.active{display:block;animation:fadeIn .3s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--teal-light);color:var(--teal);font-size:13px;font-weight:900;margin-right:8px;border:1.5px solid var(--teal-border)}
-.step-title{font-size:17px;font-weight:800;margin-bottom:16px;display:flex;align-items:center}
+/* Form */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.row3{grid-template-columns:1fr 1fr 1fr}
+.fld label{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:4px}
+.fld select,.fld input{width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:9px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--tx);outline:none;transition:border .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3l3 3 3-3' fill='none' stroke='%238A9BAA' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.fld input{background-image:none}
+.fld select:focus,.fld input:focus{border-color:var(--pri)}
+.fld select.hl{border-color:var(--amber);background-color:rgba(217,119,6,.04)}
 
-/* Form elements */
-.field{margin-bottom:16px}
-.field label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
-.field input,.field select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;transition:border .2s}
-.field input:focus,.field select:focus{border-color:var(--teal)}
-.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%238A9BAA' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+/* Stage display */
+.stage-box{text-align:center;padding:18px 10px;border-radius:12px;border:1.5px solid var(--bdr2);margin-top:6px}
+.stage-label{font-size:12px;color:var(--tx3);margin-bottom:2px}
+.stage-val{font-size:32px;font-weight:900;color:var(--pri);letter-spacing:1px}
+.stage-val.warn{color:var(--red)}
 
-/* Choice buttons */
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.choice{padding:14px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;background:var(--bg-card)}
-.choice:hover{border-color:var(--teal);background:var(--teal-light)}
-.choice.sel{border-color:var(--teal);background:var(--teal-light);box-shadow:0 0 0 2px var(--teal-border)}
-.choice-icon{font-size:28px;margin-bottom:6px;color:var(--teal)}
-.choice-label{font-size:14px;font-weight:700}
-.choice-hint{font-size:11px;color:var(--text3);margin-top:2px}
+/* Pathway display */
+.pw-box{text-align:center;padding:14px 10px;border-radius:12px;border:1.5px solid var(--bdr2)}
+.pw-label{font-size:12px;color:var(--tx3);margin-bottom:2px}
+.pw-val{font-size:18px;font-weight:800;letter-spacing:.5px}
 
-/* Result card */
-.result-box{background:var(--teal-light);border:1.5px solid var(--teal-border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
-.result-box h4{font-size:15px;font-weight:800;color:var(--teal-dark);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.result-box p{font-size:14px;line-height:1.75;color:var(--text)}
-.result-box .team-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
-.result-box .team-row:last-child{border-bottom:none}
-.result-box .team-dept{color:var(--text2)}
-.result-box .team-name{font-weight:700}
+/* Warning */
+.warn-box{text-align:center;padding:14px 10px;border-radius:12px;border:1.5px solid var(--bdr2)}
+.warn-label{font-size:12px;color:var(--tx3);margin-bottom:2px}
+.warn-count{font-size:28px;font-weight:900;color:var(--red)}
+.warn-count.ok{color:var(--green)}
+
+/* Drug steps */
+.drug-step{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--bdr2)}
+.drug-step:last-child{border-bottom:none}
+.step-n{width:28px;height:28px;border-radius:50%;background:var(--pri-bg);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;border:1.5px solid var(--pri-bdr)}
+.step-txt{font-size:14px;line-height:1.65;flex:1}
+.step-txt b{color:var(--tx)}
+.step-note{font-size:12px;color:var(--tx3);margin-top:3px}
+
+/* Alert steps */
+.alert-step{background:var(--red-bg);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:13px;color:#991b1b;line-height:1.6}
+
+/* Result sections (hidden until computed) */
+.result{display:none}
+.result.show{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* QR */
-.qr-area{text-align:center;margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border)}
-.qr-area canvas{border-radius:6px;margin-bottom:8px}
-.qr-hint{font-size:11px;color:var(--text3)}
+.qr-area{text-align:center;margin-top:14px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--bdr)}
+.qr-area canvas{border-radius:4px;margin-bottom:6px}
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;border:none}
-.btn-next{background:var(--teal);color:#fff}
-.btn-next:hover{background:var(--teal-dark)}
-.btn-back{background:transparent;color:var(--text2);border:1.5px solid var(--border)}
-.btn-back:hover{background:var(--bg)}
-.btn-row{display:flex;justify-content:space-between;margin-top:20px;gap:12px}
-.btn-row .btn{flex:1}
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--tx2);font-size:13px;font-weight:500;text-decoration:none;margin-bottom:14px;padding:6px 0}
+.back-link:hover{color:var(--pri)}
 
-/* Emergency */
-.emg{background:#FEF2F2;border:1.5px solid #E0B4B4;border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.7;margin-top:14px}
+.footer{text-align:center;padding:18px;font-size:11px;color:var(--tx3);border-top:1px solid var(--bdr2)}
 
-/* Footer */
-.footer{text-align:center;padding:20px;font-size:11px;color:var(--text3);border-top:1px solid var(--border)}
-
-/* Print */
+@media(max-width:480px){
+  .row{grid-template-columns:1fr 1fr}
+  .row3{grid-template-columns:1fr 1fr 1fr}
+  .hdr h1{font-size:18px}
+}
 @media print{
   .hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .btn,.btn-row,.footer{display:none!important}
-  .step{display:block!important;break-inside:avoid}
-}
-@media(max-width:480px){
-  .choices{grid-template-columns:1fr}
-  .hdr h1{font-size:19px}
+  .back-link,.footer{display:none!important}
+  .result{display:block!important}
 }
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <div class="hdr-icon"><i class="fa-solid fa-lungs"></i></div>
-  <h1>我的肺癌治療計畫</h1>
+  <h1>肺癌臨床路徑查詢</h1>
   <p>彰濱秀傳癌症中心 · 民眾簡易版</p>
 </div>
 
 <div class="main">
 
-  <!-- Step 1: Basic info -->
-  <div class="step active" id="s1">
-    <div class="step-title"><span class="step-num">1</span> 基本資料</div>
-    <div class="field">
-      <label>姓名</label>
-      <input type="text" id="pt-name" placeholder="請輸入姓名">
+<a href="../" class="back-link">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+  回首頁
+</a>
+
+<!-- Card 1: Baseline -->
+<div class="cd">
+  <div class="cd-hdr">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+    病患基線資料
+  </div>
+  <div class="row">
+    <div class="fld">
+      <label>年齡</label>
+      <input type="number" id="age" placeholder="選填" min="0" max="120" onchange="compute()">
     </div>
-    <div class="field">
-      <label>收案 ID（選填）</label>
-      <input type="text" id="pt-id" placeholder="個管師填寫">
+    <div class="fld">
+      <label>ECOG</label>
+      <select id="ecog" onchange="compute()">
+        <option value="">選填</option>
+        <option value="0">PS 0</option>
+        <option value="1">PS 1</option>
+        <option value="2">PS 2</option>
+        <option value="3">PS 3</option>
+        <option value="4">PS 4</option>
+      </select>
     </div>
-    <div class="btn-row">
-      <a href="../" class="btn btn-back"><i class="fa-solid fa-arrow-left"></i> 回首頁</a>
-      <button class="btn btn-next" onclick="goStep(2)">下一步 <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+  <div class="fld">
+    <label>組織型態</label>
+    <select id="histo" class="hl" onchange="compute()">
+      <option value="">— 請選擇 —</option>
+      <option value="NSCLC_NS">非小細胞肺癌 — 非鱗狀（腺癌/大細胞）</option>
+      <option value="NSCLC_SQ">非小細胞肺癌 — 鱗狀細胞癌</option>
+      <option value="SCLC">小細胞肺癌</option>
+    </select>
+  </div>
+</div>
+
+<!-- Card 2: TNM + mutation -->
+<div class="cd">
+  <div class="cd-hdr">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 -9 4 18 3 -9h4"/></svg>
+    TNM 分期與突變
+  </div>
+  <div class="row row3">
+    <div class="fld">
+      <label>T</label>
+      <select id="sel-t" onchange="compute()">
+        <option value="">—</option>
+        <option>Tis</option><option>T1mi</option><option>T1a</option><option>T1b</option><option>T1c</option>
+        <option>T2a</option><option>T2b</option><option>T3</option><option>T4</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label>N</label>
+      <select id="sel-n" onchange="compute()">
+        <option value="">—</option>
+        <option>N0</option><option>N1</option><option>N2</option><option>N3</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label>M</label>
+      <select id="sel-m" class="hl" onchange="compute()">
+        <option value="">—</option>
+        <option>M0</option><option>M1a</option><option>M1b</option><option>M1c</option>
+      </select>
     </div>
   </div>
 
-  <!-- Step 2: Cancer type (simplified) -->
-  <div class="step" id="s2">
-    <div class="step-title"><span class="step-num">2</span> 您的診斷</div>
-    <p style="font-size:14px;color:var(--text2);margin-bottom:14px">醫師告訴您的肺癌類型是？</p>
-    <div class="choices" id="type-choices">
-      <div class="choice" onclick="pickType(this,'adeno')">
-        <div class="choice-icon"><i class="fa-solid fa-lungs"></i></div>
-        <div class="choice-label">肺腺癌</div>
-        <div class="choice-hint">最常見的類型</div>
-      </div>
-      <div class="choice" onclick="pickType(this,'squamous')">
-        <div class="choice-icon"><i class="fa-solid fa-lungs"></i></div>
-        <div class="choice-label">鱗狀細胞肺癌</div>
-        <div class="choice-hint">與吸菸相關</div>
-      </div>
-      <div class="choice" onclick="pickType(this,'small')">
-        <div class="choice-icon"><i class="fa-solid fa-lungs"></i></div>
-        <div class="choice-label">小細胞肺癌</div>
-        <div class="choice-hint">生長較快</div>
-      </div>
-      <div class="choice" onclick="pickType(this,'unsure')">
-        <div class="choice-icon"><i class="fa-solid fa-circle-question"></i></div>
-        <div class="choice-label">還不確定</div>
-        <div class="choice-hint">等報告中</div>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-back" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> 上一步</button>
-      <button class="btn btn-next" onclick="goStep(3)">下一步 <i class="fa-solid fa-arrow-right"></i></button>
-    </div>
+  <div class="fld" id="mut-fld" style="margin-top:4px">
+    <label style="color:var(--pri);font-weight:700">基因/PD-L1 狀態（決定藥物）</label>
+    <select id="sel-mut" class="hl" onchange="compute()">
+      <option value="">— 選填 —</option>
+      <option value="EGFR">EGFR 突變(+)</option>
+      <option value="ALK">ALK 融合(+)</option>
+      <option value="ROS1">ROS1 融合(+)</option>
+      <option value="BRAF">BRAF V600E(+)</option>
+      <option value="KRAS">KRAS G12C(+)</option>
+      <option value="MET">MET Exon14(+)</option>
+      <option value="PDL1_HIGH">無特定突變 / PD-L1 ≥ 50%</option>
+      <option value="PDL1_LOW">無特定突變 / PD-L1 < 50%</option>
+      <option value="NONE">無特定突變 / PD-L1 未驗</option>
+    </select>
   </div>
 
-  <!-- Step 3: Stage (simplified) -->
-  <div class="step" id="s3">
-    <div class="step-title"><span class="step-num">3</span> 治療方向</div>
-    <p style="font-size:14px;color:var(--text2);margin-bottom:14px">醫師說您目前的狀況屬於？</p>
-    <div class="choices" id="stage-choices">
-      <div class="choice" onclick="pickStage(this,'early')">
-        <div class="choice-icon"><i class="fa-solid fa-seedling"></i></div>
-        <div class="choice-label">早期（可手術）</div>
-        <div class="choice-hint">Stage I ~ II</div>
-      </div>
-      <div class="choice" onclick="pickStage(this,'local_adv')">
-        <div class="choice-icon"><i class="fa-solid fa-arrow-up-right-dots"></i></div>
-        <div class="choice-label">局部晚期</div>
-        <div class="choice-hint">Stage III</div>
-      </div>
-      <div class="choice" onclick="pickStage(this,'advanced')">
-        <div class="choice-icon"><i class="fa-solid fa-circle-nodes"></i></div>
-        <div class="choice-label">晚期（有轉移）</div>
-        <div class="choice-hint">Stage IV</div>
-      </div>
-      <div class="choice" onclick="pickStage(this,'unsure')">
-        <div class="choice-icon"><i class="fa-solid fa-circle-question"></i></div>
-        <div class="choice-label">還不確定</div>
-        <div class="choice-hint">等檢查結果</div>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> 上一步</button>
-      <button class="btn btn-next" onclick="goStep(4)">查看我的計畫 <i class="fa-solid fa-arrow-right"></i></button>
+  <!-- Stage result -->
+  <div id="stage-result" class="result">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+      <div class="stage-box"><div class="stage-label">分期</div><div class="stage-val" id="r-stage">—</div></div>
+      <div class="pw-box"><div class="pw-label">主路徑</div><div class="pw-val" id="r-pathway">—</div></div>
+      <div class="warn-box"><div class="warn-label">警示</div><div class="warn-count ok" id="r-warn">0</div></div>
     </div>
   </div>
+</div>
 
-  <!-- Step 4: Result -->
-  <div class="step" id="s4">
-    <div class="step-title"><span class="step-num">4</span> 我的治療計畫</div>
-
-    <div class="result-box" id="res-plan">
-      <h4><i class="fa-solid fa-clipboard-list"></i> 治療方向</h4>
-      <p id="res-plan-text">根據您的情況，團隊會為您安排適合的治療方案。</p>
-    </div>
-
-    <div class="result-box">
-      <h4><i class="fa-solid fa-user-doctor"></i> 您的照護團隊</h4>
-      <div class="team-row"><span class="team-dept">胸腔外科</span><span class="team-name" id="doc-ts">（主治醫師）</span></div>
-      <div class="team-row"><span class="team-dept">胸腔內科／血液腫瘤科</span><span class="team-name" id="doc-chm">（主治醫師）</span></div>
-      <div class="team-row"><span class="team-dept">放射腫瘤科</span><span class="team-name" id="doc-ro">（主治醫師）</span></div>
-      <div class="team-row" style="background:var(--teal-light);margin:4px -20px -18px;padding:8px 20px;border-radius:0 0 10px 10px"><span class="team-dept" style="font-weight:700;color:var(--teal-dark)">個案管理師</span><span class="team-name" style="color:var(--teal-dark)">郭美伶</span></div>
-    </div>
-
-    <div class="result-box">
-      <h4><i class="fa-solid fa-heart-pulse"></i> 副作用管理</h4>
-      <p>治療期間可能出現噁心、疲倦、食慾下降等情形，這些都是正常反應。醫療團隊會協助您處理，請隨時向個管師反映。</p>
-    </div>
-
-    <div class="emg">
-      <b><i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸 → 請聯繫個管師。
-    </div>
-
-    <div class="qr-area" id="qr-area" style="display:none">
-      <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:4px"><i class="fa-solid fa-qrcode"></i> 電子版</div>
-      <div id="qr-container"></div>
-      <div class="qr-hint">掃描查看個人化照護資訊</div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> 修改</button>
-      <button class="btn btn-next" onclick="window.print()"><i class="fa-solid fa-print"></i> 列印</button>
-    </div>
+<!-- Card 3: Drug steps (hidden until computed) -->
+<div class="cd result" id="drug-card">
+  <div class="cd-hdr">
+    <svg width="4" height="20" viewBox="0 0 4 20"><rect width="4" height="20" rx="2" fill="var(--pri)"/></svg>
+    路徑藥物步驟
   </div>
+  <div id="drug-steps"></div>
+</div>
+
+<!-- Card 4: Warnings (hidden until applicable) -->
+<div class="cd result" id="warn-card">
+  <div class="cd-hdr">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 20h20L12 2z"/><path d="M12 9v4"/><circle cx="12" cy="16" r=".5" fill="var(--amber)"/></svg>
+    注意事項
+  </div>
+  <div id="warn-list"></div>
+</div>
+
+<!-- Card 5: Team -->
+<div class="cd result" id="team-card">
+  <div class="cd-hdr">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+    照護團隊
+  </div>
+  <div class="drug-step" style="padding:8px 0"><div style="flex:1;display:flex;justify-content:space-between"><span style="color:var(--tx2)">胸腔外科</span><b>主治醫師</b></div></div>
+  <div class="drug-step" style="padding:8px 0"><div style="flex:1;display:flex;justify-content:space-between"><span style="color:var(--tx2)">胸腔內科／血液腫瘤科</span><b>主治醫師</b></div></div>
+  <div class="drug-step" style="padding:8px 0"><div style="flex:1;display:flex;justify-content:space-between"><span style="color:var(--tx2)">放射腫瘤科</span><b>主治醫師</b></div></div>
+  <div class="drug-step" style="padding:8px 0;border:none;background:var(--pri-bg);margin:4px -18px -20px;padding:10px 18px;border-radius:0 0 12px 12px"><div style="flex:1;display:flex;justify-content:space-between"><span style="font-weight:700;color:var(--pri2)">個案管理師</span><b style="color:var(--pri2)">郭美伶</b></div></div>
+</div>
 
 </div>
 
-<div class="footer">彰濱秀傳紀念醫院 癌症中心 · 民眾簡易版</div>
+<div class="footer">彰濱秀傳紀念醫院 癌症中心 · Cancer Navigation V2.6.0</div>
 
 <script>
-let D = {name:'', id:'', type:'', stage:''};
-
-function goStep(n){
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('s'+n).classList.add('active');
-  if(n===4) renderResult();
-  window.scrollTo({top:0, behavior:'smooth'});
+// ═══ AJCC 9th staging (same as medical version) ═══
+function computeAJCC(t,n,m){
+  if(!t||!n||!m) return '';
+  const isT1=/^T1/.test(t), isT2=/^T2/.test(t), isN2=/^N2/.test(n);
+  if(m!=='M0') return (m==='M1a'||m==='M1b')?'IVA':'IVB';
+  if(n==='N0'){
+    if(t==='Tis') return '0'; if(t==='T1mi'||t==='T1a') return 'IA1'; if(t==='T1b') return 'IA2';
+    if(t==='T1c') return 'IA3'; if(t==='T2a') return 'IB'; if(t==='T2b') return 'IIA';
+    if(t==='T3') return 'IIB'; if(t==='T4') return 'IIIA';
+  }
+  if(n==='N1'){ if(isT1||isT2) return 'IIB'; if(t==='T3'||t==='T4') return 'IIIA'; }
+  if(isN2){ if(isT1||isT2) return 'IIIA'; if(t==='T3'||t==='T4') return 'IIIB'; }
+  if(n==='N3'){ if(isT1||isT2) return 'IIIB'; if(t==='T3'||t==='T4') return 'IIIC'; }
+  return '';
 }
 
-function pickType(el, val){
-  document.querySelectorAll('#type-choices .choice').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  D.type = val;
+function getPathway(type, T, N, M, stage){
+  if(!type||!stage) return '';
+  if(type==='SCLC'){
+    if(M!=='M0') return 'SCLC 擴散期';
+    if(/^T[12]/.test(T)&&N==='N0') return 'SCLC 侷限期(可手術)';
+    return 'SCLC 侷限期(化放療)';
+  }
+  const s = stage;
+  if(M==='M1a') return 'NSCLC Stage IVA (M1a)';
+  if(M==='M1b') return 'NSCLC Stage IVA (M1b)';
+  if(M&&M.startsWith('M1c')) return 'NSCLC Stage IVB';
+  if(/^(0|IA|IB)/.test(s)) return 'NSCLC 早期(I)';
+  if(/^II/.test(s)) return 'NSCLC 手術期(II)';
+  if(/^IIIA/.test(s)&&/^N2/.test(N)) return 'NSCLC Stage IIIA (N2)';
+  if(/^III/.test(s)) return 'NSCLC 局部晚期(III)';
+  return 'NSCLC Stage ' + s;
 }
 
-function pickStage(el, val){
-  document.querySelectorAll('#stage-choices .choice').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  D.stage = val;
-}
-
-const TYPE_LABEL = {adeno:'肺腺癌', squamous:'鱗狀細胞肺癌', small:'小細胞肺癌', unsure:'待確認'};
-const STAGE_LABEL = {early:'早期（可手術）', local_adv:'局部晚期', advanced:'晚期（有轉移）', unsure:'待確認'};
-
-const PLAN_TEXT = {
-  'adeno_early': '肺腺癌早期通常以<b>手術切除</b>為主。術後可能需要輔助化療，醫師會依病理報告決定。',
-  'adeno_local_adv': '肺腺癌局部晚期的治療通常是<b>化療合併放射治療</b>，部分病人可先做化療再評估手術。也會進行基因檢測，看是否適合標靶或免疫治療。',
-  'adeno_advanced': '肺腺癌晚期會先做<b>基因檢測</b>（EGFR、ALK 等），有基因突變可使用<b>標靶藥物</b>；沒有的話可使用<b>免疫治療</b>合併化療。',
-  'squamous_early': '鱗狀細胞肺癌早期以<b>手術切除</b>為主，術後依病理報告決定是否需要輔助化療。',
-  'squamous_local_adv': '鱗狀細胞肺癌局部晚期通常採<b>化療合併放射治療</b>，之後可接續免疫維持治療。',
-  'squamous_advanced': '鱗狀細胞肺癌晚期以<b>免疫治療合併化療</b>為主。醫師會檢測 PD-L1 指數來決定最適合的方案。',
-  'small_early': '小細胞肺癌早期（侷限期）如果腫瘤較小，可能先<b>手術</b>再接化療。不適合手術的，以<b>化療合併放射治療</b>為主。',
-  'small_local_adv': '小細胞肺癌侷限期以<b>化療合併放射治療</b>為標準治療，治療有效時會考慮預防性全腦照射。',
-  'small_advanced': '小細胞肺癌擴散期以<b>化療合併免疫治療</b>為主。醫師會密切追蹤治療反應，必要時調整方案。',
+// ═══ Drug step database ═══
+const DRUG_DB = {
+  'NSCLC 早期(I)': {
+    steps:[
+      '手術切除為主（肺葉切除 + 淋巴結廓清術）',
+      '不適合手術者：SBRT 立體定位放射治療',
+      '術後依病理報告決定是否輔助化療',
+    ],
+    warns:['Stage IB 高風險因子（腫瘤≧4cm、血管侵犯、臟層肋膜侵犯）建議輔助化療']
+  },
+  'NSCLC 手術期(II)': {
+    steps:[
+      '手術切除（肺葉切除 + 淋巴結廓清術）',
+      '術後輔助化療：Cisplatin 合併 Vinorelbine 或 Pemetrexed（非鱗狀）',
+      '邊緣(+)時：術後化放療（CCRT）',
+    ],
+    warns:[]
+  },
+  'NSCLC Stage IIIA (N2)': {
+    steps:[
+      '路線 A：合併化放療（CCRT）或化療，可加免疫治療',
+      '路線 B：引導化療 ± 放療 → 評估反應 → 無惡化可手術',
+      '化放療後無惡化：Durvalumab 免疫維持治療（PACIFIC 模式）',
+    ],
+    warns:['年齡 >70 歲或 PS >1：CCRT 可改為 Sequential（先化療後放療）']
+  },
+  'NSCLC 局部晚期(III)': {
+    steps:[
+      '同步化放療（CCRT）為主要選擇',
+      '可合併標靶治療或免疫治療（依健保規範及基因檢測結果）',
+      '化放療後無惡化：Durvalumab 免疫維持治療',
+    ],
+    warns:['年齡 >70 歲或 PS >1：CCRT 可改為 Sequential（先化療後放療）']
+  },
 };
 
-function renderResult(){
-  D.name = document.getElementById('pt-name').value.trim();
-  D.id = document.getElementById('pt-id').value.trim();
-
-  const key = D.type && D.stage ? D.type + '_' + D.stage : null;
-  let planHTML = PLAN_TEXT[key] || '醫療團隊會根據您的完整檢查結果，為您擬定最適合的治療計畫。請耐心等候各項檢查報告。';
-  
-  const typeStr = TYPE_LABEL[D.type] || '肺癌';
-  const stageStr = STAGE_LABEL[D.stage] || '';
-  if(D.type && D.stage && D.stage !== 'unsure'){
-    planHTML = `<div style="font-size:13px;color:var(--teal);font-weight:700;margin-bottom:6px">${typeStr} · ${stageStr}</div>` + planHTML;
+// M1 drug steps depend on mutation
+function getM1Drugs(type, mut){
+  const isNS = (type==='NSCLC_NS');
+  if(mut==='EGFR') return {steps:['標靶治療：Osimertinib 或 Erlotinib / Gefitinib / Afatinib','可合併 Bevacizumab（非鱗狀）','惡化時考慮 T790M 檢測 → Osimertinib'], warns:[]};
+  if(mut==='ALK') return {steps:['標靶治療：Alectinib（首選）或 Lorlatinib / Crizotinib / Brigatinib','耐藥後依抗藥機制選擇次線標靶'], warns:[]};
+  if(mut==='ROS1') return {steps:['標靶治療：Crizotinib 或 Entrectinib'], warns:[]};
+  if(mut==='BRAF') return {steps:['標靶治療：Dabrafenib + Trametinib 合併用藥'], warns:[]};
+  if(mut==='KRAS') return {steps:['標靶治療：Sotorasib（KRAS G12C 專一）'], warns:[]};
+  if(mut==='MET') return {steps:['標靶治療：Capmatinib 或 Tepotinib / Crizotinib'], warns:[]};
+  if(mut==='PDL1_HIGH'){
+    return isNS
+      ? {steps:['免疫治療（依健保規範）± 化療：Pembrolizumab 或 Atezolizumab','非鱗狀化療組合：Pemetrexed + Platinum','可考慮免疫 + 化療 + Bevacizumab（IMpower150 模式）'], warns:[]}
+      : {steps:['免疫治療（依健保規範）± 化療：Pembrolizumab','鱗狀化療組合：Paclitaxel + Carboplatin'], warns:[]};
   }
-  document.getElementById('res-plan-text').innerHTML = planHTML;
+  if(mut==='PDL1_LOW'){
+    return isNS
+      ? {steps:['標準化療：Pemetrexed + Platinum（非鱗狀）','可併用免疫治療：Pembrolizumab 以提升存活率','可考慮 Atezolizumab + Bevacizumab + 化療（IMpower150 模式）'], warns:['PS 2 以單獨化療為主','PS 3-4 支持性療法']}
+      : {steps:['標準化療：Paclitaxel + Carboplatin（鱗狀）','可併用免疫治療：Pembrolizumab','PS 0-1 可加免疫+化療'], warns:['PS 2 以單獨化療為主','PS 3-4 支持性療法']};
+  }
+  // NONE or unspecified
+  return isNS
+    ? {steps:['建議先做基因檢測（EGFR/ALK/ROS1/PD-L1）','無突變：Pemetrexed + Platinum ± 免疫治療','有突變：依檢測結果選擇標靶藥物'], warns:['請盡快完成基因檢測以決定最佳治療方案']}
+    : {steps:['建議檢測 PD-L1','化療：Paclitaxel + Carboplatin','可依 PD-L1 結果加入免疫治療'], warns:['鱗狀細胞癌較少有 EGFR/ALK 突變']};
+}
 
-  // QR
-  const qrArea = document.getElementById('qr-area');
-  if(D.name){
-    qrArea.style.display = 'block';
-    const masked = D.name.charAt(0) + '○'.repeat(Math.max(D.name.length-1, 1));
-    const payload = `name=${encodeURIComponent(masked)}&dx=${encodeURIComponent(typeStr)}&stage=${encodeURIComponent(stageStr)}&cm=${encodeURIComponent('郭美伶')}`;
-    const url = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu.html#' + payload;
-    const container = document.getElementById('qr-container');
-    container.innerHTML = '';
-    new QRCode(container, {text:url, width:140, height:140, colorDark:'#0f766e', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M});
+// SCLC drugs
+const SCLC_DB = {
+  'SCLC 侷限期(可手術)': {
+    steps:['Lobectomy + 淋巴結廓清術','術後化療：Cisplatin + Etoposide (EP) × 4 cycles','LN(+) 加放療（針對淋巴區域）'],
+    warns:['無法手術者：SBRT 後化療 或 化療+放療']
+  },
+  'SCLC 侷限期(化放療)': {
+    steps:['化療+放療：Cisplatin + Etoposide + 胸部放療','CCRT 每次 2Gy，total 50-70Gy','CR/PR 時：預防性全腦照射 (PCI) 25-30Gy'],
+    warns:['PS 3-4（因癌症）：化療±放療','PS 3-4（非癌症）：支持性療法']
+  },
+  'SCLC 擴散期': {
+    steps:['化療 + 免疫治療（健保事審）：EP + Atezolizumab 或 Durvalumab','化療 4-6 cycles：Cisplatin/Carboplatin + Etoposide','CR/PR：可考慮預防性全腦照射 ± 胸部放療'],
+    warns:['腦轉移有症狀：先放療全腦或伽瑪刀再化療','腦轉移無症狀：先化療再放療腦部','PS 3-4（非癌症）：支持性療法']
+  },
+};
+
+function compute(){
+  const type = document.getElementById('histo').value;
+  const T = document.getElementById('sel-t').value;
+  const N = document.getElementById('sel-n').value;
+  const M = document.getElementById('sel-m').value;
+  const mut = document.getElementById('sel-mut').value;
+  const age = parseInt(document.getElementById('age').value) || 0;
+  const ecog = document.getElementById('ecog').value;
+
+  // Show/hide mutation field (only for NSCLC)
+  document.getElementById('mut-fld').style.display = (type==='SCLC')?'none':'block';
+
+  const stage = computeAJCC(T,N,M);
+  const stageEl = document.getElementById('stage-result');
+  const drugCard = document.getElementById('drug-card');
+  const warnCard = document.getElementById('warn-card');
+  const teamCard = document.getElementById('team-card');
+
+  if(!stage){
+    stageEl.classList.remove('show');
+    drugCard.classList.remove('show');
+    warnCard.classList.remove('show');
+    teamCard.classList.remove('show');
+    return;
+  }
+
+  // Stage display
+  const pw = getPathway(type, T, N, M, stage);
+  document.getElementById('r-stage').textContent = stage;
+  document.getElementById('r-stage').className = 'stage-val' + (/IV/.test(stage)?'':' ');
+  document.getElementById('r-pathway').textContent = pw;
+  stageEl.classList.add('show');
+
+  // Get drug steps
+  let data;
+  if(type==='SCLC'){
+    data = SCLC_DB[pw] || {steps:['依臨床評估決定治療方向'], warns:[]};
+  } else if(/M1/.test(M)){
+    data = getM1Drugs(type, mut);
   } else {
-    qrArea.style.display = 'none';
+    data = DRUG_DB[pw] || {steps:['依完整分期決定治療方向'], warns:[]};
   }
+
+  // Additional warnings based on age/ECOG
+  let allWarns = [...data.warns];
+  if(age >= 70) allWarns.push('年齡 ≥70 歲：可考慮以 Carboplatin 取代 Cisplatin，CCRT 可改 Sequential');
+  if(ecog==='3'||ecog==='4') allWarns.push('PS 3-4：評估是否適合積極治療，考慮支持性療法');
+  if(ecog==='2') allWarns.push('PS 2：化療劑量可能需調整');
+
+  // Render drug steps
+  let h = '';
+  data.steps.forEach((s,i)=>{
+    h += `<div class="drug-step"><div class="step-n">${i+1}</div><div class="step-txt">${s}</div></div>`;
+  });
+  document.getElementById('drug-steps').innerHTML = h;
+  drugCard.classList.add('show');
+
+  // Render warnings
+  document.getElementById('r-warn').textContent = allWarns.length;
+  document.getElementById('r-warn').className = 'warn-count' + (allWarns.length===0?' ok':'');
+  if(allWarns.length > 0){
+    let wh = '';
+    allWarns.forEach(w => { wh += `<div class="alert-step">${w}</div>`; });
+    document.getElementById('warn-list').innerHTML = wh;
+    warnCard.classList.add('show');
+  } else {
+    warnCard.classList.remove('show');
+  }
+
+  teamCard.classList.add('show');
 }
 </script>
 </body>

@@ -4,7 +4,7 @@
 Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。純前端單一 HTML，GitHub Pages 部署。本院指引 v12 (2026) + AJCC 9th。目前只有肺癌模組上線。
 
 **部署：** `https://sela1227.github.io/Lung-ca-nevigation/`
-**技術：** 原生 HTML/CSS/JS、IndexedDB、Chart.js 4.4、qrcode.js、Font Awesome 6.5.1、Noto Sans TC
+**技術：** 原生 HTML/CSS/JS、IndexedDB、Chart.js 4.4、qrcode.js、Font Awesome 6.5.1（醫護版）、Nordic SVG（民眾版）、微軟正黑體
 
 ---
 
@@ -151,12 +151,12 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
-| V2.5.0 | V1.3.0 | 2026-04-07 | Portal 分版（醫護版 vs 民眾版）；新增 lung/patient.html 民眾簡易版 |
+| V2.6.0 | V1.4.0 | 2026-04-07 | 民眾版改為下拉式路徑查詢器（TNM→自動分期→藥物步驟） |
+| V2.5.1 | V1.3.1 | 2026-04-07 | 全系統正黑體；民眾版姓名可跳；FA→SVG |
+| V2.5.0 | V1.3.0 | 2026-04-07 | Portal 分版（醫護 vs 民眾） |
 | V2.4.0 | V1.2.0 | 2026-04-06 | 檢查移除病史；輔助→術後化放療；IO+化療+標靶 |
 | V2.3.3 | V1.1.2 | 2026-04-06 | 打包改 wrapper + 排除清單 |
-| V2.3.2 | V1.1.2 | 2026-04-06 | dtJump(5) 保留分子資料；restoreDT done 卡（BUG-12） |
-| V2.3.1 | V1.1.1 | 2026-04-06 | 列印 edu header 霧藍 + QR 位置修正（BUG-11） |
-| V2.3.0 | V1.1 | 2026-04-06 | Nordic 自製 SVG 圖示 |
+| V2.3.2 | V1.1.2 | 2026-04-06 | dtJump(5) 保留分子資料（BUG-12） |
 
 ---
 
@@ -228,4 +228,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.5.0 加了 Portal 雙版本入口（醫護 vs 民眾）+ 肺癌民眾簡易版 patient.html（3 步填完→治療計畫+團隊+QR）。肺癌醫護版功能完整穩定，下一步是讓 Sela 逐條確認民眾版的治療說明文字。
+V2.6.0 民眾版從衛教文字改為下拉式路徑查詢器：選組織型態 + TNM + 基因突變 → 自動計算分期 → 顯示藥物步驟 + 警示（年齡/ECOG）。下一步讓 Sela 確認藥物步驟內容是否正確。
