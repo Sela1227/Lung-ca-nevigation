@@ -1,4 +1,17 @@
-# Cancer Navigation V2.8.7 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.8 — 彰濱秀傳癌症中心
+
+## V2.8.8 — 2026-04-29
+**lung.html / patient.html 底部加快速工具 banner 連到 drugs.html**
+- Sela 要把 portal 的「快速工具」入口也放到醫護版與民眾版底下
+- **lung.html**：底部加 `.tools-bar` banner，霧藍漸層配色（呼應 sidebar），位於 `.app` 之後，需向下捲一點才看到（避免擾亂操作流程）。`.app` 改 `min-height:100dvh; height:auto`
+- **patient.html**：把 hdr+main+actbar 包進新 `.shell` 容器（仍是 `100dvh + overflow:hidden` 鎖屏第一屏），`.shell` 之後加 `.tools-bar`（青綠漸層配色，呼應 patient 主題）。需向下捲到第二屏才看到
+- **設計原則**：
+  - 不擾亂主流程（鎖屏行為保留）
+  - 只在第二屏顯示，需要的人會找到，不需要的人不被打擾
+  - 列印時隱藏（`@media print { .tools-bar{display:none} }`）
+  - 連結直接同層 `drugs.html`（lung/ 目錄下）
+- 814/814 回歸全綠
+- **模組**：lung V1.6.7 → V1.6.8；系統 V2.8.7 → V2.8.8
 
 ## V2.8.7 — 2026-04-29
 **edu 拆成醫/民兩檔，民眾版掃 QR 看到的內容跟 patient.html 一致**
