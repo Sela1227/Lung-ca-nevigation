@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.5"
+VERSION="2.8.6"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -131,8 +131,9 @@ node --check /tmp/j.js
 | 民眾版 SCLC 腦/脊髓轉移選項（V2.8.5+） | `patient.html` 的 `#opt-brain` 區塊 + `pickBrain()` / `applyQ3Mode()` |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
-| 民眾版 QR 內容 | `patient.html` 的 `buildQRPayload()` 函式 |
-| QR 編碼方式（V2.8.3+） | `patient.html` 的 `openQR()` 函式（用 qrcode-generator + UTF-8 byte mode）|
+| 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
+| 民眾版 QR 落地頁 | `lung/edu.html` — 解 base64 還原 type/stage/mut/brainMet 顯示摘要 |
+| 民眾版 modal 中文摘要 | `patient.html` 的 `buildHumanReadableSummary()`（QR 圖片下方文字，不是 QR 內容）|
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -186,16 +187,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.6 | V1.6.6 | 2026-04-29 | 民眾版 QR 改用 lung 同款模板（URL+base64，純 ASCII 避中文 fail）+ edu.html 加 SCLC/brainMet 處理 BUG-23 |
 | V2.8.5 | V1.6.5 | 2026-04-29 | 民眾版 SCLC 改局限/擴散二段式 + 腦/脊髓轉移影響 PCI 與免疫使用 BUG-22 |
 | V2.8.4 | V1.6.4 | 2026-04-29 | Portal 8 癌別圖示全改 inline SVG（脫離 FA）+ 跑遍 200 組合找出並修 4 個 state 殘留 bug BUG-20、BUG-21 |
 | V2.8.3 | V1.6.3 | 2026-04-29 | QR 中文 fail 修復（換 qrcode-generator + UTF-8 byte mode）+ drugs.html 健保藥物總整理頁 BUG-19 |
 | V2.8.2 | V1.6.2 | 2026-04-29 | 民眾版補回照護團隊可選（同步 CFG.team.depts）+ QR modal（hero 按鈕觸發）BUG-18 |
 | V2.8.1 | V1.6.1 | 2026-04-29 | 民眾版徹底改成真一頁式（100dvh + flex 鎖屏）；header/Q1/Q2/Q3/總覽全面重構排版 BUG-17 |
-| V2.8.0 | V1.6.0 | 2026-04-29 | 民眾版 Q2 改 TNM 輸入(簡化+進階) + 藥物視覺從附註升級為主角 BUG-16 |
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-22）
+## 六、踩過的坑（BUG-01 ~ BUG-23）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -349,6 +350,20 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**不同癌別的臨床分期邏輯不一定一致**。NSCLC 用 TNM/AJCC、SCLC 用 Limited/Extensive、其他癌別還會更不同（如食道用 Siewert 分型、肝癌用 BCLC）。下次新癌別模組複製時要認真考慮 stage axis 是不是適用，而不是套 NSCLC 模板就上
 - **測試新增 brainMet 維度**：原 200 組合擴成 800（加 5 個 brainMet 值），仍全綠
 
+### #23 (lung V1.6.6 / V2.8.6)：V2.8.3 換 QR lib 換到不可達 CDN
+- 症狀：Sela 截圖回報「QR 產生失敗：qrcode is not defined」`ReferenceError`，devtools 看到 patient.html:1209 拋錯
+- 根因：V2.8.3 為了修中文 fail（BUG-19）把 lib 從 `qrcodejs@1.0.0` 換到 `qrcode-generator@2.0.4`，但 CDN 從 `cdnjs.cloudflare.com` 換到 `cdn.jsdelivr.net`。**新 CDN 在 Sela 的網路環境沒載入到** — 可能被擋、超時或單純 DNS 失敗
+- 同時間 lung.html 的 QR 一直是 work 的，因為它從來沒換 CDN，且**用 URL（純 ASCII）做 payload 避開了 qrcodejs 中文問題**
+- 做法（抄 lung.html 模板）：
+  1. lib 換回 `cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0`（已驗證可達）
+  2. **QR 內容改成 URL** `EDU_BASE_URL + '#' + base64(JSON)`，純 ASCII
+  3. 民眾版 modal 下方仍顯示中文摘要（`buildHumanReadableSummary()`），但那是給人看的，不是 QR 內容
+  4. **edu.html 同步加 SCLC + brainMet 處理**：解 base64 還原時依 type=='SC' 走 SCLC 顯示邏輯（侷限/擴散 + brainMet 影響 PCI/免疫）
+  5. schema 新增 `b` (brainMet) / `co` (病歷號) 欄位
+- 結果：URL 220-240 bytes（QR Version 11~13 容量 380~535 綽綽有餘），純 ASCII，不會中文 fail，CDN 可達
+- 教訓：**修一個 bug 不要引入兩個新依賴**。V2.8.3 同時換了 lib 名稱跟 CDN host，遇到問題就難判斷哪個是元凶。應該先驗證新 CDN 在目標環境可達；或更好的做法是抄已驗證可用的同款模板（這次抄 lung 才一發中）
+- 教訓：**同一個 repo 內已驗證 work 的方案，是最先該抄的**。lung.html 的 QR 一直 work、Sela 從沒抱怨過，我為了民眾版「便利性」自己另創一套，反而走了 V2.8.3→V2.8.6 三個版本才繞回來
+
 ---
 
 ## 七、擴充新癌別
@@ -366,7 +381,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證** — V2.8.5 動了 SCLC 流程。Sela 應在手機 + iPad + 桌機都試一輪：(a) 選 SCLC → Q2 看到「侷限型/擴散型」雙鈕能走完 (b) 切到「改用 TNM」是否雙向順暢 (c) Q3 SCLC 看到腦轉移選項而非基因 (d) 擴散型+有腦轉移的步驟不再列免疫
+1. **GitHub Pages 部署實機驗證 QR** — V2.8.6 把民眾版 QR 改回 cdnjs 的 qrcodejs。Sela 應實測：(a) 點 QR 按鈕能不能正確產 QR (b) 用手機掃 QR 能不能落地到 edu.html 顯示完整摘要 (c) NSCLC + SCLC（侷限/擴散）+ brainMet 各種情境掃出來都對
 2. **Sela 逐條 review SCLC 步驟內容** — V2.8.5 新加的 SCLC 分支 buildPath 邏輯（侷限/擴散 × 腦轉移 yes/no/unknown 共 6 種組合的步驟與警示文字）
 3. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
 4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓，新癌別的分期邏輯不一定能套 NSCLC 的 TNM 模板（食道有 Siewert、肝癌有 BCLC），要先想清楚
@@ -376,4 +391,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.8.5 把民眾版 SCLC 從硬塞 NSCLC TNM 流程改成符合臨床的「侷限型/擴散型」二段式，Q3 也從基因換成腦/脊髓轉移選項（影響 PCI 與免疫使用）。buildPath 依 brainMet 動態調整 — 擴散型有腦轉移就不推免疫（健保 ICI 9.69 規範限「無腦/脊髓」者）。仍保留 TNM fallback 模式雙向可切。827/827 自動化測試全綠。下版第一優先：Sela 實機驗收 SCLC 流程 + review SCLC 步驟內容。
+V2.8.6 修 Sela 截圖回報的「QR 產生失敗：qrcode is not defined」— V2.8.3 換 lib 時引入了不可達 CDN，這版抄 lung.html 同款模板（cdnjs qrcodejs + URL+base64 純 ASCII payload），順便讓 edu.html 處理 SCLC 與 brainMet。817/817 測試 + 6 個 QR 掃描情境模擬全綠。下版第一優先：Sela 實機驗收 QR 能不能掃到摘要。

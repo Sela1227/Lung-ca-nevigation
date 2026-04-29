@@ -70,29 +70,57 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     {dept:'放射腫瘤科'}
   ];
   // 治療目標查表（簡化版，依 type + stage 粗分）
-  function getGoal(t,s){
+  function getGoal(t,s,b){
     if(t==='SC'){
-      if(s.startsWith('IV')) return '化療＋免疫快速緩解，維持控制。';
+      const isExt = (s==='Extensive' || s.startsWith('IV'));
+      if(isExt){
+        if(b==='yes') return '有腦/脊髓轉移：化療為主控制全身病灶，並先放療處理腦部症狀。';
+        if(b==='no')  return '化療＋免疫治療達快速緩解，維持控制（無腦/脊髓轉移者免疫適用）。';
+        return '化療為基礎，是否加免疫須先確認腦/脊髓影像。';
+      }
+      // Limited
       return '利用化療高敏感度達成快速緩解，同步放療加強局部控制。';
     }
     if(s.startsWith('IV')) return '依基因檢測結果精準選擇標靶、免疫或化療。';
     if(s.startsWith('III')) return '多模態策略：化放療 ± 手術 ± 免疫鞏固。';
     return '以治癒為目標，手術清除病灶，輔以化療降低復發。';
   }
-  function getTx(t,s,m){
+  function getTx(t,s,m,b){
     if(t==='SC'){
-      if(s.startsWith('IV')) return '化療＋免疫治療（健保事審）± 鞏固放療';
-      return '化療＋放療 → 預防性全腦照射 (PCI)';
+      const isExt = (s==='Extensive' || s.startsWith('IV'));
+      if(isExt){
+        if(b==='yes') return '化療（鉑類＋Etoposide）+ 腦放療控制病灶（免疫不適用）';
+        if(b==='no')  return '化療 + 免疫治療（Atezolizumab/Durvalumab，健保事審）';
+        return '化療為基礎，依腦/脊髓影像決定是否加免疫';
+      }
+      // Limited
+      if(b==='yes') return '同步化放療 + 腦轉移治療性放療（不再做 PCI）';
+      if(b==='no')  return '同步化放療 + CR/PR 後預防性全腦照射 (PCI)';
+      return '同步化放療，PCI 評估前先確認腦部影像';
     }
     if(s.startsWith('IV')){
       if(m==='EGFR') return 'EGFR 標靶藥物';
       if(m==='ALK') return 'ALK 標靶藥物';
+      if(m==='ROS1') return 'ROS1 標靶藥物';
+      if(m==='BRAF') return 'BRAF + MEK 標靶藥物';
+      if(m==='MET') return 'MET 標靶藥物';
+      if(m==='KRAS') return 'KRAS G12C 標靶藥物（自費）';
       if(m==='OTHER_TKI') return '對應標靶藥物';
       if(m==='PDL1_HIGH'||m==='PDL1_LOW'||m==='PDL1_NEG') return '免疫治療 ± 化療（依健保規範）';
       return '依基因檢測結果決定';
     }
     if(s.startsWith('III')) return '化放療 ± 手術 ± 免疫/標靶治療';
     return '手術切除 → 依病理分期決定輔助治療';
+  }
+
+  // 顯示分期：SCLC 用「侷限型/擴散型」
+  function stageLabel(t, s){
+    if(t==='SC'){
+      if(s==='Limited' || s.startsWith('III') || s.startsWith('II') || s.startsWith('I')) return '侷限型 (Limited)';
+      if(s==='Extensive' || s.startsWith('IV')) return '擴散型 (Extensive)';
+      return s || '—';
+    }
+    return 'Stage ' + (s||'—');
   }
 
   // Parse fragment
@@ -111,8 +139,9 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
 
   function render(d){
     const typeName = TYPE_NAME[d.t]||d.t;
-    const goal = getGoal(d.t, d.s);
-    const tx = getTx(d.t, d.s, d.m);
+    const goal = getGoal(d.t, d.s, d.b);
+    const tx = getTx(d.t, d.s, d.m, d.b);
+    const stageTxt = stageLabel(d.t, d.s);
 
     let h = '<div class="edu-handout">';
     h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 病患個人化照護導航手冊</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
@@ -120,8 +149,14 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     h += '<div class="edu-info">';
     h += `<div><b>姓名：</b>${d.n||'—'}</div>`;
     h += `<div><b>診斷：</b>${typeName}</div>`;
-    h += `<div><b>分期：</b>Stage ${d.s}</div>`;
+    h += `<div><b>分期：</b>${stageTxt}</div>`;
     h += '</div>';
+    // SCLC + brainMet 特別行
+    if(d.t==='SC' && d.b){
+      const bL = ({yes:'有腦/脊髓轉移', no:'無腦/脊髓轉移', unknown:'腦/脊髓轉移待確認'})[d.b] || '';
+      const bColor = d.b==='yes' ? '#b91c1c' : (d.b==='no' ? '#15803d' : '#a16207');
+      if(bL) h += `<div style="margin-bottom:14px;padding:8px 14px;background:#f9fafb;border-left:3px solid ${bColor};font-size:13px;color:${bColor};font-weight:700">${bL}（影響預防性全腦照射 PCI 與免疫治療使用）</div>`;
+    }
     h += '<div class="edu-2col">';
     // Left: team + emergency
     h += '<div class="edu-col">';

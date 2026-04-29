@@ -1,4 +1,20 @@
-# Cancer Navigation V2.8.5 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.6 — 彰濱秀傳癌症中心
+
+## V2.8.6 — 2026-04-29
+**民眾版 QR 改成 lung.html 同款模板（URL + base64）**
+- **Sela 截圖回報**：V2.8.5 民眾版 QR 又出現「QR 產生失敗：qrcode is not defined」— `cdn.jsdelivr.net/npm/qrcode-generator` 在使用者環境沒載入到（CDN 不可達或被擋）
+- **核心修復**：抄醫護版 lung.html 的 QR 模板：
+  - lib 換回 `cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0`（lung.html 已驗證可達）
+  - QR 內容改成 URL（`edu.html#base64_json`），不再塞中文純文字
+  - **payload 純 ASCII** → qrcodejs 中文 fail bug 自動避開（V2.8.3 BUG-19 那條坑用第二種方式繞過）
+- **edu.html 加 SCLC + brainMet 處理**：民眾掃 QR 落在 edu.html，會依 type/stage/brainMet 顯示對應內容
+  - SCLC 顯示「侷限型 / 擴散型」而非 NSCLC stage
+  - brainMet 影響 PCI 與免疫使用建議（與 patient.html 邏輯一致）
+- **schema 新增**：`b` (brainMet) / `co` (病歷號)
+- **modal 顯示**：QR 圖片用 URL，下方 `qr-meta` 仍顯示中文摘要給使用者看
+- **817/817 自動化測試全綠**：800 組合 + 14 ajcc + 3 個 QR URL 純 ASCII 驗證
+- **6 個 QR 掃描情境模擬**全部產生臨床上正確的內容差異（NSCLC IIIA EGFR / SCLC 4 種 brainMet 組合）
+- **模組**：lung V1.6.5 → V1.6.6；系統 V2.8.5 → V2.8.6
 
 ## V2.8.5 — 2026-04-29
 **民眾版 SCLC 改照常用的局限/擴散二段式設計**

@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
 <title>肺癌路徑查詢 — 彰濱秀傳癌症中心</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -1175,45 +1175,79 @@ function pickDoctor(deptId, name){
 }
 
 /* ─── QR (always-on, modal triggered) ─── */
-function buildQRPayload(){
+// 採 lung.html 同款模板：QR 內容是 URL，掃 QR 落在 edu.html 顯示摘要
+// 好處：1) payload 純 ASCII，避開 qrcodejs 中文編碼問題  2) 跟醫護版 QR 一致
+const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu.html';
+
+function buildEduPayload(){
+  // 只送必要欄位（base64 後 < 200 字元）
+  const typeCode = {NSCLC_NS:'NS', NSCLC_SQ:'SQ', SCLC:'SC'}[S.type] || '';
+  const today = (new Date()).toISOString().slice(0,10);
+  return {
+    n: (S.name||'').slice(0,8),    // 姓名（限 8 字以內隱私）
+    t: typeCode,
+    s: S.stage || (isSCLC() ? (S.stageCat==='META'?'Extensive':'Limited') : ''),
+    m: S.mut || '',
+    b: S.brainMet || '',          // SCLC 腦/脊髓轉移
+    tm: TEAM.depts.map(d => S.consult[d.id] || ''),
+    c: TEAM.caseManager.name,
+    d: today,
+    co: S.code || '',              // 病歷號（可空）
+  };
+}
+
+function buildEduURL(){
+  const json = JSON.stringify(buildEduPayload());
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return EDU_BASE_URL + '#' + b64;
+}
+
+// 民眾版 modal 用的「閱讀摘要」(中文，給 .qr-meta 顯示，QR 不裝這個)
+function buildHumanReadableSummary(){
   const r = buildPath();
   const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
-  const parts = ['肺癌路徑'];
+  const parts = [];
   if(S.code) parts.push(S.code);
   if(S.name) parts.push(S.name);
   parts.push('Stage ' + stageDisplay());
   if(tnmStr) parts.push(tnmStr);
   if(S.mut && S.mut!=='NONE') parts.push(mutDisplay(S.mut));
   if(isSCLC() && S.brainMet){
-    parts.push(({yes:'腦/脊髓轉移(+)', no:'腦/脊髓轉移(-)', unknown:''})[S.brainMet] || '');
+    const bL = ({yes:'腦/脊髓(+)', no:'腦/脊髓(-)', unknown:''})[S.brainMet];
+    if(bL) parts.push(bL);
   }
   parts.push(r.pwTxt);
-  // Doctors
-  const doctors = TEAM.depts
-    .filter(d=>S.consult[d.id])
-    .map(d=>`${d.name}:${S.consult[d.id]}`);
+  const doctors = TEAM.depts.filter(d=>S.consult[d.id]).map(d=>`${d.name}:${S.consult[d.id]}`);
   if(doctors.length) parts.push(...doctors);
   return parts.join(' | ');
 }
+
 function openQR(){
   const modal = document.getElementById('qr-modal');
   modal.style.display = 'flex';
   const canvas = document.getElementById('qr-canvas');
   canvas.innerHTML = '';
-  const payload = buildQRPayload();
-  document.getElementById('qr-meta').textContent = payload;
+  // 顯示給人看的摘要（中文）
+  document.getElementById('qr-meta').textContent = buildHumanReadableSummary();
+  // QR 內容是 URL（純 ASCII），落地 edu.html
+  const url = buildEduURL();
   try{
-    // qrcode-generator 2.0.4: 中文需先轉 UTF-8 bytes 才能正確編碼
-    // 用 unescape(encodeURIComponent(...)) 將 UTF-8 string 轉成 byte string
-    const utf8 = unescape(encodeURIComponent(payload));
-    const qr = qrcode(0, 'M');  // typeNumber=0 自動偵測尺寸；correction level M
-    qr.addData(utf8, 'Byte');
-    qr.make();
-    // cellSize=5 → 約 200px (依 QR version 不同可能略小或大)
-    canvas.innerHTML = qr.createImgTag(5, 8);
-    // 強制 img max-width 適應 modal
-    const img = canvas.querySelector('img');
-    if(img){ img.style.maxWidth = '100%'; img.style.height = 'auto'; img.style.imageRendering = 'pixelated'; }
+    if(typeof QRCode === 'undefined'){
+      throw new Error('QR lib 未載入，請檢查網路');
+    }
+    new QRCode(canvas, {
+      text: url,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    // qrcodejs 會塞 canvas + img，調整 sizing
+    setTimeout(()=>{
+      const img = canvas.querySelector('img'); if(img){ img.style.maxWidth='100%'; img.style.height='auto'; }
+      const cv = canvas.querySelector('canvas'); if(cv){ cv.style.maxWidth='100%'; cv.style.height='auto'; }
+    }, 30);
   } catch(e){
     console.error('QR generate error:', e);
     canvas.innerHTML = '<div style="padding:20px;color:var(--red);font-size:12px">QR 產生失敗：'+escapeHtml(e.message||String(e))+'</div>';
