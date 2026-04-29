@@ -60,7 +60,26 @@ body{
 
 /* progress dots inline in header right side */
 .hdr-progress{display:flex;gap:5px;align-items:center;flex-shrink:0}
-.hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* V2.8.10: 藥物查詢按鈕 — 白底青字，跳出 header 背景明顯 */
+.drug-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 11px;border-radius:9px;
+  background:#fff;color:var(--teal-d);
+  text-decoration:none;font-family:inherit;font-size:12.5px;font-weight:800;letter-spacing:.3px;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  transition:transform .15s,box-shadow .2s,background .2s;
+  white-space:nowrap;
+}
+.drug-btn:hover{background:var(--teal-soft);transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.drug-btn:active{transform:scale(.96)}
+.drug-btn svg{flex-shrink:0}
+@media(max-width:380px){
+  /* 小手機：只顯示 icon，省空間 */
+  .drug-btn{padding:7px 9px}
+  .drug-btn-lbl{display:none}
+}
 .pdot{width:18px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);transition:background .2s,width .2s}
 .pdot.active{background:#fff;width:22px}
 .pdot.done{background:rgba(255,255,255,.65)}
@@ -371,8 +390,9 @@ body{
     </div>
   </div>
   <div class="hdr-r">
-    <a href="drugs.html" class="home-btn" title="健保肺癌藥物總整理">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+    <a href="drugs.html" class="drug-btn" title="健保肺癌藥物總整理">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+      <span class="drug-btn-lbl">藥物查詢</span>
     </a>
     <div class="hdr-progress" id="progress">
       <div class="pdot active" data-p="0"></div>

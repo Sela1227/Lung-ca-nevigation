@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.9"
+VERSION="2.8.10"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -136,7 +136,7 @@ node --check /tmp/j.js
 | 醫護版 QR 落地頁（V2.8.7+） | `lung/edu-pro.html`（原 edu.html）— 詳細 getDrugDetail，含 SCLC + brainMet |
 | 民眾版 QR 落地頁（V2.8.7+） | `lung/edu-patient.html` — 完整 DRUGS + buildPathFromData，跟 patient.html 總覽頁內容一致 |
 | 民眾版 modal 中文摘要 | `patient.html` 的 `buildHumanReadableSummary()`（QR 圖片下方文字，不是 QR 內容）|
-| 藥物入口連結（V2.8.9+） | lung.html topbar 的 `<a class="topbar-btn">藥物</a>` / patient.html hdr-r 內的 `.home-btn`（連 drugs.html）|
+| 藥物入口連結（V2.8.10+） | lung.html topbar 的 `<a class="topbar-btn">藥物</a>` / patient.html hdr-r 內的 `.drug-btn`（白底青字「藥物查詢」，連 drugs.html）|
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -190,6 +190,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
 | V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
 | V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html（已被 V2.8.9 取代）|
 | V2.8.7 | V1.6.7 | 2026-04-29 | edu 拆兩檔（edu-pro.html / edu-patient.html）民眾版掃 QR 看到的內容跟 patient.html 總覽頁一致 BUG-24 |
@@ -200,7 +201,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-24）
+## 六、踩過的坑（BUG-01 ~ BUG-25）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -380,6 +381,13 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**「邏輯複用」不等於「UI 複用」**。lung.html 跟 patient.html 的目標使用者不同（醫護 vs 民眾），雖然底層都是同個 buildPath 邏輯，但呈現詳細度應該對齊各自應用本身的詳細度。下次新增「掃描碼落地頁」這種延伸頁時，記得先問：是要「跟發送者一致」還是「跟新類型受眾一致」
 - 教訓：**重複資料源跨檔同步是個維護坑**。現在 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS 物件，未來改 DRUGS 要兩邊改。CLAUDE.md 第三節改功能對映表已標註，下次改 DRUGS 要記得跟。長期可考慮把 DRUGS 抽成 `lung/_drugs.js` 共用 — 但那會破壞「單檔 HTML」原則，先不做
 
+### #25 (lung V1.6.10 / V2.8.10)：民眾版藥物按鈕「太不明顯」
+- 症狀：Sela 回報 V2.8.9 patient.html header 右上的藥物 icon「超小超不明顯」
+- 原因：V2.8.9 沿用 `.home-btn` 樣式（30×30px、半透明灰底 `rgba(255,255,255,.16)`、icon 14px）— 在 home 按鈕情境下合理（低調避免誤點），但藥物入口需要被看到才能用，沿用 home 樣式變成「沒人發現的 icon」
+- 做法：新建 `.drug-btn` 樣式區隔：白底 (#fff) + 青文字 (var(--teal-d) #115e59) + box-shadow 浮起 + 文字「藥物查詢」+ icon
+- 視覺對比：白底 vs header 深綠漸層（#115e59→#0d9488），對比度極高，民眾一眼就看到
+- 教訓：**並列按鈕不該全用同一個樣式**。home 是「逃生口」（誤觸不影響但合理低調）；藥物是「主功能延伸」（需要被發現）。同一個 header 內的不同按鈕應依重要性分配視覺權重。下次設計新按鈕前，先想：「這是誤點不要緊的逃生口，還是希望使用者主動發現的功能？」
+
 ---
 
 ## 七、擴充新癌別
@@ -397,15 +405,15 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.8.9** — Sela 應實測：(a) lung.html 上方 topbar 看到「藥物」按鈕、點進去到 drugs.html (b) patient.html hdr 右上看到藥物 icon、點進去也行 (c) 兩邊都不再有底部 banner 多佔一排空間
+1. **GitHub Pages 部署實機驗證 V2.8.10** — Sela 應實測：(a) patient.html header 右上看到白底「藥物查詢」按鈕、明顯到不會錯過 (b) 點進去到 drugs.html (c) 桌機/手機都看得清楚
 2. **Sela 逐條 review SCLC 步驟內容** — V2.8.5 新加的 SCLC 分支 buildPath 邏輯（侷限/擴散 × 腦轉移 yes/no/unknown 共 6 種組合的步驟與警示文字）
 3. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
-4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓，新癌別的分期邏輯不一定能套 NSCLC 的 TNM 模板；依 BUG-24 教訓，新癌別也要拆 edu-pro / edu-patient 兩檔；新癌別的 lung/patient 也要記得加藥物入口
+4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重
 5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-6. **DRUGS 共用機制觀察**：目前 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS。未來改 DRUGS 要兩邊改
+6. **DRUGS 共用機制觀察**：目前 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS
 
 ---
 
 ## 九、一句話總結
 
-V2.8.9 把 V2.8.8 的底部「快速工具 banner」搬到 header 區。Sela 反映底部 banner 多佔一排空間擾亂鎖屏設計。這版改成：lung.html topbar 加按鈕跟列印/新病人並列；patient.html hdr 右側加 icon 跟 home 按鈕對稱。兩邊都復原原本的鎖屏 layout。814/814 回歸全綠。下版第一優先：實機驗收。
+V2.8.10 修 V2.8.9 民眾版藥物按鈕「太不明顯」— 改用白底青字「藥物查詢」按鈕（box-shadow 浮起），跳出 header 深綠背景。`.home-btn`（誤觸逃生口）跟 `.drug-btn`（主動發現的功能延伸）視覺權重分明。814/814 回歸全綠。下版第一優先：實機驗收這次按鈕真的看得到了嗎。
