@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.10"
+VERSION="2.8.11"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -190,6 +190,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
 | V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
 | V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
 | V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html（已被 V2.8.9 取代）|
@@ -201,7 +202,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-25）
+## 六、踩過的坑（BUG-01 ~ BUG-27）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -388,6 +389,24 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 視覺對比：白底 vs header 深綠漸層（#115e59→#0d9488），對比度極高，民眾一眼就看到
 - 教訓：**並列按鈕不該全用同一個樣式**。home 是「逃生口」（誤觸不影響但合理低調）；藥物是「主功能延伸」（需要被發現）。同一個 header 內的不同按鈕應依重要性分配視覺權重。下次設計新按鈕前，先想：「這是誤點不要緊的逃生口，還是希望使用者主動發現的功能？」
 
+### #26 (lung V1.6.11 / V2.8.11)：手機版總覽頁強制鎖屏導致內容擠成一坨
+- 症狀：Sela 反映手機看總覽頁，hero+drugs+strip 被擠在一個視窗高度內，藥物清單 step 看不全
+- 原因：BUG-17 修「一問一頁」鎖屏時連帶把總覽頁也鎖死。Q1/Q2/Q3 鎖屏正確（內容是按鈕網格、本來就該一屏顯示完），但**總覽頁本來就是「閱讀型內容」**，藥物清單長度因 type/stage/mut 變動，硬塞一屏只能用內捲縮小空間
+- 做法（V2.8.11 完整套）：
+  1. CSS：`@media(max-width:640px)` 下 `body.summary { overflow:auto; min-height:100dvh }`，`.sum-wrap { overflow:visible }`，`.sum-drugs-body { overflow:visible; max-height:none }`
+  2. JS：showPage 進總覽時 `body.classList.add('summary')`，離開時 remove
+  3. actbar 改 `position:sticky; bottom:0`，「重新查詢」按鈕一直在底部
+  4. 桌機（>640px）保留原本鎖屏行為（桌機螢幕夠大不會擠）
+- 教訓：**「一頁式」是 question 階段的設計，不是 reading 階段**。問答頁需要鎖屏（避免使用者誤以為要捲）；閱讀頁需要解鎖（內容長度可變）。下次新癌別模組複製時，注意這個區別
+
+### #27 (lung V1.6.11 / V2.8.11)：「返回」一詞模糊，使用者搞不清是退一題還是退一層
+- 症狀：問答間「下一題」自動跳，但反向用「返回」這個詞 — 使用者直覺以為「返回首頁」而非「上一題」
+- 做法：
+  - Q2/Q3 顯示「← 上一題」（同層退一題，跟「下一題」對稱）
+  - 總覽頁顯示「← 返回」（跨層回到問答流程）
+  - JS 在 `updateActBar()` 內依 `stepIdx` 動態切換按鈕文字，actbar HTML 預設不寫文字
+- 教訓：**多步驟流程的「同層導覽」與「跨層返回」要用不同詞彙**。「上一題」明確指同層；「返回」隱含「離開這個區段」。混用會讓使用者卡住
+
 ---
 
 ## 七、擴充新癌別
@@ -405,15 +424,15 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.8.10** — Sela 應實測：(a) patient.html header 右上看到白底「藥物查詢」按鈕、明顯到不會錯過 (b) 點進去到 drugs.html (c) 桌機/手機都看得清楚
-2. **Sela 逐條 review SCLC 步驟內容** — V2.8.5 新加的 SCLC 分支 buildPath 邏輯（侷限/擴散 × 腦轉移 yes/no/unknown 共 6 種組合的步驟與警示文字）
+1. **GitHub Pages 部署實機驗證 V2.8.11** — Sela 應實測：(a) 手機版總覽頁可順暢向下捲，藥物清單完整顯示 (b) Q2/Q3 看到「上一題」，總覽看到「返回」 (c) 治療路徑內容（特別 SCLC PCI、NSCLC EARLY 術前免疫、PDL1_HIGH 單藥） review 是否合臨床意
+2. **Sela 確認健保事審現況** — V2.8.11 註記了幾個「待確認」項目：(a) Sotorasib (KRAS G12C) 健保是否已給付 (b) Alectinib 術後鞏固 ALINA 健保是否已給付 (c) Amivantamab 健保適應症
 3. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
-4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重
+4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖
 5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-6. **DRUGS 共用機制觀察**：目前 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS
+6. **DRUGS 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS
 
 ---
 
 ## 九、一句話總結
 
-V2.8.10 修 V2.8.9 民眾版藥物按鈕「太不明顯」— 改用白底青字「藥物查詢」按鈕（box-shadow 浮起），跳出 header 深綠背景。`.home-btn`（誤觸逃生口）跟 `.drug-btn`（主動發現的功能延伸）視覺權重分明。814/814 回歸全綠。下版第一優先：實機驗收這次按鈕真的看得到了嗎。
+V2.8.11 三件事：手機總覽頁解鎖捲動（讓藥物清單完整顯示，問答頁仍鎖屏）；返回按鈕語意精準化（上一題 vs 返回）；治療路徑全面 review — NSCLC EARLY 加術前免疫與 ALK 術後鞏固、META PDL1_HIGH 加 Pembrolizumab 單藥首選、META EGFR 加 Amivantamab 後線、SCLC Extensive PCI 改 MRI 監測或 PCI（證據更新）、SCLC brain+ 腦放療時機改依症狀決定。814/814 回歸全綠。下版第一優先：實機驗收 + Sela 確認健保事審現況。

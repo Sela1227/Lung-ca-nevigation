@@ -1,4 +1,22 @@
-# Cancer Navigation V2.8.10 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.11 — 彰濱秀傳癌症中心
+
+## V2.8.11 — 2026-04-29
+**手機版總覽頁解鎖捲動 + 治療路徑全面 review + 返回按鈕語意精準化**
+- **手機版總覽頁解鎖**：原本 patient.html `body.summary { overflow:auto }`，hero+drugs+strip 不再被擠成一坨。Q1/Q2/Q3 仍鎖屏第一屏。actbar 改成 `position:sticky; bottom:0` 讓「重新查詢」按鈕一直在底部
+- **返回按鈕語意精準化**：
+  - Q2/Q3 顯示「上一題」（同層退一題）
+  - 總覽頁顯示「返回」（跨層回到問答流程）
+  - 配合 V2.7.0 起的「選完自動跳下一題」更直觀
+- **治療路徑逐條 review（NSCLC + SCLC 全分支）**：
+  - **NSCLC 早期**：+ 術前化療免疫（CheckMate-816 模式）、+ ALK 術後鞏固（ALINA, Alectinib 2 年）、warns 從 2 條擴成 3 條（高風險因子、化療調整、術後基因檢測）
+  - **NSCLC 局晚**：+ 可切除 IIIA 描述更精準、+ IIIA 切除術後 EGFR/ALK 標靶鞏固、warns 強調基因檢測影響鞏固選擇
+  - **NSCLC META EGFR**：+ Amivantamab + 化療（MARIPOSA-2 後線）、二線改寫成「抗藥機制檢測」更實際
+  - **NSCLC META PDL1_HIGH**：+ Pembrolizumab 單藥首選（KEYNOTE-024，PD-L1 ≥50% 可不加化療）；合併化療列為「腫瘤負荷大時」次選
+  - **NSCLC META KRAS**：警示改成「健保給付狀態請確認最新事審條件」（健保條件變動快），+ Adagrasib 提及但台灣未上市
+  - **SCLC Extensive (no brain)**：PCI 改「MRI 監測 或 PCI」（Takahashi 2017 證據後 PCI 證據已弱化）
+  - **SCLC Extensive (brain+)**：腦轉移處理改「依症狀決定放療時機」（無症狀小病灶可先化療同時 MRI 監測）
+- 814/814 回歸全綠
+- **模組**：lung V1.6.10 → V1.6.11；系統 V2.8.10 → V2.8.11
 
 ## V2.8.10 — 2026-04-29
 **民眾版藥物按鈕改成白底青字「藥物查詢」（明顯）**
