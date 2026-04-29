@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.0"
+VERSION="2.8.1"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -49,7 +49,7 @@ zip -r "/mnt/user-data/outputs/${NAME}.zip" "${NAME}" \
 - Title：只顯示模組版
 - Portal footer：只顯示系統版
 - edu.html：不顯示版本
-- patient.html footer：顯示系統版（V2.7.0 起）
+- **patient.html：V2.8.1 起不顯示版本**（footer 移除以節省版面，版號由 portal 負責）
 
 ### JS 語法驗證（每次必跑）
 ```bash
@@ -178,16 +178,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.1 | V1.6.1 | 2026-04-29 | 民眾版徹底改成真一頁式（100dvh + flex 鎖屏）；header/Q1/Q2/Q3/總覽全面重構排版 BUG-17 |
 | V2.8.0 | V1.6.0 | 2026-04-29 | 民眾版 Q2 改 TNM 輸入(簡化+進階) + 藥物視覺從附註升級為主角 BUG-16 |
 | V2.7.0 | V1.5.0 | 2026-04-29 | 民眾版重寫(一問一頁) + 健保藥物資料庫整合 + Chart.js 語法錯修復 + rAF 卡頓優化 BUG-14、BUG-15 |
 | V2.6.1 | V1.4.1 | 2026-04-07 | computeAJCC N2a/N2b 修正（AJCC 9th 對齊 NCCN v3.2026）BUG-13 |
 | V2.6.0 | V1.4.0 | 2026-04-07 | 民眾版改為下拉式路徑查詢器（已被 V2.7.0 取代）|
 | V2.5.1 | V1.3.1 | 2026-04-07 | 全系統正黑體；民眾版姓名可跳；FA→SVG |
-| V2.5.0 | V1.3.0 | 2026-04-07 | Portal 分版（醫護 vs 民眾）|
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-16）
+## 六、踩過的坑（BUG-01 ~ BUG-17）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -269,6 +269,21 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
   4. 健保 badge 加粗放在 step title 開頭（從尾巴搬到前面）
 - 教訓：**民眾版的視覺層級跟醫護版不一樣**。醫護看到 12.5px 藥名是「正常的細節」，民眾看到 12.5px 是「不重要的附註」。對民眾，藥物清單必須是視覺主角、不能跟說明文字混在一起。下次再加任何「健保 / 自費 / 藥名」資訊到民眾版，都要套 `.tx-drugs-box` 模式
 
+### #17 (lung V1.6.1 / V2.8.1)：民眾版「一問一頁」其實還在滑
+- 症狀：Sela 反映 V2.8.0 桌機/手機都還要滑滾輪。每頁高度都不一樣，視覺很跳
+- 原因：之前 `body` 沒鎖視窗高度、`.main` 沒 flex:1、`.cd` 用 padding 撐高，內容多就溢出。加上 header 太厚（~120px）、actbar 加進來，可用內容區只剩 ~400px，但 Q3 的 9 顆按鈕垂直排已經破 700px
+- 做法（V2.8.1 完整套）：
+  1. `body` 用 `100dvh` + `overflow:hidden` 鎖在視窗內
+  2. `.main` `flex:1; min-height:0`，每個 `.page` 也 `flex:1; min-height:0; flex-direction:column`
+  3. `.cd` 改 `flex:1; overflow:hidden`，內部用 grid/flex 自動分配
+  4. Q1 4 顆按鈕改 2×2 grid（手機 1 欄但壓扁高度）
+  5. Q2 TNM 三組改水平 row（letter ▸ meta ▸ buttons），總覽帶 + skip-link 嵌底
+  6. Q3 mut 9 顆改 3 欄 grid（手機 2 欄）
+  7. 總覽：3 區（hero + 唯一允許捲動的藥物清單 + 底部 strip）
+  8. 進度點移進 header 右側
+  9. 移除 patient footer（佔版面又多餘）
+- 教訓：**「一問一頁」不等於「一屏放得下」**。要鎖屏，必須 (a) `100dvh` + `overflow:hidden` (b) 每層都 `flex:1+min-height:0`（少了 min-height:0，flex child 會被內容撐爆） (c) 唯一允許 scroll 的地方要刻意設計（這版只有藥物清單）。下次新癌別模組複製時，這個「鎖屏 layout」要保留
+
 ---
 
 ## 七、擴充新癌別
@@ -296,4 +311,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.8.0 兩件事：民眾版 Q2 從「分期三選一」升級成完整 TNM 輸入（簡化按鈕 + 進階展開、即時算分期、全套搬移 BUG-13 修正）；藥物視覺從 12.5px 灰色附註升級成淺青底卡片 + 14.5px 加粗英文名（Sela V2.7.0 反映「看不到藥物」的根本問題其實是視覺層級）。下版第一優先是 Sela 在實機環境驗收 TNM 流程與藥物可見性。
+V2.8.1 處理 Sela 「還在滑動」的回報：徹底改成真一頁式（`100dvh` 鎖屏 + 多層 `flex:1; min-height:0`），Q1 改 2×2 grid、Q2 三 row 水平壓扁、Q3 改 3 欄 grid、總覽分三區（hero/藥物可捲/底部 strip），header 把 progress 收進去省一行。每頁高度一致、桌機手機都不需要滾。功能無動，14/14 ajcc 測試保持綠。下版第一優先還是 Sela 在實機驗收 — 這次「真的不用滑了」嗎。

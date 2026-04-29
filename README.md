@@ -1,4 +1,20 @@
-# Cancer Navigation V2.8.0 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.1 — 彰濱秀傳癌症中心
+
+## V2.8.1 — 2026-04-29
+**民眾版整體 UI 重構成「真一頁式」**
+- Sela 反映 V2.8.0 仍要滑動，這版徹底翻修：
+  - `body` 改用 `100dvh` + `overflow:hidden`，整個 app 鎖在視窗內
+  - `.main` `flex:1`，每頁`flex:1` 填滿可用區（hdr 60-72px + bar 56-60px 之外全給內容）
+  - **Q1**：4 顆類型按鈕改 2×2 grid（手機 1 欄但更扁），姓名/病歷號折成單行
+  - **Q2**：T/N/M 三組水平 row（letter ▸ meta ▸ 按鈕組），預估高度從 ~400px 砍到 ~290px；stage 預覽嵌進底部一條
+  - **Q3**：基因 9 顆改 3 欄 grid（手機 2 欄），高度減半；按鈕用 mut-tag/title/sub 三層
+  - **總覽**：3 區塊 = hero 帶 + 藥物清單(唯一允許捲動) + 底部團隊+警示 strip(2 欄)
+  - 進度點移進 header 右側（節省一行）
+- Header 改成左 home + 標題 / 右進度點，行高 60-72px（之前 ~120px）
+- 所有 SVG 改成 `currentColor` 確保配色一致；type-grid icon 改更小更乾淨
+- **無功能性改動**：14/14 ajcc 測試保持綠
+- 移除 patient footer 文字（擠版面），版號顯示由 portal/lung 負責
+- **模組**：lung V1.6.0 → V1.6.1（僅版號 bump）；系統 V2.8.0 → V2.8.1
 
 ## V2.8.0 — 2026-04-29
 **民眾版 TNM 輸入 + 藥物可見性大幅強化**
