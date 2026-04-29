@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>我的肺癌治療計畫 — 彰濱秀傳癌症中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --teal:#0d9488;--teal-dark:#0f766e;--teal-light:rgba(13,148,136,0.08);--teal-border:rgba(13,148,136,0.20);
+  --bg:#F7F9FB;--bg-card:#FFFFFF;--border:#E2E8F0;
+  --text:#2C3E50;--text2:#5A6B7C;--text3:#8A9BAA;
+  --rose:#dc2626;--amber:#d97706;
+}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* Header */
+.hdr{background:linear-gradient(135deg,#0f766e 0%,#0d9488 60%,#14b8a6 100%);color:#fff;padding:32px 20px 48px;text-align:center;position:relative}
+.hdr-icon{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px;border:1px solid rgba(255,255,255,.20)}
+.hdr h1{font-size:22px;font-weight:900;letter-spacing:1px}
+.hdr p{font-size:13px;opacity:.82;margin-top:4px}
+
+/* Main */
+.main{flex:1;max-width:640px;width:100%;margin:-24px auto 0;padding:0 16px 40px;position:relative;z-index:2}
+
+/* Step cards */
+.step{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px 20px;margin-bottom:16px;display:none}
+.step.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--teal-light);color:var(--teal);font-size:13px;font-weight:900;margin-right:8px;border:1.5px solid var(--teal-border)}
+.step-title{font-size:17px;font-weight:800;margin-bottom:16px;display:flex;align-items:center}
+
+/* Form elements */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.field input,.field select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;transition:border .2s}
+.field input:focus,.field select:focus{border-color:var(--teal)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%238A9BAA' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+/* Choice buttons */
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{padding:14px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;background:var(--bg-card)}
+.choice:hover{border-color:var(--teal);background:var(--teal-light)}
+.choice.sel{border-color:var(--teal);background:var(--teal-light);box-shadow:0 0 0 2px var(--teal-border)}
+.choice-icon{font-size:28px;margin-bottom:6px;color:var(--teal)}
+.choice-label{font-size:14px;font-weight:700}
+.choice-hint{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Result card */
+.result-box{background:var(--teal-light);border:1.5px solid var(--teal-border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.result-box h4{font-size:15px;font-weight:800;color:var(--teal-dark);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.result-box p{font-size:14px;line-height:1.75;color:var(--text)}
+.result-box .team-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
+.result-box .team-row:last-child{border-bottom:none}
+.result-box .team-dept{color:var(--text2)}
+.result-box .team-name{font-weight:700}
+
+/* QR */
+.qr-area{text-align:center;margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border)}
+.qr-area canvas{border-radius:6px;margin-bottom:8px}
+.qr-hint{font-size:11px;color:var(--text3)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;border:none}
+.btn-next{background:var(--teal);color:#fff}
+.btn-next:hover{background:var(--teal-dark)}
+.btn-back{background:transparent;color:var(--text2);border:1.5px solid var(--border)}
+.btn-back:hover{background:var(--bg)}
+.btn-row{display:flex;justify-content:space-between;margin-top:20px;gap:12px}
+.btn-row .btn{flex:1}
+
+/* Emergency */
+.emg{background:#FEF2F2;border:1.5px solid #E0B4B4;border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.7;margin-top:14px}
+
+/* Footer */
+.footer{text-align:center;padding:20px;font-size:11px;color:var(--text3);border-top:1px solid var(--border)}
+
+/* Print */
+@media print{
+  .hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .btn,.btn-row,.footer{display:none!important}
+  .step{display:block!important;break-inside:avoid}
+}
+@media(max-width:480px){
+  .choices{grid-template-columns:1fr}
+  .hdr h1{font-size:19px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-icon"><i class="fa-solid fa-lungs"></i></div>
+  <h1>我的肺癌治療計畫</h1>
+  <p>彰濱秀傳癌症中心 · 民眾簡易版</p>
+</div>
+
+<div class="main">
+
+  <!-- Step 1: Basic info -->
+  <div class="step active" id="s1">
+    <div class="step-title"><span class="step-num">1</span> 基本資料</div>
+    <div class="field">
+      <label>姓名</label>
+      <input type="text" id="pt-name" placeholder="請輸入姓名">
+    </div>
+    <div class="field">
+      <label>收案 ID（選填）</label>
+      <input type="text" id="pt-id" placeholder="個管師填寫">
+    </div>
+    <div class="btn-row">
+      <a href="../" class="btn btn-back"><i class="fa-solid fa-arrow-left"></i> 回首頁</a>
+      <button class="btn btn-next" onclick="goStep(2)">下一步 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 2: Cancer type (simplified) -->
+  <div class="step" id="s2">
+    <div class="step-title"><span class="step-num">2</span> 您的診斷</div>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:14px">醫師告訴您的肺癌類型是？</p>
+    <div class="choices" id="type-choices">
+      <div class="choice" onclick="pickType(this,'adeno')">
+        <div class="choice-icon"><i class="fa-solid fa-lungs"></i></div>
+        <div class="choice-label">肺腺癌</div>
+        <div class="choice-hint">最常見的類型</div>
+      </div>
+      <div class="choice" onclick="pickType(this,'squamous')">
+        <div class="choice-icon"><i class="fa-solid fa-lungs"></i></div>
+        <div class="choice-label">鱗狀細胞肺癌</div>
+        <div class="choice-hint">與吸菸相關</div>
+      </div>
+      <div class="choice" onclick="pickType(this,'small')">
+        <div class="choice-icon"><i class="fa-solid fa-lungs"></i></div>
+        <div class="choice-label">小細胞肺癌</div>
+        <div class="choice-hint">生長較快</div>
+      </div>
+      <div class="choice" onclick="pickType(this,'unsure')">
+        <div class="choice-icon"><i class="fa-solid fa-circle-question"></i></div>
+        <div class="choice-label">還不確定</div>
+        <div class="choice-hint">等報告中</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> 上一步</button>
+      <button class="btn btn-next" onclick="goStep(3)">下一步 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 3: Stage (simplified) -->
+  <div class="step" id="s3">
+    <div class="step-title"><span class="step-num">3</span> 治療方向</div>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:14px">醫師說您目前的狀況屬於？</p>
+    <div class="choices" id="stage-choices">
+      <div class="choice" onclick="pickStage(this,'early')">
+        <div class="choice-icon"><i class="fa-solid fa-seedling"></i></div>
+        <div class="choice-label">早期（可手術）</div>
+        <div class="choice-hint">Stage I ~ II</div>
+      </div>
+      <div class="choice" onclick="pickStage(this,'local_adv')">
+        <div class="choice-icon"><i class="fa-solid fa-arrow-up-right-dots"></i></div>
+        <div class="choice-label">局部晚期</div>
+        <div class="choice-hint">Stage III</div>
+      </div>
+      <div class="choice" onclick="pickStage(this,'advanced')">
+        <div class="choice-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+        <div class="choice-label">晚期（有轉移）</div>
+        <div class="choice-hint">Stage IV</div>
+      </div>
+      <div class="choice" onclick="pickStage(this,'unsure')">
+        <div class="choice-icon"><i class="fa-solid fa-circle-question"></i></div>
+        <div class="choice-label">還不確定</div>
+        <div class="choice-hint">等檢查結果</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> 上一步</button>
+      <button class="btn btn-next" onclick="goStep(4)">查看我的計畫 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 4: Result -->
+  <div class="step" id="s4">
+    <div class="step-title"><span class="step-num">4</span> 我的治療計畫</div>
+
+    <div class="result-box" id="res-plan">
+      <h4><i class="fa-solid fa-clipboard-list"></i> 治療方向</h4>
+      <p id="res-plan-text">根據您的情況，團隊會為您安排適合的治療方案。</p>
+    </div>
+
+    <div class="result-box">
+      <h4><i class="fa-solid fa-user-doctor"></i> 您的照護團隊</h4>
+      <div class="team-row"><span class="team-dept">胸腔外科</span><span class="team-name" id="doc-ts">（主治醫師）</span></div>
+      <div class="team-row"><span class="team-dept">胸腔內科／血液腫瘤科</span><span class="team-name" id="doc-chm">（主治醫師）</span></div>
+      <div class="team-row"><span class="team-dept">放射腫瘤科</span><span class="team-name" id="doc-ro">（主治醫師）</span></div>
+      <div class="team-row" style="background:var(--teal-light);margin:4px -20px -18px;padding:8px 20px;border-radius:0 0 10px 10px"><span class="team-dept" style="font-weight:700;color:var(--teal-dark)">個案管理師</span><span class="team-name" style="color:var(--teal-dark)">郭美伶</span></div>
+    </div>
+
+    <div class="result-box">
+      <h4><i class="fa-solid fa-heart-pulse"></i> 副作用管理</h4>
+      <p>治療期間可能出現噁心、疲倦、食慾下降等情形，這些都是正常反應。醫療團隊會協助您處理，請隨時向個管師反映。</p>
+    </div>
+
+    <div class="emg">
+      <b><i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸 → 請聯繫個管師。
+    </div>
+
+    <div class="qr-area" id="qr-area" style="display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:4px"><i class="fa-solid fa-qrcode"></i> 電子版</div>
+      <div id="qr-container"></div>
+      <div class="qr-hint">掃描查看個人化照護資訊</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> 修改</button>
+      <button class="btn btn-next" onclick="window.print()"><i class="fa-solid fa-print"></i> 列印</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">彰濱秀傳紀念醫院 癌症中心 · 民眾簡易版</div>
+
+<script>
+let D = {name:'', id:'', type:'', stage:''};
+
+function goStep(n){
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  if(n===4) renderResult();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function pickType(el, val){
+  document.querySelectorAll('#type-choices .choice').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  D.type = val;
+}
+
+function pickStage(el, val){
+  document.querySelectorAll('#stage-choices .choice').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  D.stage = val;
+}
+
+const TYPE_LABEL = {adeno:'肺腺癌', squamous:'鱗狀細胞肺癌', small:'小細胞肺癌', unsure:'待確認'};
+const STAGE_LABEL = {early:'早期（可手術）', local_adv:'局部晚期', advanced:'晚期（有轉移）', unsure:'待確認'};
+
+const PLAN_TEXT = {
+  'adeno_early': '肺腺癌早期通常以<b>手術切除</b>為主。術後可能需要輔助化療，醫師會依病理報告決定。',
+  'adeno_local_adv': '肺腺癌局部晚期的治療通常是<b>化療合併放射治療</b>，部分病人可先做化療再評估手術。也會進行基因檢測，看是否適合標靶或免疫治療。',
+  'adeno_advanced': '肺腺癌晚期會先做<b>基因檢測</b>（EGFR、ALK 等），有基因突變可使用<b>標靶藥物</b>；沒有的話可使用<b>免疫治療</b>合併化療。',
+  'squamous_early': '鱗狀細胞肺癌早期以<b>手術切除</b>為主，術後依病理報告決定是否需要輔助化療。',
+  'squamous_local_adv': '鱗狀細胞肺癌局部晚期通常採<b>化療合併放射治療</b>，之後可接續免疫維持治療。',
+  'squamous_advanced': '鱗狀細胞肺癌晚期以<b>免疫治療合併化療</b>為主。醫師會檢測 PD-L1 指數來決定最適合的方案。',
+  'small_early': '小細胞肺癌早期（侷限期）如果腫瘤較小，可能先<b>手術</b>再接化療。不適合手術的，以<b>化療合併放射治療</b>為主。',
+  'small_local_adv': '小細胞肺癌侷限期以<b>化療合併放射治療</b>為標準治療，治療有效時會考慮預防性全腦照射。',
+  'small_advanced': '小細胞肺癌擴散期以<b>化療合併免疫治療</b>為主。醫師會密切追蹤治療反應，必要時調整方案。',
+};
+
+function renderResult(){
+  D.name = document.getElementById('pt-name').value.trim();
+  D.id = document.getElementById('pt-id').value.trim();
+
+  const key = D.type && D.stage ? D.type + '_' + D.stage : null;
+  let planHTML = PLAN_TEXT[key] || '醫療團隊會根據您的完整檢查結果，為您擬定最適合的治療計畫。請耐心等候各項檢查報告。';
+  
+  const typeStr = TYPE_LABEL[D.type] || '肺癌';
+  const stageStr = STAGE_LABEL[D.stage] || '';
+  if(D.type && D.stage && D.stage !== 'unsure'){
+    planHTML = `<div style="font-size:13px;color:var(--teal);font-weight:700;margin-bottom:6px">${typeStr} · ${stageStr}</div>` + planHTML;
+  }
+  document.getElementById('res-plan-text').innerHTML = planHTML;
+
+  // QR
+  const qrArea = document.getElementById('qr-area');
+  if(D.name){
+    qrArea.style.display = 'block';
+    const masked = D.name.charAt(0) + '○'.repeat(Math.max(D.name.length-1, 1));
+    const payload = `name=${encodeURIComponent(masked)}&dx=${encodeURIComponent(typeStr)}&stage=${encodeURIComponent(stageStr)}&cm=${encodeURIComponent('郭美伶')}`;
+    const url = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu.html#' + payload;
+    const container = document.getElementById('qr-container');
+    container.innerHTML = '';
+    new QRCode(container, {text:url, width:140, height:140, colorDark:'#0f766e', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M});
+  } else {
+    qrArea.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>
