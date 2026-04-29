@@ -156,7 +156,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
       <label>N</label>
       <select id="sel-n" onchange="compute()">
         <option value="">—</option>
-        <option>N0</option><option>N1</option><option>N2</option><option>N3</option>
+        <option>N0</option><option>N1</option><option>N2a</option><option>N2b</option><option>N3</option>
       </select>
     </div>
     <div class="fld">
@@ -226,7 +226,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
 
 </div>
 
-<div class="footer">彰濱秀傳紀念醫院 癌症中心 · Cancer Navigation V2.6.0</div>
+<div class="footer">彰濱秀傳紀念醫院 癌症中心 · Cancer Navigation V2.6.1</div>
 
 <script>
 // ═══ AJCC 9th staging (same as medical version) ═══
@@ -240,6 +240,8 @@ function computeAJCC(t,n,m){
     if(t==='T3') return 'IIB'; if(t==='T4') return 'IIIA';
   }
   if(n==='N1'){ if(isT1||isT2) return 'IIB'; if(t==='T3'||t==='T4') return 'IIIA'; }
+  if(n==='N2a'){ if(isT1) return 'IIB'; if(isT2||t==='T3') return 'IIIA'; if(t==='T4') return 'IIIB'; }
+  if(n==='N2b'){ if(isT1) return 'IIIA'; if(isT2||t==='T3') return 'IIIB'; if(t==='T4') return 'IIIB'; }
   if(isN2){ if(isT1||isT2) return 'IIIA'; if(t==='T3'||t==='T4') return 'IIIB'; }
   if(n==='N3'){ if(isT1||isT2) return 'IIIB'; if(t==='T3'||t==='T4') return 'IIIC'; }
   return '';

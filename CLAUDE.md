@@ -151,12 +151,12 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.6.1 | V1.4.1 | 2026-04-07 | computeAJCC N2a/N2b 修正（AJCC 9th 對齊 NCCN v3.2026）BUG-13 |
 | V2.6.0 | V1.4.0 | 2026-04-07 | 民眾版改為下拉式路徑查詢器（TNM→自動分期→藥物步驟） |
 | V2.5.1 | V1.3.1 | 2026-04-07 | 全系統正黑體；民眾版姓名可跳；FA→SVG |
 | V2.5.0 | V1.3.0 | 2026-04-07 | Portal 分版（醫護 vs 民眾） |
 | V2.4.0 | V1.2.0 | 2026-04-06 | 檢查移除病史；輔助→術後化放療；IO+化療+標靶 |
 | V2.3.3 | V1.1.2 | 2026-04-06 | 打包改 wrapper + 排除清單 |
-| V2.3.2 | V1.1.2 | 2026-04-06 | dtJump(5) 保留分子資料（BUG-12） |
 
 ---
 
@@ -202,6 +202,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 原因：`dtJump(5)` 用 `step<=5` 清資料；`restoreDT()` 落 Step 1
 - 做法：改 `step<=4`；加 `renderMolPanel()` 重繪；restoreDT 改 `dtShowCard('done')`
 
+### #13 (lung V1.4.1)：computeAJCC N2a vs N2b 分期錯誤
+- 症狀：T1+N2a 算出 IIIA，NCCN v3.2026 (AJCC 9th) 應為 IIB
+- 原因：`computeAJCC` 把 N2a 和 N2b 當同一級處理（`isN2` regex 吃掉 sub-type）
+- 做法：拆成三段 `n==='N2a'` / `n==='N2b'` / fallback `isN2`
+- AJCC 9th 完整 N2 對照表：
+  ```
+  T1+N2a→IIB  T1+N2b→IIIA
+  T2+N2a→IIIA T2+N2b→IIIB
+  T3+N2a→IIIA T3+N2b→IIIB
+  T4+N2→IIIB
+  ```
+
 ---
 
 ## 七、擴充新癌別
@@ -218,14 +230,14 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **民眾版內容細化** — 現在 patient.html 有 9 種組合的治療說明文字（3 型態 × 3 期別），Sela 需要逐條確認臨床用語是否適合民眾閱讀
-2. GitHub Pages 部署驗證（QR 實機掃碼、patient.html 路徑確認）
-3. 新增第二個癌別（頭頸或食道）— 醫護版 + 民眾版同時建
-4. 列印手冊 A4 分頁控制
-5. 民眾版加入「常見問題 FAQ」區塊
+1. **效能優化 — 解決畫面卡頓** — Sela 回報偶爾凍結/部分字消失。254KB 單檔 + 60 個 innerHTML + 141 事件監聽。需要 profiling 找瓶頸，可能要加 requestAnimationFrame 或拆分渲染
+2. **民眾版分頁架構** — 從單頁拆成多頁智慧選擇：hub 頁選型態 → 路由到 early/advanced/metastatic/sclc 四個子頁，每頁更輕量
+3. 民眾版藥物步驟內容確認（Sela 逐條 review）
+4. 新增第二個癌別（頭頸或食道）
+5. GitHub Pages 部署驗證
 
 ---
 
 ## 九、一句話總結
 
-V2.6.0 民眾版從衛教文字改為下拉式路徑查詢器：選組織型態 + TNM + 基因突變 → 自動計算分期 → 顯示藥物步驟 + 警示（年齡/ECOG）。下一步讓 Sela 確認藥物步驟內容是否正確。
+V2.6.1 修了 computeAJCC 的 N2a/N2b 分期錯誤（對齊 NCCN v3.2026 AJCC 9th）。待處理：畫面偶爾卡頓（254KB 單檔 + 60 個 innerHTML 操作需要效能審查）、民眾版分頁架構（早期/局晚/晚期/SCLC 四頁智慧路由）。

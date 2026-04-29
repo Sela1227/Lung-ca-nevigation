@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.4.0</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.4.1</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -687,7 +687,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">V1.4.0 · System V2.6.0</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">V1.4.1 · System V2.6.1</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
@@ -978,7 +978,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">V1.4.0 · System V2.6.0</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">V1.4.1 · System V2.6.1</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1169,8 +1169,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.4.0';
-const SYSTEM_VERSION = 'V2.6.0';
+const MODULE_VERSION = 'V1.4.1';
+const SYSTEM_VERSION = 'V2.6.1';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1340,7 +1340,19 @@ function computeAJCC(t,n,m){
     if(t==='T3') return 'IIIA';
     if(t==='T4') return 'IIIA';
   }
-  // M0 + N2 (N2a or N2b)
+  // M0 + N2a (single mediastinal station)
+  if(n==='N2a'){
+    if(isT1) return 'IIB';             // AJCC 9th: T1+N2a→IIB (was IIIA in 8th)
+    if(isT2||t==='T3') return 'IIIA';  // T2-T3+N2a→IIIA
+    if(t==='T4') return 'IIIB';
+  }
+  // M0 + N2b (multiple mediastinal stations)
+  if(n==='N2b'){
+    if(isT1) return 'IIIA';            // T1+N2b→IIIA
+    if(isT2||t==='T3') return 'IIIB';  // T2-T3+N2b→IIIB (was IIIA in 8th)
+    if(t==='T4') return 'IIIB';
+  }
+  // Fallback for plain "N2" (no sub)
   if(isN2){
     if(isT1||isT2) return 'IIIA';
     if(t==='T3'||t==='T4') return 'IIIB';
