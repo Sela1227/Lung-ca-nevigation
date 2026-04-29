@@ -1,4 +1,16 @@
-# Cancer Navigation V2.8.8 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.9 — 彰濱秀傳癌症中心
+
+## V2.8.9 — 2026-04-29
+**藥物入口從底部 banner 改到 header 按鈕**
+- Sela 反映 V2.8.8 的底部 banner 多佔一排空間（破壞鎖屏設計），改到 header 比較順眼
+- **lung.html**：topbar 加 `<a class="topbar-btn outline" href="drugs.html">藥物</a>` 按鈕，跟「列印」「新病人」並列；移除底部 tools-bar；`.app` 復原為 `height:100dvh` 鎖屏
+- **patient.html**：hdr 右側拆出 `.hdr-r` 容器，內含「藥物」icon 按鈕（樣式同 `.home-btn`，做在 progress dots 旁邊）；移除底部 tools-bar 與 `.shell` 包覆；body 復原為 `height:100dvh + overflow:hidden` 鎖屏
+- **設計原則**：
+  - header icon 按鈕不佔額外空間，跟 home 按鈕視覺對稱
+  - 列印時跟其他按鈕一起被 `.no-print` 隱藏（lung）/ 不會列印到（patient print rule 已包含 `.home-btn`）
+  - 連結同層 `drugs.html`
+- 814/814 回歸全綠
+- **模組**：lung V1.6.8 → V1.6.9；系統 V2.8.8 → V2.8.9
 
 ## V2.8.8 — 2026-04-29
 **lung.html / patient.html 底部加快速工具 banner 連到 drugs.html**

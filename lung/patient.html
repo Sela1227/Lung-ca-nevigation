@@ -28,39 +28,14 @@
   :root{ --hdr-h:60px; --bar-h:56px; }
 }
 
-html,body{min-height:100%}
+html,body{height:100%}
 body{
   font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;
   background:var(--bg);color:var(--tx);font-size:14px;line-height:1.55;
   display:flex;flex-direction:column;
-  min-height:100dvh;min-height:100vh;       /* fallback for older safari */
-  /* V2.8.8: 不再 overflow:hidden，讓最下方 tools-bar 可被捲到 */
+  height:100dvh;height:100vh;       /* fallback for older safari */
+  overflow:hidden;
 }
-
-/* V2.8.8: 主流程區（hdr + main + actbar）仍維持 100dvh 鎖在第一屏，下方 tools-bar 要捲才看到 */
-.shell{display:flex;flex-direction:column;height:100dvh;height:100vh;flex-shrink:0;overflow:hidden}
-
-/* V2.8.8 快速工具 footer banner — 在 .shell 之後，需向下捲才看到 */
-.tools-bar{
-  background:linear-gradient(135deg,#115e59 0%,#0f766e 50%,#0d9488 100%);
-  color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:center;gap:10px;
-  flex-shrink:0;
-}
-.tools-bar a{
-  display:inline-flex;align-items:center;gap:10px;padding:10px 16px;
-  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:11px;
-  color:#fff;text-decoration:none;font-size:13.5px;font-weight:700;letter-spacing:.3px;
-  transition:background .2s,transform .15s,border-color .2s;
-}
-.tools-bar a:hover{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
-.tools-bar a:active{transform:scale(.97)}
-.tools-bar .ic{width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(255,255,255,.2);border-radius:7px;padding:3px}
-.tools-bar .lbl{display:flex;flex-direction:column;line-height:1.25;text-align:left}
-.tools-bar .lbl b{font-size:13.5px;font-weight:800;letter-spacing:.3px}
-.tools-bar .lbl small{font-size:10px;opacity:.78;font-weight:500;letter-spacing:.4px}
-.tools-bar .arrow{margin-left:4px;opacity:.7;transition:transform .2s,opacity .2s}
-.tools-bar a:hover .arrow{transform:translateX(3px);opacity:1}
-@media print{.tools-bar{display:none!important}}
 
 /* ── Header ── */
 .hdr{
@@ -85,6 +60,7 @@ body{
 
 /* progress dots inline in header right side */
 .hdr-progress{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .pdot{width:18px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);transition:background .2s,width .2s}
 .pdot.active{background:#fff;width:22px}
 .pdot.done{background:rgba(255,255,255,.65)}
@@ -384,8 +360,6 @@ body{
 <!-- ════════════════════════════════════════════ -->
 <!-- Header (compact, includes inline progress)   -->
 <!-- ════════════════════════════════════════════ -->
-<div class="shell">
-
 <div class="hdr">
   <div class="hdr-l">
     <a href="../" class="home-btn" title="回首頁">
@@ -396,11 +370,16 @@ body{
       <p>彰濱秀傳癌症中心 · 民眾簡易版</p>
     </div>
   </div>
-  <div class="hdr-progress" id="progress">
-    <div class="pdot active" data-p="0"></div>
-    <div class="pdot" data-p="1"></div>
-    <div class="pdot" data-p="2"></div>
-    <div class="pdot" data-p="3"></div>
+  <div class="hdr-r">
+    <a href="drugs.html" class="home-btn" title="健保肺癌藥物總整理">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+    </a>
+    <div class="hdr-progress" id="progress">
+      <div class="pdot active" data-p="0"></div>
+      <div class="pdot" data-p="1"></div>
+      <div class="pdot" data-p="2"></div>
+      <div class="pdot" data-p="3"></div>
+    </div>
   </div>
 </div>
 
@@ -783,22 +762,6 @@ body{
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
     重新查詢
   </button>
-</div>
-
-</div><!-- /shell -->
-
-<!-- ─── V2.8.8 快速工具 footer banner — 捲到下方才看到 ─── -->
-<div class="tools-bar">
-  <a href="drugs.html" title="健保肺癌藥物總整理">
-    <span class="ic">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
-    </span>
-    <span class="lbl">
-      <b>健保肺癌藥物總整理</b>
-      <small>標靶 / 免疫 / 化療　可搜尋與篩選</small>
-    </span>
-    <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-  </a>
 </div>
 
 <script>

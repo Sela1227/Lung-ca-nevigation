@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.8"
+VERSION="2.8.9"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -136,7 +136,7 @@ node --check /tmp/j.js
 | 醫護版 QR 落地頁（V2.8.7+） | `lung/edu-pro.html`（原 edu.html）— 詳細 getDrugDetail，含 SCLC + brainMet |
 | 民眾版 QR 落地頁（V2.8.7+） | `lung/edu-patient.html` — 完整 DRUGS + buildPathFromData，跟 patient.html 總覽頁內容一致 |
 | 民眾版 modal 中文摘要 | `patient.html` 的 `buildHumanReadableSummary()`（QR 圖片下方文字，不是 QR 內容）|
-| 快速工具 footer banner（V2.8.8+） | lung.html / patient.html 各自的 `.tools-bar` 區塊，連到同層 `drugs.html` |
+| 藥物入口連結（V2.8.9+） | lung.html topbar 的 `<a class="topbar-btn">藥物</a>` / patient.html hdr-r 內的 `.home-btn`（連 drugs.html）|
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -190,7 +190,8 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
-| V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html |
+| V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
+| V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html（已被 V2.8.9 取代）|
 | V2.8.7 | V1.6.7 | 2026-04-29 | edu 拆兩檔（edu-pro.html / edu-patient.html）民眾版掃 QR 看到的內容跟 patient.html 總覽頁一致 BUG-24 |
 | V2.8.6 | V1.6.6 | 2026-04-29 | 民眾版 QR 改用 lung 同款模板（URL+base64，純 ASCII 避中文 fail）+ edu.html 加 SCLC/brainMet 處理 BUG-23 |
 | V2.8.5 | V1.6.5 | 2026-04-29 | 民眾版 SCLC 改局限/擴散二段式 + 腦/脊髓轉移影響 PCI 與免疫使用 BUG-22 |
@@ -396,10 +397,10 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.8.8** — Sela 應實測：(a) 醫護版 lung.html 滑到最下面看到霧藍工具 banner、點進去能到 drugs.html (b) 民眾版 patient.html 滑到第二屏看到青綠工具 banner、點進去也行 (c) 桌機/手機在使用流程中不會被 banner 干擾
+1. **GitHub Pages 部署實機驗證 V2.8.9** — Sela 應實測：(a) lung.html 上方 topbar 看到「藥物」按鈕、點進去到 drugs.html (b) patient.html hdr 右上看到藥物 icon、點進去也行 (c) 兩邊都不再有底部 banner 多佔一排空間
 2. **Sela 逐條 review SCLC 步驟內容** — V2.8.5 新加的 SCLC 分支 buildPath 邏輯（侷限/擴散 × 腦轉移 yes/no/unknown 共 6 種組合的步驟與警示文字）
 3. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
-4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓，新癌別的分期邏輯不一定能套 NSCLC 的 TNM 模板；依 BUG-24 教訓，新癌別也要拆 edu-pro / edu-patient 兩檔；新癌別的 lung/patient 也要記得加 tools-bar
+4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓，新癌別的分期邏輯不一定能套 NSCLC 的 TNM 模板；依 BUG-24 教訓，新癌別也要拆 edu-pro / edu-patient 兩檔；新癌別的 lung/patient 也要記得加藥物入口
 5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
 6. **DRUGS 共用機制觀察**：目前 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS。未來改 DRUGS 要兩邊改
 
@@ -407,4 +408,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.8.8 把 portal 的「快速工具」入口也搬到醫護版（lung.html）與民眾版（patient.html）底下，做成 footer banner 形式。lung.html `.app` 改 min-height、後面接 banner（霧藍）；patient.html 把主流程包進 `.shell` 維持鎖屏，後面接 banner（青綠），需向下捲一點才看到，不擾亂主操作。814/814 回歸全綠。下版第一優先：實機驗收。
+V2.8.9 把 V2.8.8 的底部「快速工具 banner」搬到 header 區。Sela 反映底部 banner 多佔一排空間擾亂鎖屏設計。這版改成：lung.html topbar 加按鈕跟列印/新病人並列；patient.html hdr 右側加 icon 跟 home 按鈕對稱。兩邊都復原原本的鎖屏 layout。814/814 回歸全綠。下版第一優先：實機驗收。
