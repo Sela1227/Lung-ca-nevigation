@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0d9488">
+<title>個人化照護導航手冊（民眾版） — 彰濱秀傳癌症中心</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#0d9488;--teal2:#0f766e;--teal-d:#115e59;
+  --teal-bg:rgba(13,148,136,.08);--teal-bdr:rgba(13,148,136,.22);--teal-soft:#e6f5f3;
+  --bg:#F4F8F8;--card:#FFF;--bdr:#D8E5E4;--bdr2:#E8EFEE;
+  --tx:#1e3a3a;--tx2:#5A6B6B;--tx3:#8A9595;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --self:#94703f;--self-bg:#fef9e7;
+  --rose:#dc2626;--rose-bg:#FEF2F2;
+}
+body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.55;padding:14px 12px 30px}
+
+.handout{max-width:820px;margin:0 auto}
+
+.hdr{background:linear-gradient(135deg,#115e59 0%,#0f766e 50%,#0d9488 100%);color:#fff;padding:18px 22px 22px;border-radius:14px 14px 0 0}
+.hdr h1{font-size:20px;font-weight:900;letter-spacing:.5px;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.hdr p{font-size:12px;opacity:.85}
+@media(max-width:480px){
+  .hdr{padding:14px 16px 18px}
+  .hdr h1{font-size:17px}
+}
+
+.body{background:var(--card);border:1px solid var(--bdr);border-top:none;border-radius:0 0 14px 14px;padding:16px 18px 22px}
+
+/* hero band */
+.hero{background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:14px}
+@media(max-width:380px){
+  .hero{grid-template-columns:1fr;text-align:center}
+}
+.hero .stage-lbl{font-size:10px;opacity:.85;letter-spacing:1.5px;font-weight:700}
+.hero .stage-val{font-size:30px;font-weight:900;letter-spacing:.5px;line-height:1;margin-top:2px}
+.hero .pw{font-size:13.5px;font-weight:800;line-height:1.4}
+.hero .meta{font-size:11px;opacity:.85;line-height:1.5;margin-top:4px}
+
+.section{margin-bottom:14px}
+.sh{font-size:14.5px;font-weight:900;color:var(--tx);display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--bdr2)}
+.sh .ic{width:24px;height:24px;border-radius:7px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sh.warn-h .ic{background:var(--amber-bg);color:var(--amber)}
+
+/* tx step */
+.tx-step{padding:10px 0;border-bottom:1px dashed var(--bdr2)}
+.tx-step:last-child{border-bottom:none}
+.tx-step:first-child{padding-top:4px}
+.tx-step-head{display:flex;gap:9px;align-items:flex-start}
+.tx-step-n{width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tx-step-title{flex:1;font-size:14px;font-weight:800;color:var(--tx);line-height:1.45}
+.tx-drugs-box{background:var(--teal-soft);border:1px solid var(--teal-bdr);border-radius:9px;padding:8px 11px;margin-top:6px;margin-left:33px}
+.tx-drugs-head{font-size:10.5px;font-weight:800;color:var(--teal-d);letter-spacing:.8px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.tx-drug-item{padding:5px 0;border-bottom:1px dotted rgba(13,148,136,.18)}
+.tx-drug-item:last-child{border-bottom:none;padding-bottom:0}
+.tx-drug-item:first-child{padding-top:0}
+.tx-drug-en{font-size:13.5px;font-weight:800;color:var(--teal-d);letter-spacing:.2px;line-height:1.4}
+.tx-drug-zh{font-size:11.5px;color:var(--tx2);font-weight:600;line-height:1.4}
+.tx-step-note{font-size:11.5px;color:var(--tx2);margin-top:5px;margin-left:33px;line-height:1.55;background:#fff8eb;padding:6px 9px;border-radius:6px;border-left:2.5px solid var(--amber)}
+.tx-step-line{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--teal);background:#fff;padding:1px 6px;border-radius:4px;margin-left:5px;vertical-align:1px;border:1px solid var(--teal-bdr)}
+.b-nhi{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;background:var(--teal);color:#fff;padding:1px 6px;border-radius:4px;margin-right:4px;vertical-align:1px}
+.b-self{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;background:var(--self-bg);color:var(--self);padding:1px 6px;border-radius:4px;margin-right:4px;vertical-align:1px;border:1px solid #e6d3a7}
+
+/* warns */
+.warn{background:#fff8eb;border:1px solid #fbe4a8;border-radius:8px;padding:8px 11px;font-size:12.5px;color:#7a4f00;line-height:1.55;margin-bottom:6px;display:flex;gap:7px;align-items:flex-start}
+.warn:last-child{margin-bottom:0}
+.warn .ic{flex-shrink:0;color:var(--amber);margin-top:1px}
+
+/* team */
+.team{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:480px){.team{grid-template-columns:1fr}}
+.team-row{padding:9px 12px;background:var(--bg);border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.team-row .l{color:var(--tx2)}
+.team-row .v{font-weight:800;color:var(--tx)}
+.team-row.cm{background:var(--teal-bg);grid-column:1/-1}
+.team-row.cm .l{color:var(--teal-d);font-weight:700}
+.team-row.cm .v{color:var(--teal-d);font-weight:900}
+
+/* emergency */
+.emg{background:var(--rose-bg);border:2px solid var(--rose);border-radius:10px;padding:10px 14px;font-size:12.5px;color:#991b1b;line-height:1.6;margin-top:14px}
+.emg b{font-weight:900}
+
+/* SCLC brain met note */
+.brain-row{margin-bottom:14px;padding:9px 14px;background:#f9fafb;border-left:3px solid;font-size:12.5px;font-weight:700;line-height:1.5}
+
+.error-box{max-width:480px;margin:60px auto;padding:40px 24px;background:#fff;border-radius:14px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+.error-box h3{font-size:18px;color:var(--tx);margin-bottom:6px}
+.error-box p{font-size:13px;color:var(--tx2);line-height:1.7}
+
+.foot-note{margin-top:14px;font-size:11px;color:var(--tx3);line-height:1.6;text-align:center}
+
+@media print{
+  body{padding:0;background:#fff}
+  .handout{max-width:none}
+  .hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0}
+  .hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .body{border:none;border-radius:0}
+}
+</style>
+</head>
+<body>
+
+<div id="app"><div class="handout"></div></div>
+<div class="foot-note" id="foot-note"></div>
+
+<script>
+'use strict';
+
+// ── 從 patient.html 同步的資料庫與 buildPath 邏輯 ──
+const DRUGS = {
+  EGFR: {line:'一線標靶', nhi:'NHI', list:[
+    {n:'Osimertinib',z:'泰格莎'},{n:'Gefitinib',z:'艾瑞莎'},
+    {n:'Erlotinib',z:'得舒緩'},{n:'Afatinib',z:'妥復克'},
+    {n:'Dacomitinib',z:'肺欣妥'}],
+    note:'五藥擇一不互換。Dacomitinib 限無腦轉移者。'},
+  EGFR_BRAIN: {line:'一線（合併）', nhi:'NHI', list:[{n:'Erlotinib + Bevacizumab',z:'得舒緩 + 癌思停'}],
+    note:'限 EGFR L858R 突變且有腦轉移者。'},
+  ALK: {line:'一線標靶', nhi:'NHI', list:[
+    {n:'Alectinib',z:'安立適'},{n:'Lorlatinib',z:'瘤利欣'},
+    {n:'Ceritinib',z:'立克癌'},{n:'Brigatinib',z:'癌倍利'},
+    {n:'Crizotinib',z:'截克瘤'}],
+    note:'五藥擇一。Lorlatinib 也可用於其他 ALK TKI 失敗後。'},
+  ROS1: {line:'一線標靶', nhi:'NHI', list:[{n:'Crizotinib',z:'截克瘤'},{n:'Entrectinib',z:'羅思克'}],
+    note:'擇一不互換。'},
+  BRAF: {line:'二線（含鉑後）', nhi:'NHI', list:[{n:'Dabrafenib + Trametinib',z:'泰伏樂 + 麥欣寧'}],
+    note:'限 BRAF V600E 突變、第一線含鉑化療失敗後。'},
+  MET: {line:'不分線', nhi:'NHI', list:[{n:'Tepotinib',z:'特癌適'}],
+    note:'限 MET exon 14 skipping 突變。'},
+  KRAS: {line:'二線', nhi:'SELF', list:[{n:'Sotorasib',z:'魯瑪克拉斯'}],
+    note:'限 KRAS G12C 突變。健保尚未給付，需自費。'},
+  NS_PDL1H: {line:'一線（IO+化療）', nhi:'NHI', list:[
+    {n:'Pembrolizumab + Pemetrexed + 鉑類',z:'吉舒達 + 愛寧達 + 鉑類'},
+    {n:'Atezolizumab + Bevacizumab + Carboplatin + Paclitaxel',z:'癌自禦 + 癌思停 + 鉑類 + 紫杉醇'}],
+    note:'非鱗狀，原生型，PD-L1 ≥ 50% 健保事審。'},
+  NS_PDL1L: {line:'一線（化療±IO）', nhi:'NHI', list:[
+    {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類雙藥'},
+    {n:'± Pembrolizumab',z:'± 吉舒達'}],
+    note:'非鱗狀原生型；PD-L1 1–49% 加免疫須符合 ICI 9.69 規範。'},
+  SQ_PDL1H: {line:'一線（IO+化療）', nhi:'NHI', list:[{n:'Pembrolizumab + Carboplatin + Paclitaxel',z:'吉舒達 + 鉑類 + 紫杉醇'}],
+    note:'鱗狀，原生型，PD-L1 ≥ 50% 健保事審。'},
+  SQ_PDL1L: {line:'一線（化療±IO）', nhi:'NHI', list:[
+    {n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'},
+    {n:'± Pembrolizumab',z:'± 吉舒達'}],
+    note:'鱗狀原生型；PD-L1 1–49% 加免疫須符合 ICI 9.69 規範。'},
+  CONSOLIDATION: {line:'CCRT 後鞏固', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
+    note:'Stage III CCRT 後無惡化、PD-L1≥1%，健保事審，至多 12 個月（PACIFIC 模式）。'},
+  SCLC_ES: {line:'一線', nhi:'NHI', list:[
+    {n:'Atezolizumab + Carboplatin + Etoposide',z:'癌自禦 + 鉑類 + 滅必治'},
+    {n:'Durvalumab + Etoposide + Cisplatin/Carboplatin',z:'抑癌寧 + 滅必治 + 鉑類'}],
+    note:'SCLC 擴散期、無腦/脊髓轉移，健保事審。'},
+  SCLC_LS_CCRT: {line:'侷限期化放療', nhi:'NHI', list:[{n:'Cisplatin + Etoposide + 胸部放療',z:'鉑類 + 滅必治 + RT'}],
+    note:'CCRT 為主。CR/PR 者可考慮預防性全腦照射 (PCI) 25–30 Gy。'},
+  SCLC_2L: {line:'二線', nhi:'NHI', list:[{n:'Topotecan',z:'喜樹鹼'}],
+    note:'第一線含鉑治療後復發。'},
+};
+
+/* ═══════════════════════════════════════════════════
+   PATHWAY ENGINE
+═══════════════════════════════════════════════════ */
+function buildPathFromData(d){
+  const t = d._type, st = d._stageCat, m = d.m, brain = d.b;
+  // SCLC special
+  if(t==='SCLC'){
+    if(st==='META'){
+      // 擴散型
+      const steps = [];
+      const warns = ['SCLC 進展快，建議盡早展開治療','PS 3-4 因癌症導致：化療±放療；非癌症導致：以支持性療法為主'];
+      // 依腦/脊髓轉移調整第一線
+      if(brain==='no'){
+        steps.push({ title:'第一線：化療 + 免疫治療', line:DRUGS.SCLC_ES.line, nhi:'NHI', drugs: DRUGS.SCLC_ES.list, note: DRUGS.SCLC_ES.note });
+      } else if(brain==='yes'){
+        steps.push({ title:'第一線：化療（無腦/脊髓轉移者才可加免疫，本案不適用）', line:'一線', nhi:'NHI',
+          drugs:[{n:'Cisplatin/Carboplatin + Etoposide',z:'鉑類 + 滅必治'}],
+          note:'健保 ICI 9.69 規範限「無腦/脊髓轉移」者才能合併免疫治療。' });
+        steps.push({ title:'腦轉移處理：先全腦照射 (WBRT) 或伽瑪刀，再化療', line:'並行',
+          note:'有症狀腦轉移：先放療控制症狀；無症狀：可先化療，影像追蹤腦部變化' });
+        warns.push('腦轉移使免疫治療不適用，預後相對較差');
+      } else {
+        // unknown
+        steps.push({ title:'第一線：化療為基礎，是否加免疫須先確認腦/脊髓影像', line:'一線', nhi:'NHI',
+          drugs: DRUGS.SCLC_ES.list,
+          note:'若已排除腦/脊髓轉移：可加免疫（健保事審）；尚未排除：先化療等影像結果' });
+        warns.push('建議完成腦部 MRI 後再決定是否加入免疫治療');
+      }
+      // PCI 鞏固
+      if(brain==='yes'){
+        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）' });
+      } else {
+        steps.push({ title:'CR/PR 反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'放射治療科會診評估' });
+      }
+      steps.push({ title:'治療失敗或復發：二線', line:DRUGS.SCLC_2L.line, nhi:'NHI', drugs: DRUGS.SCLC_2L.list, note: DRUGS.SCLC_2L.note });
+
+      return {
+        stageTxt:'SCLC 擴散型 (Extensive)', pwTxt: brain==='yes' ? '化療為主（不適用免疫）+ 放療控制腦病灶' : '全身性化療 + 免疫治療',
+        steps, warns,
+      };
+    }
+    if(st==='EARLY' || st==='LOCAL'){
+      // 侷限型
+      const steps = [
+        { title:'同步化放療 (CCRT) — 主要治療', line:DRUGS.SCLC_LS_CCRT.line, nhi:'NHI', drugs: DRUGS.SCLC_LS_CCRT.list, note: DRUGS.SCLC_LS_CCRT.note },
+        { title:'極早期（T1-2 N0）可考慮先手術切除', line:'替代方案', note:'肺葉切除 + 淋巴結廓清；術後追加化療' },
+      ];
+      // PCI 依 brainMet
+      if(brain==='yes'){
+        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）' });
+      } else if(brain==='no'){
+        steps.push({ title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'25-30 Gy；可顯著降低腦轉移風險' });
+      } else {
+        steps.push({ title:'治療反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'25-30 Gy；放射治療科評估前需確認腦部 MRI 無轉移' });
+      }
+      const warns = ['年齡 ≥70 或 PS≥2：CCRT 可調整為序貫治療'];
+      if(brain==='yes') warns.push('已有腦轉移：屬於擴散期，治療策略要修正（請與主治醫師確認）');
+      return { stageTxt:'SCLC 侷限型 (Limited)', pwTxt:'同步化放療為主', steps, warns };
+    }
+    return { stageTxt:'小細胞肺癌', pwTxt:'依分期決定方向',
+      steps:[{ title:'請先完成完整影像檢查（CT、腦 MRI、骨掃描）以確認分期', note:'分期確認後才能決定治療策略' }],
+      warns:['SCLC 進展較快，請盡早回診確認分期'] };
+  }
+
+  // NSCLC
+  const isNS = (t==='NSCLC_NS');
+  const typeLabel = isNS ? '非小細胞肺癌（非鱗狀）' : (t==='NSCLC_SQ' ? '非小細胞肺癌（鱗狀）' : '肺癌');
+
+  if(st==='EARLY'){
+    return {
+      stageTxt:`${typeLabel} 早期 (I-II)`, pwTxt:'手術切除為主',
+      steps:[
+        { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清術', line:'主要治療', note:'NSCLC 早期治療首選' },
+        { title:'不適合手術：立體定位放射治療 (SBRT)', line:'替代手術', note:'限 T1-2 N0；70 歲以上或心肺功能不佳者考慮' },
+        { title:'術後輔助化療（若為 II 期或高風險 IB）', line:'術後輔助', nhi:'NHI', drugs:[
+            {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
+            {n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}],
+          note:'4 個療程；高齡可改 Carboplatin。' },
+        ...(isNS ? [{ title:'EGFR 陽性者（IB-IIIA 術後）：Osimertinib 鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'術後鞏固至多 3 年（ADAURA 模式）。' }] : []),
+      ],
+      warns:['IB 期具高風險因子（腫瘤≥4cm、血管侵犯、臟層肋膜侵犯）建議輔助化療','年齡≥70 或 PS≥2：CCRT 可改序貫；化療劑量需調整'],
+    };
+  }
+
+  if(st==='LOCAL'){
+    return {
+      stageTxt:`${typeLabel} 局部晚期 (III)`, pwTxt:'同步化放療為主，再加免疫鞏固',
+      steps:[
+        { title:'同步化放療 (CCRT) — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
+            {n:'Cisplatin + Etoposide + 胸部放療',z:'鉑類 + 滅必治 + RT'},
+            {n:'Carboplatin + Paclitaxel + 胸部放療',z:'鉑類 + 紫杉醇 + RT'}],
+          note:'每次 2 Gy，總劑量 60–66 Gy' },
+        { title:'CCRT 後無惡化：Durvalumab 免疫鞏固', line:DRUGS.CONSOLIDATION.line, nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note },
+        { title:'部分病人可考慮先手術 + 術後輔助治療', line:'替代方案', note:'手術評估須由胸腔外科決定' },
+      ],
+      warns:['年齡 >70 歲或 PS >1：CCRT 可改為 Sequential（先化療後放療）','Durvalumab 鞏固限 PD-L1 ≥1%，療程至多 12 個月'],
+    };
+  }
+
+  if(st==='META'){
+    let steps = [];
+    let warns = ['年齡 ≥70 或 PS≥2：化療劑量需調整或改 Carboplatin'];
+    if(m==='EGFR'){
+      steps = [
+        { title:'第一線：EGFR TKI 標靶', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
+        { title:'EGFR L858R + 腦轉移：合併方案', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI', drugs: DRUGS.EGFR_BRAIN.list, note: DRUGS.EGFR_BRAIN.note },
+        { title:'惡化後：T790M 檢測 → Osimertinib 二線', line:'二線', note:'若一線非 Osimertinib，惡化後可換用' },
+        { title:'多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}], note:'非鱗狀標準後線' },
+      ];
+    } else if(m==='ALK'){
+      steps = [
+        { title:'第一線：ALK TKI 標靶', line:DRUGS.ALK.line, nhi:'NHI', drugs: DRUGS.ALK.list, note: DRUGS.ALK.note },
+        { title:'耐藥後：依抗藥機制換次線 ALK TKI', line:'二線', note:'Lorlatinib 可用於 alectinib/ceritinib/brigatinib 失敗後' },
+        { title:'多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'非鱗狀後線標準' },
+      ];
+    } else if(m==='ROS1'){
+      steps = [
+        { title:'第一線：ROS1 TKI 標靶', line:DRUGS.ROS1.line, nhi:'NHI', drugs: DRUGS.ROS1.list, note: DRUGS.ROS1.note },
+        { title:'耐藥或多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'' },
+      ];
+    } else if(m==='BRAF'){
+      steps = [
+        { title:'第一線：含鉑化療', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin（非鱗狀）',z:'愛寧達 + 鉑類'}], note:'鱗狀者 Paclitaxel + Carboplatin' },
+        { title:'第二線（含鉑後）：BRAF + MEK 標靶', line:DRUGS.BRAF.line, nhi:'NHI', drugs: DRUGS.BRAF.list, note: DRUGS.BRAF.note },
+      ];
+    } else if(m==='MET'){
+      steps = [
+        { title:'標靶：MET 抑制劑', line:DRUGS.MET.line, nhi:'NHI', drugs: DRUGS.MET.list, note: DRUGS.MET.note },
+        { title:'若無法使用標靶：含鉑化療 ± 免疫', line:'替代', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin ± Pembrolizumab',z:'愛寧達 + 鉑類 ± 吉舒達'}], note:'' },
+      ];
+    } else if(m==='KRAS'){
+      steps = [
+        { title:'第一線：含鉑化療 + 免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin + Pembrolizumab',z:'愛寧達 + 鉑類 + 吉舒達'}], note:'依 PD-L1 表現考慮 IO' },
+        { title:'第二線：KRAS G12C 標靶', line:DRUGS.KRAS.line, nhi:'SELF', drugs: DRUGS.KRAS.list, note: DRUGS.KRAS.note },
+      ];
+      warns.push('KRAS G12C 標靶 Sotorasib 健保尚未給付，需自費');
+    } else if(m==='PDL1_HIGH'){
+      const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
+      steps = [
+        { title:'第一線：免疫 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
+        { title:'惡化後：含鉑後線 / 加做 NGS 找其他突變', line:'後線', note:'' },
+      ];
+    } else if(m==='PDL1_LOW'){
+      const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
+      steps = [
+        { title:'第一線：化療 ± 免疫', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
+        { title:'惡化後：後線化療或加做 NGS', line:'後線', note:'進一步分子檢測（如 KRAS、HER2、NTRK）' },
+      ];
+      warns.push('PS 2：以單獨化療為主');
+      warns.push('PS 3-4：以支持性療法為主');
+    } else {
+      // NONE
+      steps = [
+        { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'EGFR / ALK / ROS1 / BRAF / MET / KRAS / NTRK + PD-L1' },
+        { title:'等報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
+        { title:'依檢測結果再個人化治療', line:'後續', note:'有突變→標靶；無突變且 PD-L1 高→免疫加化療' },
+      ];
+      warns.push('基因檢測會大幅影響可用藥物，請務必完成');
+    }
+    return { stageTxt:`${typeLabel} 轉移期 (IV)`, pwTxt:'依基因 / PD-L1 個人化治療', steps, warns };
+  }
+
+  return { stageTxt: typeLabel + '（分期待定）', pwTxt:'請先完成完整分期檢查',
+    steps:[{ title:'請與主治醫師討論完整分期計畫（CT、PET、腦 MRI）', note:'分期確認後才能個人化治療' }],
+    warns:['未明確分期前的建議僅供參考'] };
+}
+
+
+// ── edu schema → patient state mapping ──
+const TYPE_CODE_TO_FULL = { NS:'NSCLC_NS', SQ:'NSCLC_SQ', SC:'SCLC' };
+
+function deriveStageCat(d){
+  if(d._type==='SCLC'){
+    return (d.s==='Extensive' || /^IV/.test(d.s)) ? 'META' : 'LOCAL';
+  }
+  if(/^IV/.test(d.s)) return 'META';
+  if(/^III/.test(d.s)) return 'LOCAL';
+  if(/^(0|I|II)/.test(d.s)) return 'EARLY';
+  return '';
+}
+
+// 顯示用
+function stageDisplay(d){
+  if(d._type==='SCLC'){
+    if(d.s==='Limited' || /^III|^II|^I/.test(d.s)) return '侷限型';
+    if(d.s==='Extensive' || /^IV/.test(d.s)) return '擴散型';
+    return '?';
+  }
+  return d.s || '?';
+}
+
+function mutDisplay(m){
+  return ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF V600E(+)',MET:'MET ex14(+)',KRAS:'KRAS G12C(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:''}[m] || '');
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"\']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ── render ──
+function renderTreatmentSteps(steps){
+  if(!steps || !steps.length) return '<p style="font-size:12px;color:var(--tx3);padding:10px 0">尚無資料</p>';
+  return steps.map((s,i)=>{
+    let badge = '';
+    if(s.nhi==='NHI') badge = '<span class="b-nhi">健保</span>';
+    else if(s.nhi==='SELF') badge = '<span class="b-self">自費</span>';
+    let line = s.line ? `<span class="tx-step-line">${escapeHtml(s.line)}</span>` : '';
+    let drugsBox = '';
+    if(s.drugs && s.drugs.length){
+      const items = s.drugs.map(d=>{
+        const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
+        const zh = d.z ? `<div class="tx-drug-zh">${escapeHtml(d.z)}</div>` : '';
+        return `<div class="tx-drug-item">${en}${zh}</div>`;
+      }).join('');
+      drugsBox = `<div class="tx-drugs-box"><div class="tx-drugs-head">適用藥物</div>${items}</div>`;
+    }
+    let note = s.note ? `<div class="tx-step-note">${escapeHtml(s.note)}</div>` : '';
+    return `<div class="tx-step">
+      <div class="tx-step-head">
+        <div class="tx-step-n">${i+1}</div>
+        <div class="tx-step-title">${badge}${escapeHtml(s.title)}${line}</div>
+      </div>
+      ${drugsBox}${note}
+    </div>`;
+  }).join('');
+}
+
+function render(d){
+  d._type = TYPE_CODE_TO_FULL[d.t] || d.t || '';
+  d._stageCat = deriveStageCat(d);
+  const r = buildPathFromData(d);
+
+  let h = '<div class="hdr"><h1>';
+  h += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+  h += '個人化照護導航手冊</h1>';
+  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版</p></div>';
+
+  h += '<div class="body">';
+
+  // hero
+  h += '<div class="hero">';
+  h += `<div><div class="stage-lbl">分期</div><div class="stage-val">${escapeHtml(stageDisplay(d))}</div></div>`;
+  h += `<div><div class="pw">${escapeHtml(r.pwTxt||'')}</div>`;
+  let meta = r.stageTxt;
+  if(d.m && d.m!=='NONE') meta += ' · ' + mutDisplay(d.m);
+  if(d._type==='SCLC' && d.b){
+    const bL = ({yes:'腦/脊髓(+)', no:'腦/脊髓(-)', unknown:''})[d.b];
+    if(bL) meta += ' · ' + bL;
+  }
+  if(d.co) meta += ' · ' + escapeHtml(d.co);
+  if(d.n) meta += ' ' + escapeHtml(d.n);
+  h += `<div class="meta">${meta}</div></div></div>`;
+
+  // SCLC brain met 警示行
+  if(d._type==='SCLC' && d.b){
+    const bL = ({yes:'有腦/脊髓轉移', no:'無腦/脊髓轉移', unknown:'腦/脊髓轉移待確認'})[d.b] || '';
+    const bColor = d.b==='yes' ? '#b91c1c' : (d.b==='no' ? '#15803d' : '#a16207');
+    if(bL) h += `<div class="brain-row" style="border-left-color:${bColor};color:${bColor}">${bL}（影響預防性全腦照射 PCI 與免疫治療使用）</div>`;
+  }
+
+  // 治療方向與藥物
+  h += '<div class="section">';
+  h += '<div class="sh"><span class="ic">';
+  h += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>';
+  h += '</span>治療方向與藥物</div>';
+  h += renderTreatmentSteps(r.steps);
+  h += '</div>';
+
+  // 注意事項
+  if(r.warns && r.warns.length){
+    h += '<div class="section">';
+    h += '<div class="sh warn-h"><span class="ic">';
+    h += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>';
+    h += '</span>注意事項</div>';
+    r.warns.forEach(w=>{
+      h += `<div class="warn"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg></span><span>${escapeHtml(w)}</span></div>`;
+    });
+    h += '</div>';
+  }
+
+  // 照護團隊
+  h += '<div class="section">';
+  h += '<div class="sh"><span class="ic">';
+  h += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.4"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M14 19a4 4 0 0 1 7 0"/></svg>';
+  h += '</span>照護團隊</div>';
+  h += '<div class="team">';
+  const teamLabels = ['胸腔外科','胸腔內科 / 血腫科','放射腫瘤科'];
+  teamLabels.forEach((lbl,i)=>{
+    const doc = (d.tm && d.tm[i]) ? d.tm[i] : '';
+    h += `<div class="team-row"><span class="l">${lbl}</span><span class="v">${doc ? escapeHtml(doc)+' 醫師' : '（待安排）'}</span></div>`;
+  });
+  h += `<div class="team-row cm"><span class="l">個案管理師</span><span class="v">${escapeHtml(d.c||'郭美伶')}</span></div>`;
+  h += '</div>';
+  h += '</div>';
+
+  // 緊急回診
+  h += '<div class="emg"><b>⚠ 緊急回診時機：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸 → 請立即聯繫個案管理師或回診。</div>';
+
+  h += '<p class="tx-step-note" style="margin-top:14px;margin-left:0;font-size:11px">＊本頁依本院《肺癌診療指引 v12 (2026)》與健保第 9 章規範彙整。實際治療由主治醫師依您的完整檢查結果決定。</p>';
+
+  h += '</div>';
+
+  document.querySelector('#app').innerHTML = `<div class="handout">${h}</div>`;
+  document.getElementById('foot-note').innerHTML = `產生日期：${escapeHtml(d.d||'—')}　·　彰濱秀傳紀念醫院 癌症中心`;
+}
+
+function showError(title, msg){
+  document.querySelector('#app').innerHTML = `<div class="error-box"><h3>${title}</h3><p>${msg}</p></div>`;
+  document.getElementById('foot-note').textContent = '彰濱秀傳紀念醫院 癌症中心';
+}
+
+// ── parse fragment ──
+const frag = location.hash.substring(1);
+if(!frag){
+  showError('找不到資料','此連結不包含照護資訊，請重新掃描 QR code。');
+} else {
+  let data;
+  try {
+    const json = decodeURIComponent(escape(atob(frag)));
+    data = JSON.parse(json);
+  } catch(e){
+    showError('資料解析失敗','QR code 內容無法解讀，請確認連結完整。');
+    data = null;
+  }
+  if(data){
+    if(!data.t || !data.s){ showError('資料不完整','缺少診斷或分期資訊。'); }
+    else { render(data); }
+  }
+}
+</script>
+</body>
+</html>

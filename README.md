@@ -1,4 +1,16 @@
-# Cancer Navigation V2.8.6 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.7 — 彰濱秀傳癌症中心
+
+## V2.8.7 — 2026-04-29
+**edu 拆成醫/民兩檔，民眾版掃 QR 看到的內容跟 patient.html 一致**
+- Sela 回報：民眾版掃 QR 進去看到「化放療 ± 手術 ± 免疫/標靶」這種粗略一行，跟 patient.html 總覽頁的詳細藥物清單對不上 — 因為兩邊都用同一個 edu.html，但 edu.html 是醫護版簡化邏輯
+- **拆成兩個獨立檔**：
+  - `lung/edu-pro.html`（原 edu.html 改名）：醫護版，加詳細 `getDrugDetail()`，每個 step 顯示完整藥名 + 健保事審條件 + note；含 SCLC + brainMet 處理
+  - `lung/edu-patient.html`（新建）：**民眾版完整 buildPath**，把 patient.html 的 `DRUGS` + `buildPathFromData()` 整套搬進去，所以掃 QR 看到的內容跟 patient 總覽頁一模一樣
+- **lung.html → edu-pro.html、patient.html → edu-patient.html**：兩邊各自的 EDU_BASE_URL 指對應檔
+- **base64 schema 兼容**：兩邊 schema 一致（n/t/s/m/b/tm/c/d/co），edu-patient.html 內部 `TYPE_CODE_TO_FULL` + `deriveStageCat()` 把 schema 轉成 patient state 後呼叫 `buildPathFromData()`
+- **6 個 round-trip 情境驗證**全 work：NSCLC IV EGFR / SCLC Limited no-brain / SCLC Extensive brain+ / SCLC Extensive no-brain / NSCLC IIIA / NSCLC IB
+- **回歸測試 814/814 全綠**
+- **模組**：lung V1.6.6 → V1.6.7；系統 V2.8.6 → V2.8.7
 
 ## V2.8.6 — 2026-04-29
 **民眾版 QR 改成 lung.html 同款模板（URL + base64）**

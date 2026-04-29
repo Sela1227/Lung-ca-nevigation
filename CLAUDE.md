@@ -17,14 +17,15 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.6"
+VERSION="2.8.7"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
 rm -rf "${WORK}" && mkdir -p "${WORK}/${NAME}/lung"
 cp portal.html "${WORK}/${NAME}/index.html"
 cp lung.html "${WORK}/${NAME}/lung/index.html"
-cp edu.html "${WORK}/${NAME}/lung/edu.html"
+cp edu-pro.html "${WORK}/${NAME}/lung/edu-pro.html"
+cp edu-patient.html "${WORK}/${NAME}/lung/edu-patient.html"
 cp patient.html "${WORK}/${NAME}/lung/patient.html"
 cp drugs.html "${WORK}/${NAME}/lung/drugs.html"
 cp README.md CLAUDE.md "${WORK}/${NAME}/"
@@ -132,7 +133,8 @@ node --check /tmp/j.js
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
-| 民眾版 QR 落地頁 | `lung/edu.html` — 解 base64 還原 type/stage/mut/brainMet 顯示摘要 |
+| 醫護版 QR 落地頁（V2.8.7+） | `lung/edu-pro.html`（原 edu.html）— 詳細 getDrugDetail，含 SCLC + brainMet |
+| 民眾版 QR 落地頁（V2.8.7+） | `lung/edu-patient.html` — 完整 DRUGS + buildPathFromData，跟 patient.html 總覽頁內容一致 |
 | 民眾版 modal 中文摘要 | `patient.html` 的 `buildHumanReadableSummary()`（QR 圖片下方文字，不是 QR 內容）|
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
@@ -187,16 +189,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.7 | V1.6.7 | 2026-04-29 | edu 拆兩檔（edu-pro.html / edu-patient.html）民眾版掃 QR 看到的內容跟 patient.html 總覽頁一致 BUG-24 |
 | V2.8.6 | V1.6.6 | 2026-04-29 | 民眾版 QR 改用 lung 同款模板（URL+base64，純 ASCII 避中文 fail）+ edu.html 加 SCLC/brainMet 處理 BUG-23 |
 | V2.8.5 | V1.6.5 | 2026-04-29 | 民眾版 SCLC 改局限/擴散二段式 + 腦/脊髓轉移影響 PCI 與免疫使用 BUG-22 |
 | V2.8.4 | V1.6.4 | 2026-04-29 | Portal 8 癌別圖示全改 inline SVG（脫離 FA）+ 跑遍 200 組合找出並修 4 個 state 殘留 bug BUG-20、BUG-21 |
 | V2.8.3 | V1.6.3 | 2026-04-29 | QR 中文 fail 修復（換 qrcode-generator + UTF-8 byte mode）+ drugs.html 健保藥物總整理頁 BUG-19 |
 | V2.8.2 | V1.6.2 | 2026-04-29 | 民眾版補回照護團隊可選（同步 CFG.team.depts）+ QR modal（hero 按鈕觸發）BUG-18 |
-| V2.8.1 | V1.6.1 | 2026-04-29 | 民眾版徹底改成真一頁式（100dvh + flex 鎖屏）；header/Q1/Q2/Q3/總覽全面重構排版 BUG-17 |
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-23）
+## 六、踩過的坑（BUG-01 ~ BUG-24）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -364,6 +366,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**修一個 bug 不要引入兩個新依賴**。V2.8.3 同時換了 lib 名稱跟 CDN host，遇到問題就難判斷哪個是元凶。應該先驗證新 CDN 在目標環境可達；或更好的做法是抄已驗證可用的同款模板（這次抄 lung 才一發中）
 - 教訓：**同一個 repo 內已驗證 work 的方案，是最先該抄的**。lung.html 的 QR 一直 work、Sela 從沒抱怨過，我為了民眾版「便利性」自己另創一套，反而走了 V2.8.3→V2.8.6 三個版本才繞回來
 
+### #24 (lung V1.6.7 / V2.8.7)：民眾版掃 QR 看到「醫護版簡化內容」對不上總覽頁
+- 症狀：Sela 回報 V2.8.6 民眾版掃 QR 進去，治療內容跟 patient.html 總覽頁完全不一樣 — 一個是粗略一行（"化放療 ± 手術 ± 免疫/標靶"），一個是完整藥物清單
+- 原因：V2.8.6 為了避中文 fail bug 抄 lung.html 的 QR 模板（URL→base64→edu.html），但**忘了 edu.html 內部用的是醫護版簡化邏輯**（getGoal/getTx 都是粗略字串），跟 patient.html 的 buildPath 完整 DRUGS 結構是兩套東西
+- 做法（拆檔 + 同步邏輯）：
+  1. **edu.html 改名 edu-pro.html**（醫護版），加 `getDrugDetail()` 顯示完整藥名 + 健保事審條件，每個 step 卡片化
+  2. **新建 edu-patient.html**（民眾版），把 patient.html 的整套 `DRUGS` 物件 + 改名為 `buildPathFromData(d)` 的 buildPath 邏輯複製進去
+  3. **lung.html → edu-pro.html、patient.html → edu-patient.html**：兩邊各自的 EDU_BASE_URL 指對應檔
+  4. **base64 schema 不變**（n/t/s/m/b/tm/c/d/co），edu-patient 用 `TYPE_CODE_TO_FULL` + `deriveStageCat()` 把 schema 還原成 patient 的 S 型再呼叫 buildPathFromData
+  5. CSS 風格：edu-pro 沿用霧藍，edu-patient 改青綠（呼應 patient.html 的 teal 主題）
+- 教訓：**「邏輯複用」不等於「UI 複用」**。lung.html 跟 patient.html 的目標使用者不同（醫護 vs 民眾），雖然底層都是同個 buildPath 邏輯，但呈現詳細度應該對齊各自應用本身的詳細度。下次新增「掃描碼落地頁」這種延伸頁時，記得先問：是要「跟發送者一致」還是「跟新類型受眾一致」
+- 教訓：**重複資料源跨檔同步是個維護坑**。現在 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS 物件，未來改 DRUGS 要兩邊改。CLAUDE.md 第三節改功能對映表已標註，下次改 DRUGS 要記得跟。長期可考慮把 DRUGS 抽成 `lung/_drugs.js` 共用 — 但那會破壞「單檔 HTML」原則，先不做
+
 ---
 
 ## 七、擴充新癌別
@@ -381,14 +395,15 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 QR** — V2.8.6 把民眾版 QR 改回 cdnjs 的 qrcodejs。Sela 應實測：(a) 點 QR 按鈕能不能正確產 QR (b) 用手機掃 QR 能不能落地到 edu.html 顯示完整摘要 (c) NSCLC + SCLC（侷限/擴散）+ brainMet 各種情境掃出來都對
-2. **Sela 逐條 review SCLC 步驟內容** — V2.8.5 新加的 SCLC 分支 buildPath 邏輯（侷限/擴散 × 腦轉移 yes/no/unknown 共 6 種組合的步驟與警示文字）
+1. **GitHub Pages 部署實機驗證 edu 兩檔** — V2.8.7 拆了 edu。Sela 應實測：(a) 民眾版掃 QR 能落地到 edu-patient.html 看到完整藥物清單跟 patient 總覽頁一致 (b) 醫護版 lung.html 掃 QR 能落地到 edu-pro.html 看到詳細藥物 + 健保規範 (c) 兩個檔都要記得 push
+2. **Sela 逐條 review SCLC 步驟內容** — V2.8.5 新加的 SCLC 分支 buildPath 邏輯（侷限/擴散 × 腦轉移 yes/no/unknown 共 6 種組合的步驟與警示文字），目前 patient.html 跟 edu-patient.html 共用此邏輯
 3. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
-4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓，新癌別的分期邏輯不一定能套 NSCLC 的 TNM 模板（食道有 Siewert、肝癌有 BCLC），要先想清楚
+4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓，新癌別的分期邏輯不一定能套 NSCLC 的 TNM 模板；依 BUG-24 教訓，新癌別也要拆 edu-pro / edu-patient 兩檔
 5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+6. **DRUGS 共用機制觀察**：目前 patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS。未來改 DRUGS 要兩邊改。如果重複改錯造成不一致，再考慮抽 `_drugs.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V2.8.6 修 Sela 截圖回報的「QR 產生失敗：qrcode is not defined」— V2.8.3 換 lib 時引入了不可達 CDN，這版抄 lung.html 同款模板（cdnjs qrcodejs + URL+base64 純 ASCII payload），順便讓 edu.html 處理 SCLC 與 brainMet。817/817 測試 + 6 個 QR 掃描情境模擬全綠。下版第一優先：Sela 實機驗收 QR 能不能掃到摘要。
+V2.8.7 拆 edu 為 edu-pro.html / edu-patient.html 兩檔。Sela 反映民眾版掃 QR 看到的內容跟 patient 總覽頁對不上 — 因為兩邊共用 edu.html 但邏輯是醫護版簡化版。這版民眾 QR → edu-patient.html（完整 DRUGS + buildPath，跟 patient 總覽頁一致），醫護 QR → edu-pro.html（加詳細藥名與健保規範卡片）。6 個情境 round-trip 全 work + 814/814 回歸全綠。下版第一優先：實機 push 兩個 edu 檔到 GitHub Pages 後 Sela 驗收。

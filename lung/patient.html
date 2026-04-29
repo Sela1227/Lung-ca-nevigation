@@ -1175,9 +1175,9 @@ function pickDoctor(deptId, name){
 }
 
 /* ─── QR (always-on, modal triggered) ─── */
-// 採 lung.html 同款模板：QR 內容是 URL，掃 QR 落在 edu.html 顯示摘要
-// 好處：1) payload 純 ASCII，避開 qrcodejs 中文編碼問題  2) 跟醫護版 QR 一致
-const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu.html';
+// 採 lung.html 同款模板：QR 內容是 URL，掃 QR 落在 edu-patient.html 顯示摘要
+// 民眾版 edu 頁：完整 DRUGS + buildPath，跟 patient.html 總覽頁內容一致
+const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu-patient.html';
 
 function buildEduPayload(){
   // 只送必要欄位（base64 後 < 200 字元）

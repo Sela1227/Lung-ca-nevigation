@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="robots" content="noindex, nofollow">
-<title>個人化照護導航手冊 — 彰濱秀傳癌症中心</title>
+<title>個人化照護導航手冊（醫護版） — 彰濱秀傳癌症中心</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -25,6 +25,12 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
 .edu-team td{padding:8px 12px;border-bottom:1px solid #e5e7eb}
 .edu-team td:first-child{font-weight:600;white-space:nowrap}
 .edu-emg{background:#fef2f2;border:2px solid var(--rose);border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.6;margin-top:12px}
+.drug-list{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
+.drug-item{background:var(--surface2);border-left:3px solid var(--primary);border-radius:8px;padding:8px 12px}
+.drug-title{font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.drug-n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:800;flex-shrink:0}
+.drug-d{font-size:13px;color:var(--primary-dark);font-weight:700;line-height:1.5;margin-left:28px}
+.drug-note{font-size:11.5px;color:var(--text2);line-height:1.5;margin-left:28px;margin-top:3px;font-style:italic}
 .edu-footer{margin-top:20px;padding:14px 18px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text3);text-align:center}
 .edu-error{max-width:480px;text-align:center;padding:60px 30px;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
 .edu-error i{font-size:48px;color:var(--text3);margin-bottom:16px;display:block}
@@ -123,6 +129,80 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     return 'Stage ' + (s||'—');
   }
 
+  // ── 詳細藥物清單（醫護版用，給快速查閱）──
+  function getDrugDetail(t, s, m, b){
+    const items = [];
+    if(t==='SC'){
+      const isExt = (s==='Extensive' || s.startsWith('IV'));
+      if(isExt){
+        if(b==='yes'){
+          items.push({title:'第一線：化療（不可加免疫）', drugs:'Cisplatin/Carboplatin + Etoposide', note:'健保 ICI 9.69 限「無腦/脊髓轉移」者才能加免疫'});
+          items.push({title:'腦病灶處理', drugs:'WBRT 或伽瑪刀 + 同步/序貫化療', note:'有症狀腦轉移：先放療控制症狀'});
+        } else if(b==='no'){
+          items.push({title:'第一線：化療 + 免疫', drugs:'Atezolizumab + Carboplatin + Etoposide / Durvalumab + Etoposide + 鉑類', note:'健保事審，PD-L1 不限'});
+        } else {
+          items.push({title:'第一線：化療 ± 免疫', drugs:'Cisplatin/Carboplatin + Etoposide', note:'先排除腦/脊髓轉移再決定是否加免疫'});
+        }
+        items.push({title:'PCI', drugs: b==='yes' ? '已轉移者改治療性放療（不做 PCI）' : 'CR/PR 後可考慮（25-30 Gy）'});
+        items.push({title:'二線', drugs:'Topotecan', note:'第一線含鉑後復發'});
+        return items;
+      }
+      // Limited
+      items.push({title:'同步化放療 (CCRT)', drugs:'Cisplatin + Etoposide + 胸部放療 60-66 Gy', note:'年齡 ≥70 或 PS≥2 可調序貫'});
+      items.push({title:'極早期', drugs:'T1-2 N0 可先手術切除 + 術後化療'});
+      if(b==='yes'){
+        items.push({title:'PCI', drugs:'已轉移者不再做 PCI，改治療性放療'});
+      } else if(b==='no'){
+        items.push({title:'PCI', drugs:'CR/PR 後 25-30 Gy', note:'顯著降低腦轉移風險'});
+      } else {
+        items.push({title:'PCI', drugs:'CR/PR 後評估，先確認腦部 MRI'});
+      }
+      return items;
+    }
+    // NSCLC
+    if(s.startsWith('IV')){
+      if(m==='EGFR'){
+        items.push({title:'第一線標靶', drugs:'Osimertinib / Gefitinib / Erlotinib / Afatinib / Dacomitinib', note:'五擇一不互換；Dacomitinib 限無腦轉移'});
+        items.push({title:'L858R + 腦轉移', drugs:'Erlotinib + Bevacizumab', note:'事審'});
+        items.push({title:'惡化後', drugs:'T790M 檢測 → Osimertinib 二線'});
+      } else if(m==='ALK'){
+        items.push({title:'第一線標靶', drugs:'Alectinib / Lorlatinib / Ceritinib / Brigatinib / Crizotinib', note:'五擇一'});
+      } else if(m==='ROS1'){
+        items.push({title:'第一線標靶', drugs:'Crizotinib / Entrectinib', note:'擇一'});
+      } else if(m==='BRAF'){
+        items.push({title:'第一線', drugs:'含鉑化療（Pemetrexed + 鉑類）'});
+        items.push({title:'第二線（含鉑後）', drugs:'Dabrafenib + Trametinib', note:'限 BRAF V600E'});
+      } else if(m==='MET'){
+        items.push({title:'標靶', drugs:'Tepotinib', note:'限 MET exon 14 skipping'});
+      } else if(m==='KRAS'){
+        items.push({title:'第一線', drugs:'含鉑化療 + 免疫'});
+        items.push({title:'第二線', drugs:'Sotorasib（自費，KRAS G12C）'});
+      } else if(m==='PDL1_HIGH'){
+        items.push({title:'第一線（IO+化療）', drugs:'Pembrolizumab + Pemetrexed + 鉑類 / Atezolizumab + Bevacizumab + Carboplatin + Paclitaxel', note:'PD-L1 ≥50% 健保事審'});
+      } else if(m==='PDL1_LOW'){
+        items.push({title:'第一線（化療±IO）', drugs:'Pemetrexed + Carboplatin/Cisplatin ± Pembrolizumab', note:'PD-L1 1-49% 加免疫須符合 ICI 9.69'});
+      } else {
+        items.push({title:'建議', drugs:'先做 NGS（EGFR/ALK/ROS1/BRAF/MET/KRAS/NTRK）+ PD-L1，依結果個人化'});
+        items.push({title:'等報告期間', drugs:'可先含鉑化療'});
+      }
+      return items;
+    }
+    if(s.startsWith('III')){
+      items.push({title:'同步化放療 (CCRT)', drugs:'Cisplatin + Etoposide + 胸部放療 / Carboplatin + Paclitaxel + RT', note:'每次 2 Gy 總劑量 60-66 Gy'});
+      items.push({title:'CCRT 後鞏固', drugs:'Durvalumab', note:'PD-L1 ≥1%，至多 12 個月（PACIFIC）'});
+      items.push({title:'部分病人', drugs:'可先手術 + 術後輔助治療'});
+      return items;
+    }
+    // Early
+    items.push({title:'手術根除', drugs:'肺葉切除 + 縱膈淋巴結廓清術', note:'NSCLC 早期首選'});
+    items.push({title:'不適合手術', drugs:'SBRT（限 T1-2 N0）'});
+    items.push({title:'術後輔助化療（II 期或高風險 IB）', drugs:'Cisplatin + Vinorelbine / Cisplatin + Pemetrexed', note:'4 個療程；高齡可改 Carboplatin'});
+    if(t==='NS'){
+      items.push({title:'EGFR(+) 鞏固', drugs:'Osimertinib', note:'IB-IIIA 術後至多 3 年（ADAURA）'});
+    }
+    return items;
+  }
+
   // Parse fragment
   const frag = location.hash.substring(1);
   if(!frag){ showError('找不到資料','此連結不包含照護資訊，請重新掃描 QR code。'); return; }
@@ -142,9 +222,10 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     const goal = getGoal(d.t, d.s, d.b);
     const tx = getTx(d.t, d.s, d.m, d.b);
     const stageTxt = stageLabel(d.t, d.s);
+    const drugDetail = getDrugDetail(d.t, d.s, d.m, d.b);
 
     let h = '<div class="edu-handout">';
-    h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 病患個人化照護導航手冊</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
+    h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 個人化照護導航手冊 — 醫護版</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
     h += '<div class="edu-body">';
     h += '<div class="edu-info">';
     h += `<div><b>姓名：</b>${d.n||'—'}</div>`;
@@ -175,14 +256,22 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     h += '<div class="edu-col">';
     h += `<h4 class="edu-sh"><i class="fa-solid fa-bullseye"></i> 治療目標</h4><p class="edu-p">${goal}</p>`;
     h += `<h4 class="edu-sh"><i class="fa-solid fa-flask"></i> 建議治療方案</h4><p class="edu-p">${tx}</p>`;
-    h += '<p class="edu-note">＊依本院診療指引標準建議，實際方案由主治醫師依您的狀況調整。</p>';
-    h += '<h4 class="edu-sh"><i class="fa-solid fa-shield-heart"></i> 副作用管理</h4>';
-    h += '<p class="edu-p">持續發燒、皮膚紅腫或皮疹、腹瀉不止、呼吸急促、嚴重疲倦無法進食 → 請聯繫個管師。</p>';
+    // Drug detail (醫護版重點：完整藥名 + 規範)
+    h += '<h4 class="edu-sh"><i class="fa-solid fa-prescription-bottle-medical"></i> 藥物與規範</h4>';
+    h += '<div class="drug-list">';
+    drugDetail.forEach((it,i)=>{
+      h += `<div class="drug-item"><div class="drug-title"><span class="drug-n">${i+1}</span>${it.title}</div>`;
+      if(it.drugs) h += `<div class="drug-d">${it.drugs}</div>`;
+      if(it.note)  h += `<div class="drug-note">${it.note}</div>`;
+      h += '</div>';
+    });
+    h += '</div>';
+    h += '<p class="edu-note">＊依本院診療指引與健保第 9 章彙整，實際處方由主治醫師依病人狀況決定。</p>';
     h += '</div></div>';
-    h += `<div class="edu-footer">如有任何疑問，請隨時聯繫您的個案管理師${d.c?'（'+d.c+'）':''}。</div>`;
+    h += `<div class="edu-footer">本頁為醫護內部快速查閱用。如有疑問請聯繫個案管理師${d.c?'（'+d.c+'）':''}。</div>`;
     h += '</div></div>';
     app.innerHTML = h;
-    footer.innerHTML = `產生日期：${d.d||'—'}<br>此頁面為個人化照護內容，請勿分享他人。<br>彰濱秀傳紀念醫院 癌症中心`;
+    footer.innerHTML = `產生日期：${d.d||'—'}<br>此頁面為醫護快速查閱版本（病人版本請改用 edu-patient.html）。<br>彰濱秀傳紀念醫院 癌症中心`;
   }
 
   function showError(title, msg){
