@@ -1148,7 +1148,15 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
     </div><!-- content -->
 
     <div class="bottombar">
-      <div class="step-dots" id="dots"></div>
+      <div class="step-dots" id="dots">
+        <div class="step-dot active" data-i="0" title="病人"></div>
+        <div class="step-dot" data-i="1" title="基礎檢查"></div>
+        <div class="step-dot" data-i="2" title="分期"></div>
+        <div class="step-dot" data-i="3" title="進階檢查"></div>
+        <div class="step-dot" data-i="4" title="路徑"></div>
+        <div class="step-dot" data-i="5" title="總覽"></div>
+        <div class="step-dot" data-i="6" title="手冊"></div>
+      </div>
       <div class="spacer"></div>
       <button class="btn-nav back" id="btn-back" onclick="APP.back()" disabled><i class="fa-solid fa-chevron-left"></i> 上一步</button>
       <button class="btn-nav next" id="btn-next" onclick="APP.next()">下一步 <i class="fa-solid fa-chevron-right"></i></button>
@@ -1169,8 +1177,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.4.1';
-const SYSTEM_VERSION = 'V2.6.1';
+const MODULE_VERSION = 'V1.5.0';
+const SYSTEM_VERSION = 'V2.7.0';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1412,20 +1420,34 @@ function getAll(s){ return new Promise(r=>{ const t=db.transaction(s); const q=t
 function del(s,k){ return new Promise(r=>{ const t=db.transaction(s,'readwrite'); t.objectStore(s).delete(k); t.oncomplete=()=>r(); }); }
 
 // ── Navigation ──
+// V2.7.0 perf: cache panel/nav-item NodeLists (do NOT re-querySelectorAll on every nav)
+let _panels = null, _navs = null;
+function _initNavCache(){
+  if(!_panels) _panels = document.querySelectorAll('.panel');
+  if(!_navs)   _navs   = document.querySelectorAll('.nav-item');
+}
 A.go = function(name){
   try{ readForm(); saveDraft(); if(editId && (cur==='basicck'||cur==='checklist'||cur==='decision'||cur==='pathway')){ autoUpdateRecord(); } } catch(e){}
   cur = name;
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.panel===name));
+  _initNavCache();
+  // Toggle panel + nav classes (cheap class flips, single reflow batch)
+  for(let i=0; i<_panels.length; i++) _panels[i].classList.toggle('active', _panels[i].id==='panel-'+name);
+  for(let i=0; i<_navs.length;   i++) _navs[i].classList.toggle('active', _navs[i].dataset.panel===name);
   updateBar();
-  if(name==='records') loadList();
-  if(name==='pathway') renderPW();
-  if(name==='summary'){ document.getElementById('sum-saved').style.display='none'; renderSummary(); }
-  if(name==='edu'){ const hasData=A.S.type&&A.S.stage; document.getElementById('edu-empty').style.display=hasData?'none':''; document.getElementById('edu-content').style.display=hasData?'':'none'; if(hasData) renderEduHandout(); }
-  if(name==='basicck') renderBasicCK();
-  if(name==='checklist') renderCK();
-  if(name==='stats') loadStats();
-  if(name==='backup') loadBackupStatus();
+  // Defer heavy renders to next frame so the panel transition paints first.
+  // Most renders only need to run for the panel actually being shown.
+  requestAnimationFrame(()=>{
+    try{
+      if(name==='records') loadList();
+      else if(name==='pathway') renderPW();
+      else if(name==='summary'){ document.getElementById('sum-saved').style.display='none'; renderSummary(); }
+      else if(name==='edu'){ const hasData=A.S.type&&A.S.stage; document.getElementById('edu-empty').style.display=hasData?'none':''; document.getElementById('edu-content').style.display=hasData?'':'none'; if(hasData) renderEduHandout(); }
+      else if(name==='basicck') renderBasicCK();
+      else if(name==='checklist') renderCK();
+      else if(name==='stats') loadStats();
+      else if(name==='backup') loadBackupStatus();
+    } catch(e){ /* swallow render errors so a bad panel doesn't crash navigation */ }
+  });
 };
 
 async function autoUpdateRecord(){
@@ -1463,8 +1485,14 @@ function updateBar(){
     const nextLabel = flowLabels[i+1]||'';
     btnN.innerHTML = `${nextLabel} <i class="fa-solid fa-chevron-right"></i>`;
   } else { btnN.style.display='none'; }
-  // Dots
-  document.getElementById('dots').innerHTML = flowPanels.map((p,j)=>`<div class="step-dot${j===i?' active':''}" title="${flowLabels[j]}"></div>`).join('');
+  // Dots — toggle classes only (V2.7.0 perf: avoid innerHTML rebuild on every nav)
+  const dotsEl = document.getElementById('dots');
+  if(dotsEl){
+    const dots = dotsEl.children;
+    for(let j=0; j<dots.length; j++){
+      dots[j].classList.toggle('active', j===i);
+    }
+  }
 }
 
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -1686,7 +1714,7 @@ function afterMstage(){
     A.S.mutation='';
 
     dtShowCard(5);
-    setTimeout(renderMolPanel, 50);
+    requestAnimationFrame(renderMolPanel);
   } else {
     // SCLC: no driver gene step
     A.S.mutation = 'N/A';
@@ -1726,7 +1754,7 @@ A.dtJump = function(step){
   if(step <= 4){ A.S.drivers={}; A.S.pdl1Val=''; A.S.mutation=''; }
   dtShowCard(step);
   // If landing on step 5, re-render the molecular panel so existing selections show up correctly
-  if(step === 5) setTimeout(renderMolPanel, 50);
+  if(step === 5) requestAnimationFrame(renderMolPanel);
 };
 
 // ═══ 分子檢測 — 驅動基因 + PD-L1 ═══
@@ -1900,8 +1928,8 @@ function restoreDT(){
   A.S.stage = computeAJCC(A.S.tstage, A.S.nstage, A.S.mstage);
   const isNSCLC_r = A.S.type==='NSCLC_NS'||A.S.type==='NSCLC_SQ';
   if(isNSCLC_r){
-    if(!A.S.mutation){ dtShowCard(5); setTimeout(renderMolPanel,50); return; }
-    setTimeout(renderMolPanel,50);
+    if(!A.S.mutation){ dtShowCard(5); requestAnimationFrame(renderMolPanel); return; }
+    requestAnimationFrame(renderMolPanel);
   }
   const parts=[TYPE_LABEL[A.S.type], A.S.tstage+A.S.nstage+A.S.mstage, 'Stage '+A.S.stage];
   if(A.S.mutation&&A.S.mutation!=='N/A'&&A.S.mutation!=='NOT_TESTED') parts.push('分子:'+A.S.mutation);
@@ -1983,11 +2011,11 @@ function renderPW(){
     document.getElementById('pw-content').innerHTML = '<div class="card"><p>此組合尚無路徑資料，請與主治醫師確認。</p></div>';
     document.getElementById('pw-cost-inner').innerHTML = '';
   }
-  // Render treatment execution checklist
-  renderTxExec();
-  // Render consultation routing
-  renderConsult();
-  updatePWNav();
+  // Render treatment execution checklist + consult routing on next frame
+  // (V2.7.0 perf: keeps main pw paint <16ms; defers heavy tx-exec list)
+  requestAnimationFrame(()=>{
+    try{ renderTxExec(); renderConsult(); updatePWNav(); } catch(e){}
+  });
 }
 
 A._pwTabs = ['plan','exec','team','cost'];
@@ -3256,8 +3284,8 @@ function renderSummary(){
   nH += S.notes ? `<div class="snote">${S.notes.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>` : '<div class="snote-empty">無備註</div>';
   document.getElementById('sum-notes-box').innerHTML = nH;
 
-  // KPI Compliance
-  renderKPI();
+  // KPI Compliance — defer to next frame (V2.7.0 perf)
+  requestAnimationFrame(()=>{ try{ renderKPI(); } catch(e){} });
 }
 
 // ── Basic Checklist (Phase 1+2, tabbed like advanced) ──
@@ -3685,7 +3713,7 @@ async function loadStats(){
       charts['ch-kpi-time'] = new Chart(ctxTime,{type:'bar',data:{labels:timeBuckets.map(b=>b+'天'),datasets:[
         {label:'收案→確診',data:diagBuckets,backgroundColor:'#5B8FB9',borderRadius:4},
         {label:'收案→首治',data:txBuckets,backgroundColor:'#2563eb',borderRadius:4}
-      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:'Microsoft JhengHei','微軟正黑體'}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:"Microsoft JhengHei,微軟正黑體"}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
     }
 
     // Detail table
@@ -3744,7 +3772,7 @@ async function loadStats(){
 function mkChart(id,type,labels,data,colors){
   if(charts[id])charts[id].destroy();
   const ctx=document.getElementById(id); if(!ctx)return;
-  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:type==='line'?'transparent':colors,borderColor:type==='line'?colors[0]:colors,borderWidth:type==='line'?3:1,tension:.4,pointRadius:type==='line'?4:0,pointBackgroundColor:type==='line'?colors[0]:undefined}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{font:{size:11,family:'Microsoft JhengHei','微軟正黑體'}}}},scales:(type==='bar'||type==='line')?{y:{beginAtZero:true,ticks:{stepSize:1}}}:undefined}});
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:type==='line'?'transparent':colors,borderColor:type==='line'?colors[0]:colors,borderWidth:type==='line'?3:1,tension:.4,pointRadius:type==='line'?4:0,pointBackgroundColor:type==='line'?colors[0]:undefined}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{font:{size:11,family:"Microsoft JhengHei,微軟正黑體"}}}},scales:(type==='bar'||type==='line')?{y:{beginAtZero:true,ticks:{stepSize:1}}}:undefined}});
 }
 
 // ── Export / Import ──
