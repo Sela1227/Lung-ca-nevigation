@@ -1134,7 +1134,19 @@ function updateActBar(){
    Pickers
 ═══════════════════════════════════════════════════ */
 function pickType(btn){
-  S.type = btn.dataset.val;
+  const newType = btn.dataset.val;
+  // 改變 type 時，重置下游所有狀態（避免 stale data 帶到後面）
+  if(S.type && S.type !== newType){
+    S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut='';
+    // 視覺：清掉 TNM 與 mut 的 selected
+    document.querySelectorAll('.tnm-btn,.mut-btn').forEach(b=>b.classList.remove('selected'));
+    // 清掉 stage preview
+    const foot = document.getElementById('tnm-foot');
+    const v = document.getElementById('tnm-stage');
+    if(foot){ foot.classList.add('empty'); }
+    if(v){ v.classList.add('empty'); v.textContent = '— 請完整選擇 T、N、M —'; }
+  }
+  S.type = newType;
   document.querySelectorAll('#opt-type .btn-type').forEach(b=>b.classList.toggle('selected', b===btn));
   updateActBar();
 }
@@ -1155,9 +1167,15 @@ function pickTNM(axis, btn){
 }
 
 function recomputeStage(){
+  const oldCat = S.stageCat;
   const stage = computeAJCC(S.t, S.n, S.m);
   S.stage = stage;
   S.stageCat = stageToCategory(stage);
+  // 若 stage 改變導致 mut 不再相關（例如 META→EARLY），清掉 mut 避免殘留汙染 buildPath/QR payload
+  if(oldCat !== S.stageCat && !mutNeeded() && S.mut){
+    S.mut = '';
+    document.querySelectorAll('.mut-btn').forEach(b=>b.classList.remove('selected'));
+  }
   const foot = document.getElementById('tnm-foot');
   const val = document.getElementById('tnm-stage');
   if(stage){
@@ -1187,14 +1205,15 @@ function toggleTNMMode(){
 }
 
 function setStageUnknown(){
-  S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat='EARLY';
-  document.querySelectorAll('.tnm-btn').forEach(b=>b.classList.remove('selected'));
-  recomputeStage();
-  // After clearing, stageCat is set, so update actbar manually
-  S.stageCat='EARLY'; // recomputeStage cleared it
+  // Fallback: 民眾不確定 TNM。清空 T/N/M、mut，明確標記 stageCat='EARLY' 走最保守一般原則
+  S.t=''; S.n=''; S.m=''; S.stage=''; S.mut='';
+  S.stageCat = 'EARLY';
+  document.querySelectorAll('.tnm-btn,.mut-btn').forEach(b=>b.classList.remove('selected'));
+  // 直接更新 UI（不走 recomputeStage 因為它依 T/N/M 算）
   document.getElementById('tnm-foot').classList.remove('empty');
-  document.getElementById('tnm-stage').classList.remove('empty');
-  document.getElementById('tnm-stage').textContent = '不確定 — 一般原則';
+  const val = document.getElementById('tnm-stage');
+  val.classList.remove('empty');
+  val.textContent = '不確定 — 一般原則';
   updateActBar();
   setTimeout(()=>goNext(), 250);
 }

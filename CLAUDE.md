@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.3"
+VERSION="2.8.4"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -121,6 +121,7 @@ node --check /tmp/j.js
 | QR 碼 base URL | 約第 2898 行 `EDU_BASE_URL` |
 | QR 掃碼頁 | `lung/edu.html` |
 | Portal 角色選擇+癌別列表 | `portal.html` 的 `CANCERS` 陣列 + `selectRole()` |
+| Portal 8 癌別 SVG 圖示（V2.8.4+） | `portal.html` 的 `CANCERS` 內每個 `svg` 欄位（inline path） |
 | 民眾版健保藥物清單 | `patient.html` 的 `DRUGS` 物件 |
 | 健保藥物總整理頁（V2.8.3+） | `lung/drugs.html` 的 `ALL_DRUGS` 陣列 |
 | 民眾版治療路徑邏輯 | `patient.html` 的 `buildPath()` 函式 |
@@ -183,16 +184,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.8.4 | V1.6.4 | 2026-04-29 | Portal 8 癌別圖示全改 inline SVG（脫離 FA）+ 跑遍 200 組合找出並修 4 個 state 殘留 bug BUG-20、BUG-21 |
 | V2.8.3 | V1.6.3 | 2026-04-29 | QR 中文 fail 修復（換 qrcode-generator + UTF-8 byte mode）+ drugs.html 健保藥物總整理頁 BUG-19 |
 | V2.8.2 | V1.6.2 | 2026-04-29 | 民眾版補回照護團隊可選（同步 CFG.team.depts）+ QR modal（hero 按鈕觸發）BUG-18 |
 | V2.8.1 | V1.6.1 | 2026-04-29 | 民眾版徹底改成真一頁式（100dvh + flex 鎖屏）；header/Q1/Q2/Q3/總覽全面重構排版 BUG-17 |
 | V2.8.0 | V1.6.0 | 2026-04-29 | 民眾版 Q2 改 TNM 輸入(簡化+進階) + 藥物視覺從附註升級為主角 BUG-16 |
 | V2.7.0 | V1.5.0 | 2026-04-29 | 民眾版重寫(一問一頁) + 健保藥物資料庫整合 + Chart.js 語法錯修復 + rAF 卡頓優化 BUG-14、BUG-15 |
-| V2.6.1 | V1.4.1 | 2026-04-07 | computeAJCC N2a/N2b 修正（AJCC 9th 對齊 NCCN v3.2026）BUG-13 |
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-19）
+## 六、踩過的坑（BUG-01 ~ BUG-21）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -311,6 +312,26 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - QR 容量：Version 15 (77x77) M-level 容量 535 bytes；115 byte 的 payload 完全不是問題（先前 fail 是 lib bug 不是容量問題）
 - 教訓：**選 JS lib 看 dependents 數，不是 npm 名稱看起來像哪個**。`qrcodejs` (davidshimjs) 跟 `qrcode-generator` (kazuhikoarase) 名字相似但維護完全不同。下次選 cdn lib 先 web_search 看現代版本與下載量
 
+### #20 (lung V1.6.4 / V2.8.4)：使用者改前面題目時下游 state 殘留
+- 症狀：跑遍 200 個 (type × stageCat × mut) 組合「自動化測試」時意外發現的，民眾不會看到 — 但 QR payload 會帶錯資訊
+- 場景：使用者選 NSCLC_NS → 走到 META → 選 EGFR → 返回到 Q1 改成 SCLC，或返回到 Q2 改 TNM 變 EARLY。雖然 buildPath 走 SCLC/EARLY 分支不看 mut，但 `S.mut='EGFR'` 還在 state，QR payload 會印「肺癌路徑 | SCLC 擴散期 | EGFR(+)」這種矛盾訊息
+- 三個獨立 bug：
+  1. `pickType`：改 type 不重置下游（mut/TNM/stage/stageCat）
+  2. `recomputeStage`：TNM 改變導致 stageCat 變動（特別是 META→EARLY），不檢查 mutNeeded() 因此不清 mut
+  3. `setStageUnknown`：fallback 走 EARLY 不清 mut；且程式碼有 hack（先 recomputeStage 再覆寫 stageCat）
+- 做法：
+  1. `pickType`：偵測 type 真的改變才清下游；同 type 不重置（避免使用者重複點同一顆按鈕被清掉）
+  2. `recomputeStage`：oldCat !== newCat 且 !mutNeeded() → 清 S.mut + 清 selected class
+  3. `setStageUnknown`：直接清乾淨（不再走 recomputeStage hack），明確 set stageCat='EARLY'
+- 教訓：**state 跨 step 流動時，往回改前面題目的 reset 邏輯永遠是漏網之魚**。寫多步驟流程時要列出 state dependency graph：改 X 應該清哪些下游欄位？這個版本之前我沒系統性思考過這件事。下次新癌別模組要照樣寫 reset 規則
+- **測試方法**：寫了個 mock-DOM 測試 harness，在 node 跑 200 組合（types × stageCats × muts），confirm `buildPath()` 對每組都能產 valid result（有 stageTxt/pwTxt/steps/warns），再加 4 個專門的 state-residue 案例。這個 harness 程式碼放在 V2.8.4 開發過程，下版若再改 state 邏輯應該重跑
+
+### #21 (V2.8.4)：portal 還掛著 Font Awesome CSS 但 90% 圖示是 SVG
+- 症狀：FA CSS 約 90KB，但 portal 只用 4 個 icon（hospital + 2 role + 1 badge）
+- 做法：把這 4 個 + 8 個癌別圖示全改 inline SVG，刪掉 FA 引用。portal 完全脫離 FA，首屏快很多
+- 順帶**重新設計 8 個癌別 SVG**：用器官解剖意象取代 FA 的類比物（ribbon、bacteria、utensils、mars 等不直觀的）
+- 教訓：**FA 用一個 icon 拉整個 90KB CSS 不划算**。lung.html 因為用了 ~30+ 個 FA icon 留著合理；portal/patient/drugs 都該避免
+
 ---
 
 ## 七、擴充新癌別
@@ -328,14 +349,14 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證** — V2.8.3 修了 QR + 加了 drugs.html。Sela 應在手機 + iPad + 桌機都試一輪：(a) QR 中英混合 payload 能正確掃描 (b) drugs.html 搜尋與篩選順暢嗎 (c) drugs.html 在小螢幕排版正常嗎
-2. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字，特別是健保事審條件（健保署公告隨時可能調整）
-3. 新增第二個癌別（頭頸或食道）— 模板已穩定，可開始
-4. 民眾版 TEAM 同步機制觀察（patient.html 手動同步 lung CFG.team.depts；如果 lung 改名單就要記得跟）
+1. **GitHub Pages 部署實機驗證** — V2.8.4 動了 portal SVG + state reset 邏輯。Sela 應在手機 + iPad + 桌機都試一輪：(a) portal 8 個新 SVG 看起來合理嗎 (b) 民眾流程「往回改」場景：選 NSCLC META EGFR → 返回改 SCLC → QR payload 是不是乾淨的（不該有 EGFR）
+2. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
+3. 新增第二個癌別（頭頸或食道）— 模板已穩定，可開始；新模組要記得套 V2.8.4 的「改 type 重置下游」reset 規則
+4. SCLC 在 patient.html 的 Q2 應該特殊處理 — 民眾選了 SCLC 後 TNM 其實不該照 NSCLC 的方式算（SCLC 用 limited/extensive 二分法）。目前 SCLC 的 EARLY 跟 LOCAL 都會走 `SCLC 侷限期`，UI 上沒問題但概念上 stage 標籤不一致
 5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
 
 ---
 
 ## 九、一句話總結
 
-V2.8.3 兩件事：QR 中文 fail bug 修復（換 `qrcode-generator@2.0.4` + UTF-8 byte mode）；新增 `lung/drugs.html` 健保肺癌藥物總整理頁（28 種藥可搜尋與篩選）。portal 加快速工具入口連到藥物總整理。下版第一優先還是實機驗收 + Sela 逐條 review drugs 資料。
+V2.8.4 兩件事：portal 8 癌別圖示改 inline SVG（脫離 FA，重新設計成器官解剖意象）；跑遍 200 個 (type × stageCat × mut) 組合自動化測試找出 4 個 state 殘留 bug 全修。218/218 全綠。下版第一優先還是實機驗收 V2.8.4 + Sela review drugs.html 資料。

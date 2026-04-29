@@ -1,4 +1,19 @@
-# Cancer Navigation V2.8.3 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.8.4 — 彰濱秀傳癌症中心
+
+## V2.8.4 — 2026-04-29
+**portal SVG 重設計 + 全組合 state 殘留修復**
+- **portal 8 個癌別圖示全改 inline SVG**：每個都是器官解剖意象（24×24, currentColor stroke 1.6, round caps）
+  - 肺癌：兩瓣肺 + 氣管分支 / 乳癌：圓形 + 乳腺管 / 大腸：彎曲腸道 / 食道：垂直管狀
+  - 頭頸：側面頭頸輪廓 / 肝：不對稱兩葉 / 攝護腺：倒三角 / 膀胱：球囊
+  - 風格與 lung.html 的 NORDIC_ICONS 一致
+- **portal 完全脫離 Font Awesome**：hospital / role / cancer / badge 圖示全 inline SVG，刪掉 FA CSS 引用，首屏載入更快
+- **跑遍 200 個組合（type × stageCat × mut）找 bug**：結構性 0 bug；找到 4 個 state 殘留問題：
+  - **Bug A**：`setStageUnknown` 內部雙重 set stageCat（recomputeStage 後再覆寫）— 重構乾淨
+  - **Bug B**：改 type 沒清下游（mut/TNM 殘留汙染 QR payload）— 加 reset
+  - **Bug C**：改 TNM 從 META → EARLY 時 `S.mut` 殘留（雖然 buildPath 不用，但 QR 會帶錯資訊）— `recomputeStage` 加 mutNeeded 檢查
+  - **Bug D（追加）**：`setStageUnknown` 走 EARLY fallback 沒清 mut — 補上
+- **218/218 自動化測試全綠**：200 組合 + 14 ajcc + 4 state-residue
+- **模組**：lung V1.6.3 → V1.6.4；系統 V2.8.3 → V2.8.4
 
 ## V2.8.3 — 2026-04-29
 **QR 修復 + 健保藥物總整理頁**
