@@ -1,4 +1,21 @@
-# Cancer Navigation V2.9.3 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.9.4 — 彰濱秀傳癌症中心
+
+## V2.9.4 — 2026-04-30
+**手機版 Q-page 鎖屏 bug 大盤點與修復**
+- Sela 回報：手機版 TNM 詳細模式（進階 9 欄）顯示不完全、無法拉動
+- **根因**：所有 Q1-Q4 都鎖在 `100dvh` + `.cd { overflow:hidden }`，桌機 OK，手機內容超出時被切掉看不見也無法捲
+- **盤點 + 修復 7 個手機 bug**：
+  - **Bug A**：TNM 進階 T 軸 9 欄在 360px 手機按鈕擠到 23px 寬，文字「T1mi」「T2a」看不到 → 加 `@media(max-width:480px)`：`tnm-btns[data-cols="9"]` 與 `[data-cols="5"]` 改 4 欄自動 wrap；tnm-row 改 `flex-wrap:wrap` 讓 letter+meta 一排、按鈕另起一排
+  - **Bug B**：手機所有 Q-page 內容超出時被 overflow:hidden 切掉 → 新增 `body.questioning` class，showPage 進 Q1-Q4 時加 / 進總覽時移除；CSS `@media(max-width:640px)` 下這個 class 解開 body / main / page / cd 的 overflow，actbar 改 sticky 貼底
+  - **Bug C**：iOS Safari 對 input font-size <16px 自動 zoom（Q1 病歷號/姓名 input 點下去整個畫面爆） → 改 16px，桌機（≥481px）才壓回 13.5px
+  - **Bug D**：viewport `maximum-scale=1` 阻止使用者放大頁面（accessibility 問題，視力不佳長者看不清字） → 移除
+  - **Bug E**：actbar 沒處理 iOS safe-area-inset-bottom，iPhone 全螢幕底部會被 home indicator 蓋到 → 加 `padding-bottom: calc(8px + env(safe-area-inset-bottom))`，height 改 min-height 避免被推爆
+  - **Bug F**：sclc-grid 用 `grid-template-rows: 1fr 1fr` 在解鎖（flex:none）模式變 0 高度 → 手機加 `grid-template-rows: auto auto`
+  - **Bug G**：input 沒設 scroll-margin-bottom，手機點輸入框時鍵盤遮住底下 → 加 80px scroll-margin-bottom，input focus 時自動捲入視窗
+- showPage 進 Q 頁也 `scrollTo({top:0})` 確保切頁不殘留前頁的捲動位置
+- **桌機行為完全不變**（所有改動都包在 `@media(max-width:640px)` 或 `@media(max-width:480px)`）
+- 1152/1152 回歸全綠 + 4/4 ajcc
+- **模組**：lung V1.7.3 → V1.7.4；系統 V2.9.3 → V2.9.4
 
 ## V2.9.3 — 2026-04-30
 **民眾版說明文字精簡：刪客套、瘦身**

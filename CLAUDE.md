@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.9.3"
+VERSION="2.9.4"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -198,6 +198,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.9.4 | V1.7.4 | 2026-04-30 | 手機版 Q-page 鎖屏 bug 修復（TNM 進階 9 欄擠扁、iOS 自動 zoom、safe-area、grid-rows 失效）BUG-29 |
 | V2.9.3 | V1.7.3 | 2026-04-30 | 民眾版說明精簡（刪「醫師討論」客套話、刪試驗代號、note 瘦身）|
 | V2.9.2 | V1.7.2 | 2026-04-30 | portal.html UI 重構（清爽收斂、header 收縮、role 卡瘦身、quick-tools 改同節奏 section）|
 | V2.9.1 | V1.7.1 | 2026-04-29 | 民眾版字樣全面平民化（CCRT→同步化放療、RT→放射線治療）+ 隱藏放療劑量（由主治溝通）|
@@ -214,7 +215,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-28）
+## 六、踩過的坑（BUG-01 ~ BUG-29）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -431,6 +432,20 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 流程改 5 頁：Q1 基本 → Q2 類型 → Q3 分期 → Q4 基因/腦 → 總覽
 - 教訓：**個人化建議不該只在 warns 提一句，要直接套到 step 內容上**。民眾不會細讀 warns；他們看 step 卡片，那才是主要視覺焦點。年齡/PS 既然影響具體用藥，就要在 step 旁邊直接顯示「對您而言：改 Carboplatin」這種具體訊息
 
+### #29 (lung V1.7.4 / V2.9.4)：手機版 Q-page 鎖屏導致 7 個 bug
+- 症狀：Sela 回報手機版 Q3 進階 TNM 顯示不全、無法拉動。實測同源問題還有 6 個
+- 根因：BUG-17 修「一問一頁」鎖屏時，所有 Q 頁設定 `body { overflow:hidden }` + `.cd { overflow:hidden }` + 各 grid 用 `flex:1; min-height:0`。桌機 OK 因為內容寬鬆夠裝；手機 360px 寬一旦超出 → 切掉看不見也不能捲
+- 7 個盤點到的 bug：
+  1. **TNM 進階 T 軸 9 欄擠扁**：360px 手機按鈕只有 23px 寬，「T1mi」「T2a」字看不清，按下去還按不到。修：手機 `[data-cols="9"]` 與 `[data-cols="5"]` 改 4 欄 wrap，`tnm-row` 加 `flex-wrap:wrap` 讓按鈕另起一行
+  2. **Q-page 內容無法捲**：新 `body.questioning` class 配合 `@media(max-width:640px)` 解開 body / main / page / cd 的 overflow
+  3. **iOS Safari 對 input font-size <16px 自動 zoom**：Q1 病歷號/姓名 input 點下去整個頁面爆。改 16px（桌機 ≥481px 才壓回 13.5px）
+  4. **viewport maximum-scale=1**：阻止使用者放大頁面是 accessibility 問題（視力不佳長者看不清）。移除
+  5. **actbar 沒處理 safe-area**：iPhone 全螢幕底部 home indicator 會蓋到。`padding-bottom: calc(8px + env(safe-area-inset-bottom))`，height 改 min-height
+  6. **sclc-grid `grid-template-rows: 1fr 1fr` 在 flex:none 解鎖模式變 0 高度**：手機加 `auto auto`
+  7. **input 沒 scroll-margin-bottom**：手機點輸入框鍵盤遮 actbar。加 80px scroll-margin
+- 教訓：**「鎖屏為桌機設計，但手機需要解鎖」是個重複的 anti-pattern**。BUG-17（V2.8.1）只解總覽頁、BUG-26（V2.8.11）也只解總覽頁、BUG-29（V2.9.4）才解所有 Q 頁。下次新癌別的 patient.html 一開始就應該預設「桌機鎖屏 + 手機解鎖」雙模式，而不是先做鎖屏再一個個 bug 解
+- 教訓：**iOS Safari 的 input zoom-on-focus 是個普遍坑**。任何 input、textarea、select 在手機 ≤16px font-size 都會 trigger，從現在起所有新 input 預設 `font-size: 16px`，桌機才透過 media query 壓小
+
 ---
 
 ## 七、擴充新癌別
@@ -460,4 +475,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.9.3 民眾版文字大瘦身 — Sela 反映「醫師會與您討論」這類客套話可刪、整體說明太囉唆。這版砍掉所有「由 X 與您討論」「需與醫師討論」「由主治個別評估」客套句、試驗代號（PACIFIC/ADAURA/ALINA/KEYNOTE/MARIPOSA/Takahashi）民眾不認得也砍掉、applyAgeEcog 提示也大量瘦身（30+ 字 → 15 字內）。1152/1152 回歸 + 客套話殘餘 0 處。下版第一優先：Sela 拿院內指引一條條比對。
+V2.9.4 修手機版 Q-page 一系列鎖屏 bug — Sela 回報 TNM 進階模式手機顯示不全、無法拉動。盤點 7 個同源問題：TNM 9 欄擠扁、Q 頁內容無法捲、iOS input font<16px 自動 zoom、maximum-scale=1 阻止放大、safe-area 沒處理、sclc-grid rows fr 解鎖時失效、input 沒 scroll-margin。全部用 `body.questioning` + `@media(max-width:640px)` 解鎖手機端，桌機行為不變。1152/1152 全綠。下版第一優先：Sela 實機在小手機（如 iPhone SE 360px）跑一遍流程確認。

@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
 <title>肺癌路徑查詢 — 彰濱秀傳癌症中心</title>
@@ -106,6 +106,33 @@ body{
   overflow:hidden;
 }
 
+/* V2.9.4: 手機版全頁解鎖捲動
+   問題：Q1-Q4 桌機鎖屏 OK，但手機 (≤640px) 內容超出時 .cd / .main 都 overflow:hidden 切掉看不見
+   修：手機加 body.questioning class 解開 body / main / page / cd 的 overflow，內容直接堆疊可向下捲
+   桌機 ≥641px 保留鎖屏行為（內容寬鬆夠裝）
+   showPage 進 Q1-Q4 時加 body.questioning，進 summary 時加 body.summary（已存在），切離時各自移除 */
+@media(max-width:640px){
+  body.questioning{
+    height:auto;min-height:100dvh;min-height:100vh;
+    overflow:auto;-webkit-overflow-scrolling:touch;
+  }
+  body.questioning .main{flex:1 0 auto;overflow:visible}
+  body.questioning .page.active{flex:none;min-height:0}
+  body.questioning .cd{flex:none;overflow:visible}
+  /* 各 Q 頁內部容器也解鎖，避免 grid/rows 被截 */
+  body.questioning .tnm-wrap,
+  body.questioning .tnm-rows,
+  body.questioning .sclc-wrap,
+  body.questioning .sclc-grid,
+  body.questioning .mut-grid,
+  body.questioning .brain-grid,
+  body.questioning .type-grid{
+    flex:none;overflow:visible;min-height:0;
+  }
+  /* actbar sticky 貼底（與 summary 模式一致） */
+  body.questioning .actbar{position:sticky;bottom:0;z-index:50}
+}
+
 /* Q-header inside card */
 .cd-head{flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:1px solid var(--bdr2);padding-bottom:8px}
 .cd-head-l{min-width:0;flex:1}
@@ -147,9 +174,13 @@ body{
 @media(max-width:380px){.info-row{grid-template-columns:1fr}}
 .info-fld{background:var(--bg);border:1px solid var(--bdr2);border-radius:9px;padding:7px 11px;display:flex;flex-direction:column;gap:2px}
 .info-lbl{font-size:10px;color:var(--tx3);font-weight:700;letter-spacing:.5px}
-.info-fld input{border:none;outline:none;background:transparent;font-size:13.5px;font-family:inherit;color:var(--tx);padding:2px 0;border-bottom:1px dotted var(--bdr2)}
+.info-fld input{border:none;outline:none;background:transparent;font-size:16px;font-family:inherit;color:var(--tx);padding:2px 0;border-bottom:1px dotted var(--bdr2);scroll-margin-bottom:80px}
 .info-fld input:focus{border-bottom-color:var(--teal)}
-.info-fld input::placeholder{color:var(--tx3);font-size:12px}
+.info-fld input::placeholder{color:var(--tx3);font-size:12.5px}
+@media(min-width:481px){
+  .info-fld input{font-size:13.5px}
+  .info-fld input::placeholder{font-size:12px}
+}
 
 .info-block{flex-shrink:0;display:flex;flex-direction:column;gap:6px}
 .info-block-lbl{display:flex;align-items:baseline;gap:8px;padding-left:2px}
@@ -213,6 +244,9 @@ body{
 /* SCLC 兩段式 */
 .sclc-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
 .sclc-grid{flex:1;min-height:0;display:grid;grid-template-rows:1fr 1fr;gap:10px}
+@media(max-width:640px){
+  body.questioning .sclc-grid{grid-template-rows:auto auto}
+}
 .sclc-btn{
   background:var(--card);border:2px solid var(--bdr);border-radius:13px;
   padding:16px 16px;cursor:pointer;font-family:inherit;text-align:left;
@@ -243,6 +277,15 @@ body{
 .tnm-btns[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
 .tnm-btns[data-cols="9"]{grid-template-columns:repeat(9,1fr)}
 .tnm-btns[data-cols="5"]{grid-template-columns:repeat(5,1fr)}
+
+/* V2.9.4: 小手機把 9 欄/5 欄 TNM 進階壓回 4 欄 wrap 多行（避免 25px 寬擠按鈕） */
+@media(max-width:480px){
+  .tnm-btns[data-cols="9"]{grid-template-columns:repeat(4,1fr)}
+  .tnm-btns[data-cols="5"]{grid-template-columns:repeat(4,1fr)}
+  /* tnm-row 直立排版：letter+meta 一排，按鈕拉到下一排佔滿 */
+  .tnm-row{flex-wrap:wrap}
+  .tnm-row .tnm-btns{flex-basis:100%}
+}
 .tnm-btn{padding:8px 4px;border:1.5px solid var(--bdr);border-radius:8px;background:var(--card);font-family:inherit;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s,background .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:42px}
 .tnm-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
 .tnm-btn:active{transform:scale(.95)}
@@ -406,9 +449,10 @@ body{
 
 /* ── Bottom action bar ── */
 .actbar{
-  flex-shrink:0;height:var(--bar-h);
+  flex-shrink:0;min-height:var(--bar-h);
   background:rgba(255,255,255,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   border-top:1px solid var(--bdr);padding:8px 14px;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom));
   display:flex;gap:8px;align-items:stretch;
 }
 .act-btn{
@@ -1563,8 +1607,13 @@ function showPage(idx){
   updateActBar();
   // V2.8.11: 進總覽頁時加 body.summary 解鎖手機捲動
   document.body.classList.toggle('summary', pageId==='p-sum');
+  // V2.9.4: 在 Q1-Q4 加 body.questioning 解鎖手機 Q-page 捲動
+  document.body.classList.toggle('questioning', pageId!=='p-sum');
   if(pageId==='p-sum'){
     renderSummary();
+    window.scrollTo({top:0, behavior:'auto'});
+  } else {
+    // 進新 Q 頁時捲到頂（避免使用者切到下一題時還停在前頁尾）
     window.scrollTo({top:0, behavior:'auto'});
   }
 }
