@@ -146,14 +146,14 @@ const DRUGS = {
     {n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'},
     {n:'± Pembrolizumab',z:'± 吉舒達'}],
     note:'鱗狀原生型；PD-L1 1–49% 加免疫須符合 ICI 9.69 規範。'},
-  CONSOLIDATION: {line:'CCRT 後鞏固', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
-    note:'Stage III CCRT 後無惡化、PD-L1≥1%，健保事審，至多 12 個月（PACIFIC 模式）。'},
+  CONSOLIDATION: {line:'同步化放療後鞏固', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
+    note:'Stage III 同步化放療後無惡化、PD-L1≥1%，健保事審，至多 12 個月（PACIFIC 模式）。'},
   SCLC_ES: {line:'一線', nhi:'NHI', list:[
     {n:'Atezolizumab + Carboplatin + Etoposide',z:'癌自禦 + 鉑類 + 滅必治'},
     {n:'Durvalumab + Etoposide + Cisplatin/Carboplatin',z:'抑癌寧 + 滅必治 + 鉑類'}],
     note:'SCLC 擴散期、無腦/脊髓轉移，健保事審。'},
-  SCLC_LS_CCRT: {line:'侷限期化放療', nhi:'NHI', list:[{n:'Cisplatin + Etoposide + 胸部放療',z:'鉑類 + 滅必治 + RT'}],
-    note:'CCRT 為主。CR/PR 者可考慮預防性全腦照射 (PCI) 25–30 Gy。'},
+  SCLC_LS_CCRT: {line:'侷限期同步化放療', nhi:'NHI', list:[{n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'}],
+    note:'同步化放療為主。治療反應佳者可與主治醫師討論預防性全腦照射 (PCI)。'},
   SCLC_2L: {line:'二線', nhi:'NHI', list:[{n:'Topotecan',z:'喜樹鹼'}],
     note:'第一線含鉑治療後復發。'},
 };
@@ -162,7 +162,7 @@ const DRUGS = {
    PATHWAY ENGINE
 ═══════════════════════════════════════════════════ */
 function buildPathFromData(d){
-  // V2.9.0: edu-patient.html 入口 — 接受 schema d，包裝成原本 patient state 後跑
+  // V2.9.1: edu-patient.html 入口 — 接受 schema d，包裝成原本 patient state 後跑
   const r = buildPathRawFromData(d);
   applyAgeEcogFromData(r, d);
   return r;
@@ -171,8 +171,8 @@ function buildPathFromData(d){
 /**
  * V2.9.0: 依 S.age 與 S.ecog 對 result 的 steps/warns 做注入
  * 規則:
- *  - 高齡 (≥70): 化療鉑類首選 Carboplatin（提示）；CCRT 同步毒性高，可改序貫
- *  - PS 2: 化療單藥優先；CCRT 改序貫；免疫單藥需謹慎
+ *  - 高齡 (≥70): 化療鉑類首選 Carboplatin（提示）；同步化放療毒性高，可改序貫
+ *  - PS 2: 化療單藥優先；同步化放療改序貫；免疫單藥需謹慎
  *  - PS 3-4: 以支持性療法為主，化療毒性風險高，需個別評估
  */
 function applyAgeEcogFromData(r, d){
@@ -185,16 +185,16 @@ function applyAgeEcogFromData(r, d){
   if(ps2)     tags.push('PS 2');
   if(ps34)    tags.push('PS 3-4');
 
-  // 1) 在 step 的 note 後面追加細節（針對含化療/CCRT 的 step）
+  // 1) 在 step 的 note 後面追加細節（針對含化療/同步化放療的 step）
   for(const step of r.steps){
     const title = step.title || '';
-    const hasChemo = /(化療|CCRT|含鉑|鉑類|Cisplatin|Carboplatin)/.test(title) ||
+    const hasChemo = /(化療|同步化放療|含鉑|鉑類|Cisplatin|Carboplatin)/.test(title) ||
                      (step.drugs && step.drugs.some(d=>/Cisplatin|Carboplatin|Etoposide|Pemetrexed|Paclitaxel|化療|鉑類/.test(d.n||'')));
-    const hasCCRT = /CCRT|同步化放療/.test(title);
+    const hasCCRT = /同步化放療/.test(title);
     const note = step.note || '';
     const adjs = [];
     if(elderly && hasChemo) adjs.push('您 ≥70 歲：化療建議改 Carboplatin（毒性較低）');
-    if(ps2 && hasCCRT)      adjs.push('PS 2：CCRT 毒性風險高，可考慮改序貫（先化後放）');
+    if(ps2 && hasCCRT)      adjs.push('PS 2：同步化放療毒性風險高，可考慮改序貫（先化後放）');
     if(ps34 && hasChemo)    adjs.push('PS 3-4：化療需審慎評估，可能以支持性療法為主');
     if(adjs.length){
       step.note = note + (note ? '　/　' : '') + '【依您狀況】' + adjs.join('；');
@@ -203,7 +203,7 @@ function applyAgeEcogFromData(r, d){
 
   // 2) 動態加 warns
   if(elderly) r.warns.unshift('您填寫年齡 ≥70 歲：化療鉑類首選 Carboplatin；藥物劑量會調整');
-  if(ps2)     r.warns.unshift('您填寫 PS 2（常隱受症狀）：化療多以單藥優先；CCRT 可改序貫；免疫單藥需謹慎');
+  if(ps2)     r.warns.unshift('您填寫 PS 2（常隱受症狀）：化療多以單藥優先；同步化放療可改序貫；免疫單藥需謹慎');
   if(ps34)    r.warns.unshift('您填寫 PS 3-4（安床休息為主）：以症狀控制與支持性療法為主，是否化療由主治醫師個別評估');
 
   // 3) 修正 pwTxt（極端 PS 3-4 或高齡 + 局晚的情境）
@@ -227,8 +227,8 @@ function buildPathRawFromData(d){
         steps.push({ title:'第一線：化療（無腦/脊髓轉移者才可加免疫，本案不適用）', line:'一線', nhi:'NHI',
           drugs:[{n:'Cisplatin/Carboplatin + Etoposide',z:'鉑類 + 滅必治'}],
           note:'健保 ICI 9.69 規範限「無腦/脊髓轉移」者才能合併免疫治療。' });
-        steps.push({ title:'腦轉移處理：依症狀決定放療時機', line:'並行',
-          note:'有症狀（頭痛/神經症狀）或大病灶：先做全腦放療 (WBRT) 或立體定位放療 (SRS) 再化療；無症狀小病灶：可先化療同時 MRI 監測，必要時再放療' });
+        steps.push({ title:'腦轉移處理：依症狀決定放射線治療時機', line:'並行',
+          note:'有症狀（頭痛/神經症狀）或大病灶：先做全腦放射線治療或立體定位放射線治療再化療；無症狀小病灶：可先化療同時 MRI 監測，必要時再放射線治療' });
         warns.push('腦轉移使免疫治療不適用，預後相對較差');
       } else {
         // unknown
@@ -239,34 +239,34 @@ function buildPathRawFromData(d){
       }
       // PCI 鞏固 — 擴散期 PCI 證據近年已弱化（Takahashi 2017），改為 MRI 監測為合理替代
       if(brain==='yes'){
-        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）' });
+        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放射線治療（針對病灶），由放射腫瘤科醫師與您討論' });
       } else if(brain==='no'){
-        steps.push({ title:'CR/PR 後鞏固：MRI 監測 或 預防性全腦照射 (PCI)', line:'鞏固', note:'擴散期 PCI 對整體存活的助益已較不明確（Takahashi 2017）；多數中心改用每 3 個月腦 MRI 追蹤；若 MRI 不便取得仍可考慮 PCI 25 Gy' });
+        steps.push({ title:'治療反應佳後鞏固：MRI 監測 或 預防性全腦照射 (PCI)', line:'鞏固', note:'擴散期 PCI 對整體存活的助益已較不明確（Takahashi 2017）；多數中心改用每 3 個月腦 MRI 追蹤；PCI 與否由放射腫瘤科醫師與您討論' });
       } else {
-        steps.push({ title:'治療反應佳後依腦影像決定鞏固策略', line:'鞏固', note:'先做腦 MRI；陰性者可選 MRI 監測或 PCI（依醫師臨床判斷）' });
+        steps.push({ title:'治療反應佳後依腦影像決定鞏固策略', line:'鞏固', note:'先做腦 MRI；陰性者可選 MRI 監測或預防性全腦照射 (PCI)，由放射腫瘤科醫師與您討論' });
       }
       steps.push({ title:'治療失敗或復發：二線', line:DRUGS.SCLC_2L.line, nhi:'NHI', drugs: DRUGS.SCLC_2L.list, note: DRUGS.SCLC_2L.note });
 
       return {
-        stageTxt:'SCLC 擴散型 (Extensive)', pwTxt: brain==='yes' ? '化療為主（不適用免疫）+ 放療控制腦病灶' : '全身性化療 + 免疫治療',
+        stageTxt:'SCLC 擴散型 (Extensive)', pwTxt: brain==='yes' ? '化療為主（不適用免疫）+ 放射線治療控制腦病灶' : '全身性化療 + 免疫治療',
         steps, warns,
       };
     }
     if(st==='EARLY' || st==='LOCAL'){
       // 侷限型
       const steps = [
-        { title:'同步化放療 (CCRT) — 主要治療', line:DRUGS.SCLC_LS_CCRT.line, nhi:'NHI', drugs: DRUGS.SCLC_LS_CCRT.list, note: DRUGS.SCLC_LS_CCRT.note },
+        { title:'同步化放療 — 主要治療', line:DRUGS.SCLC_LS_CCRT.line, nhi:'NHI', drugs: DRUGS.SCLC_LS_CCRT.list, note: DRUGS.SCLC_LS_CCRT.note },
         { title:'極早期（T1-2 N0）可考慮先手術切除', line:'替代方案', note:'肺葉切除 + 淋巴結廓清；術後追加化療' },
       ];
       // PCI 依 brainMet
       if(brain==='yes'){
-        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）' });
+        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放射線治療（針對病灶），由放射腫瘤科醫師與您討論' });
       } else if(brain==='no'){
-        steps.push({ title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'25-30 Gy；可顯著降低腦轉移風險' });
+        steps.push({ title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'可顯著降低腦轉移風險；劑量與療程由放射腫瘤科醫師與您討論' });
       } else {
-        steps.push({ title:'治療反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'25-30 Gy；放射治療科評估前需確認腦部 MRI 無轉移' });
+        steps.push({ title:'治療反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'放射腫瘤科評估前需確認腦部 MRI 無轉移' });
       }
-      const warns = ['年齡 ≥70 或 PS≥2：CCRT 可調整為序貫治療'];
+      const warns = ['年齡 ≥70 或 PS≥2：同步化放療可調整為序貫治療'];
       if(brain==='yes') warns.push('已有腦轉移：屬於擴散期，治療策略要修正（請與主治醫師確認）');
       return { stageTxt:'SCLC 侷限型 (Limited)', pwTxt:'同步化放療為主', steps, warns };
     }
@@ -282,7 +282,7 @@ function buildPathRawFromData(d){
   if(st==='EARLY'){
     const steps = [
       { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清術', line:'主要治療', note:'NSCLC 早期（I-II）治療首選；極早期 T1a/T1b 可考慮節段切除（segmentectomy）' },
-      { title:'不適合手術：立體定位放射治療 (SBRT)', line:'替代手術', note:'最適 T1-T2a N0 周邊型病灶；高齡、心肺功能不佳或拒絕手術者考慮' },
+      { title:'不適合手術：立體定位放射線治療 (SBRT)', line:'替代手術', note:'最適 T1-T2a N0 周邊型病灶；高齡、心肺功能不佳或拒絕手術者考慮' },
       { title:'部分 II-IIIA 可切除者：術前化療 ± 免疫', line:'術前輔助', note:'CheckMate-816 顯示 nivolumab + 化療術前可改善病理反應；健保尚未給付，需自費或臨床試驗' },
       { title:'術後輔助化療（若為 II 期或高風險 IB）', line:'術後輔助', nhi:'NHI', drugs:[
           {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
@@ -308,17 +308,17 @@ function buildPathRawFromData(d){
     return {
       stageTxt:`${typeLabel} 局部晚期 (III)`, pwTxt:'同步化放療為主，再加免疫鞏固',
       steps:[
-        { title:'同步化放療 (CCRT) — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
-            {n:'Cisplatin + Etoposide + 胸部放療',z:'鉑類 + 滅必治 + RT'},
-            {n:'Carboplatin + Paclitaxel + 胸部放療',z:'鉑類 + 紫杉醇 + RT'}],
-          note:'每次 2 Gy，總劑量 60–66 Gy，4-6 個療程化療同步進行' },
-        { title:'CCRT 後無惡化：Durvalumab 免疫鞏固', line:DRUGS.CONSOLIDATION.line, nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note },
-        { title:'可切除型 IIIA：先手術 + 術後輔助化療 ± 標靶/免疫', line:'替代方案', note:'侷限 N1 或單站 N2 可手術；多站 N2 或大腫瘤通常先 CCRT' },
+        { title:'同步化放療 — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
+            {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'},
+            {n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'鉑類 + 紫杉醇 + 放射線治療'}],
+          note:'4-6 個療程化療同步進行；放射線治療劑量與次數由放射腫瘤科醫師依您病情決定' },
+        { title:'同步化放療後無惡化：Durvalumab 免疫鞏固', line:DRUGS.CONSOLIDATION.line, nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note },
+        { title:'可切除型 IIIA：先手術 + 術後輔助化療 ± 標靶/免疫', line:'替代方案', note:'侷限 N1 或單站 N2 可手術；多站 N2 或大腫瘤通常先做同步化放療' },
         ...(isNS ? [{ title:'IIIA 切除術後 EGFR(+) / ALK(+)：標靶鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib (EGFR)',z:'泰格莎'},{n:'Alectinib (ALK)',z:'安立適'}], note:'術後依基因檢測結果加鞏固治療（ADAURA / ALINA 模式）' }] : []),
       ],
       warns:[
-        '高齡（>70）或 PS >1：CCRT 同步毒性高，可改序貫（先化療後放療），需與醫師討論',
-        'Durvalumab 鞏固限 PD-L1 ≥1%、CCRT 結束後 6 週內開始，至多 12 個月（PACIFIC 模式）',
+        '高齡（>70）或 PS >1：同步化放療毒性高，可改序貫（先化療後放射線治療），需與醫師討論',
+        'Durvalumab 鞏固限 PD-L1 ≥1%、同步化放療結束後 6 週內開始，至多 12 個月（PACIFIC 模式）',
         '建議診斷時即做 EGFR / ALK / PD-L1 檢測，影響鞏固治療選擇',
       ],
     };
@@ -396,6 +396,7 @@ function buildPathRawFromData(d){
     steps:[{ title:'請與主治醫師討論完整分期計畫（CT、PET、腦 MRI）', note:'分期確認後才能個人化治療' }],
     warns:['未明確分期前的建議僅供參考'] };
 }
+
 
 
 

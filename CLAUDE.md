@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.9.0"
+VERSION="2.9.1"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -198,6 +198,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.9.1 | V1.7.1 | 2026-04-29 | 民眾版字樣全面平民化（CCRT→同步化放療、RT→放射線治療）+ 隱藏放療劑量（由主治溝通）|
 | V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
 | V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
 | V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
@@ -457,4 +458,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.9.0 是 V2.8.x 系列累積到一個明顯的轉折點 — 從「告訴所有民眾同樣的標準建議」進化成「依年齡/體能個人化建議」。新增 Q1 基本資料頁問年齡 + ECOG（民眾化詞彙）；buildPath 改成 wrapper 模式，applyAgeEcog 對 step 動態注入「【依您狀況】」標記，例如「您 ≥70 歲：化療建議改 Carboplatin」；warns 也帶進個人化提示。流程改 5 頁、edu-patient.html 同步邏輯。9600/9600 全綠。下版第一優先：實機驗收 + Sela 拿院內指引比對。
+V2.9.1 是 V2.9.0 的字樣 patch — Sela 反映民眾版有醫學術語，這版把 patient.html / edu-patient.html 的「CCRT→同步化放療、RT→放射線治療、WBRT/SRS→全稱中文」全換，所有 Gy 劑量描述移除，改成「劑量與療程由放射腫瘤科醫師與您討論」。醫護版 lung.html / edu-pro.html 不動。1536/1536 殘餘掃描乾淨 + 9600/9600 組合 + 14/14 ajcc。下版第一優先：Sela 拿院內指引一條條比對。
