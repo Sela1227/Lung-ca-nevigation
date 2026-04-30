@@ -1,4 +1,18 @@
-# Cancer Navigation V2.9.1 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.9.2 — 彰濱秀傳癌症中心
+
+## V2.9.2 — 2026-04-30
+**portal.html UI 重構：清爽收斂**
+- Sela 截圖反映 V2.9.1 portal 排版淩亂、太多大留白：header 太厚、role-card padding 過大、quick-tools 用分隔線斷得太兇、footer 浮在底部
+- **header 收縮**：padding 從 `48px / 64px` 改 `24px / 16px`，logo icon 從 56px → 42px、字級從 26px → 22px、subtitle 從 12px → 10.5px
+  - 桌機橫排（hospital name + subtitle 並排於 logo 右側）
+  - 手機直排（圖案在上，文字置中）
+- **role 卡片瘦身**：padding 從 `28px / 20px` 改 `16px / 14px`，icon 從 64px → 46px，role-sub 從 2 行改成 1 行（用「·」分隔）
+  - 高度從 ~140px → ~90px
+- **quick-tools 改成「同節奏」section**：移除虛線分隔 + `margin-top:32px`，改用跟 role-section / cancer-grid 同樣的 section-title 模式（左側 dot + 標題）
+- **footer 緊貼+一行**：原本 `padding:24px`+ 兩行文字，改 `padding:14px` 用「·」分隔合成一行
+- **設計原則**：每個區塊 16px gap、`.main` 用 flexbox+gap 統一節奏，視覺斷點更清楚
+- **整體高度**：桌機從 ~600px → ~405px（壓縮 32%），不再有「上半部空白下半部擠」的失衡感
+- 模組：lung V1.7.1 → V1.7.2；系統 V2.9.1 → V2.9.2
 
 ## V2.9.1 — 2026-04-29
 **民眾版字樣全面平民化 + 隱藏放療劑量**
