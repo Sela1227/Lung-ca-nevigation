@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.8.11"
+VERSION="2.9.0"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -52,6 +52,12 @@ zip -r "/mnt/user-data/outputs/${NAME}.zip" "${NAME}" \
 - Portal footer：只顯示系統版
 - edu.html：不顯示版本
 - **patient.html：V2.8.1 起不顯示版本**（footer 移除以節省版面，版號由 portal 負責）
+
+### 民眾版流程（V2.9.0+）
+五頁流程：Q1 基本資料 → Q2 類型 → Q3 分期 → Q4 基因/腦 → 總覽
+- Q1 全選填（姓名 / 病歷號 / 年齡 / ECOG），跳過也可
+- Q2/Q3/Q4 必選（Q4 依 q4Needed() 條件性出現：早期 NSCLC 不問 Q4）
+- 進度 dots 4 或 5 點（依 q4Needed）
 
 ### JS 語法驗證（每次必跑）
 ```bash
@@ -127,6 +133,8 @@ node --check /tmp/j.js
 | 健保藥物總整理頁（V2.8.3+） | `lung/drugs.html` 的 `ALL_DRUGS` 陣列 |
 | 民眾版治療路徑邏輯 | `patient.html` 的 `buildPath()` 函式 |
 | 民眾版 TNM 計算（V2.8.0+） | `patient.html` 的 `computeAJCC()` 與 `stageToCategory()` |
+| 民眾版基本資料頁（V2.9.0+） | `patient.html` 的 `#p-q1` 區塊（姓名/病歷號/年齡/ECOG）+ `pickAge()` / `pickEcog()` |
+| 民眾版年齡與 ECOG 影響建議（V2.9.0+） | `patient.html` 的 `applyAgeEcog()` 函式（buildPath 內呼叫，依 age/ecog 對 steps 與 warns 動態注入）|
 | 民眾版 TNM 簡化/進階按鈕組 | `patient.html` 第 250 行 `#p-q2` 區塊 + `pickTNM()` / `toggleTNMMode()` |
 | 民眾版 SCLC 兩段式選項（V2.8.5+） | `patient.html` 的 `#sclc-wrap` 區塊 + `pickSCLC()` / `setQ2Mode()` / `applyQ2Mode()` |
 | 民眾版 SCLC 腦/脊髓轉移選項（V2.8.5+） | `patient.html` 的 `#opt-brain` 區塊 + `pickBrain()` / `applyQ3Mode()` |
@@ -190,6 +198,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
 | V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
 | V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
 | V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
@@ -202,7 +211,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-27）
+## 六、踩過的坑（BUG-01 ~ BUG-28）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -407,6 +416,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
   - JS 在 `updateActBar()` 內依 `stepIdx` 動態切換按鈕文字，actbar HTML 預設不寫文字
 - 教訓：**多步驟流程的「同層導覽」與「跨層返回」要用不同詞彙**。「上一題」明確指同層；「返回」隱含「離開這個區段」。混用會讓使用者卡住
 
+### #28 (lung V1.7.0 / V2.9.0)：治療建議「應該依年齡/體能調整」但原本只在 warns 裡說
+- 症狀：原本 V2.8.11 之前 buildPath 對所有人都返回同樣的 steps，年齡/PS 調整僅是 warns 裡一句話「年齡 ≥70 或 PS≥2：化療劑量需調整或改 Carboplatin」— 民眾看不出對「自己」有什麼具體差異
+- 做法：
+  1. 新增 Q1 基本資料頁，加「年齡」（<70 / ≥70 兩選）+「ECOG」（PS 0-1 / 2 / 3-4 三選），全選填
+  2. ECOG 改成民眾化詞彙：「沒什麼影響 / 常隱受症狀 / 安床休息為主」+ 對應 SVG 圖示
+  3. buildPath 改成 `buildPath() = applyAgeEcog(buildPathRaw())` 模式，applyAgeEcog 在 step.note 動態追加「【依您狀況】」標記，例如「您 ≥70 歲：化療建議改 Carboplatin（毒性較低）」
+  4. PS 3-4 + 局晚/轉移 → 整個 pwTxt 改成「以症狀控制與支持性療法為主」
+  5. warns 開頭新增「您填寫的狀況」提示句
+  6. edu schema 加 `a` `e` 欄位，掃 QR 落地 edu-patient.html 也會看到個人化建議
+- 流程改 5 頁：Q1 基本 → Q2 類型 → Q3 分期 → Q4 基因/腦 → 總覽
+- 教訓：**個人化建議不該只在 warns 提一句，要直接套到 step 內容上**。民眾不會細讀 warns；他們看 step 卡片，那才是主要視覺焦點。年齡/PS 既然影響具體用藥，就要在 step 旁邊直接顯示「對您而言：改 Carboplatin」這種具體訊息
+
 ---
 
 ## 七、擴充新癌別
@@ -424,15 +445,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.8.11** — Sela 應實測：(a) 手機版總覽頁可順暢向下捲，藥物清單完整顯示 (b) Q2/Q3 看到「上一題」，總覽看到「返回」 (c) 治療路徑內容（特別 SCLC PCI、NSCLC EARLY 術前免疫、PDL1_HIGH 單藥） review 是否合臨床意
-2. **Sela 確認健保事審現況** — V2.8.11 註記了幾個「待確認」項目：(a) Sotorasib (KRAS G12C) 健保是否已給付 (b) Alectinib 術後鞏固 ALINA 健保是否已給付 (c) Amivantamab 健保適應症
-3. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物的中英文藥名、適應症、線數、規範文字
-4. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖
-5. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-6. **DRUGS 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS
+1. **GitHub Pages 部署實機驗證 V2.9.0** — Sela 應實測：(a) Q1 基本資料頁能填能跳 (b) 各種 age/ecog 組合下 step 內出現的「【依您狀況】」提示符合臨床預期 (c) PS 3-4 + 局晚情境下 pwTxt 真的改成「支持性療法為主」 (d) 跳過 Q1 全部欄位的人能正常走完流程
+2. **Sela 比對院內指引** — V2.8.11+V2.9.0 兩版改了很多治療路徑內容（NSCLC EARLY 加術前免疫與 ALK 鞏固、META PDL1_HIGH 加 Pembrolizumab 單藥、SCLC PCI 改 MRI 監測、age/ecog 動態調整）。Sela 應拿院內肺癌指引 v12 (2026) 一條一條比對，告訴我哪條要再修
+3. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症
+4. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
+5. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容
+6. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+7. **DRUGS 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS 與 buildPath 邏輯。V2.9.0 加 applyAgeEcog 後，兩邊改的負擔更大；考慮是否該抽 `_drugs.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V2.8.11 三件事：手機總覽頁解鎖捲動（讓藥物清單完整顯示，問答頁仍鎖屏）；返回按鈕語意精準化（上一題 vs 返回）；治療路徑全面 review — NSCLC EARLY 加術前免疫與 ALK 術後鞏固、META PDL1_HIGH 加 Pembrolizumab 單藥首選、META EGFR 加 Amivantamab 後線、SCLC Extensive PCI 改 MRI 監測或 PCI（證據更新）、SCLC brain+ 腦放療時機改依症狀決定。814/814 回歸全綠。下版第一優先：實機驗收 + Sela 確認健保事審現況。
+V2.9.0 是 V2.8.x 系列累積到一個明顯的轉折點 — 從「告訴所有民眾同樣的標準建議」進化成「依年齡/體能個人化建議」。新增 Q1 基本資料頁問年齡 + ECOG（民眾化詞彙）；buildPath 改成 wrapper 模式，applyAgeEcog 對 step 動態注入「【依您狀況】」標記，例如「您 ≥70 歲：化療建議改 Carboplatin」；warns 也帶進個人化提示。流程改 5 頁、edu-patient.html 同步邏輯。9600/9600 全綠。下版第一優先：實機驗收 + Sela 拿院內指引比對。

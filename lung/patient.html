@@ -135,11 +135,58 @@ body{
 }
 
 /* Optional name/code field (Q1) */
+/* Optional name/code field (legacy, V2.9.0 起改用 info-row) */
 .opt-fld{flex-shrink:0;background:var(--bg);border:1px dashed var(--bdr);border-radius:9px;padding:7px 10px;display:flex;gap:8px;align-items:center}
 .opt-fld-lbl{font-size:10.5px;color:var(--tx3);flex-shrink:0;font-weight:600;letter-spacing:.3px}
 .opt-fld input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;font-family:inherit;color:var(--tx);padding:2px 0;border-bottom:1px dotted var(--bdr2)}
 .opt-fld input::placeholder{color:var(--tx3);font-size:12px}
 .opt-fld input:focus{border-bottom-color:var(--teal)}
+
+/* V2.9.0: 基本資料頁 (Q1) */
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0}
+@media(max-width:380px){.info-row{grid-template-columns:1fr}}
+.info-fld{background:var(--bg);border:1px solid var(--bdr2);border-radius:9px;padding:7px 11px;display:flex;flex-direction:column;gap:2px}
+.info-lbl{font-size:10px;color:var(--tx3);font-weight:700;letter-spacing:.5px}
+.info-fld input{border:none;outline:none;background:transparent;font-size:13.5px;font-family:inherit;color:var(--tx);padding:2px 0;border-bottom:1px dotted var(--bdr2)}
+.info-fld input:focus{border-bottom-color:var(--teal)}
+.info-fld input::placeholder{color:var(--tx3);font-size:12px}
+
+.info-block{flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.info-block-lbl{display:flex;align-items:baseline;gap:8px;padding-left:2px}
+.info-block-tag{font-size:11.5px;font-weight:800;color:var(--tx);letter-spacing:.3px}
+.info-block-hint{font-size:10px;color:var(--tx3)}
+
+/* 年齡 2 選 */
+.age-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.age-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:11px;padding:9px 8px;
+  cursor:pointer;font-family:inherit;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.3;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.age-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.age-btn:active{transform:scale(.97)}
+.age-btn.selected{border-color:var(--teal);background:var(--teal-soft)}
+.age-btn b{font-size:14px;font-weight:900;color:var(--tx)}
+.age-btn.selected b{color:var(--teal-d)}
+.age-btn i{font-size:10.5px;color:var(--tx3);font-style:normal;font-weight:600}
+
+/* ECOG 3 選 */
+.ecog-grid{display:flex;flex-direction:column;gap:6px}
+.ecog-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:11px;
+  padding:9px 11px;cursor:pointer;font-family:inherit;text-align:left;
+  display:flex;align-items:center;gap:11px;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.ecog-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.ecog-btn:active{transform:scale(.985)}
+.ecog-btn.selected{border-color:var(--teal);background:var(--teal-soft)}
+.ecog-btn .ic{width:38px;height:38px;border-radius:11px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ecog-info{flex:1;min-width:0}
+.ecog-tt{font-size:13.5px;font-weight:800;color:var(--tx);letter-spacing:.3px;line-height:1.3}
+.ecog-btn.selected .ecog-tt{color:var(--teal-d)}
+.ecog-ss{font-size:11px;color:var(--tx2);line-height:1.4;margin-top:1px}
 
 /* ── Q2: TNM ── */
 /* SCLC brain/spine-met grid */
@@ -414,6 +461,7 @@ body{
       <div class="pdot" data-p="1"></div>
       <div class="pdot" data-p="2"></div>
       <div class="pdot" data-p="3"></div>
+      <div class="pdot" data-p="4"></div>
     </div>
   </div>
 </div>
@@ -424,11 +472,92 @@ body{
 <div class="main">
 
 <!-- ─── Q1: Type ─── -->
+<!-- ─── Q1: 基本資料（姓名 / 病歷號 / 年齡 / ECOG）── -->
 <div class="page active" id="p-q1">
   <div class="cd">
     <div class="cd-head">
       <div class="cd-head-l">
-        <div class="cd-step">第 1 步 / 共 3-4 步</div>
+        <div class="cd-step">第 1 步 / 基本資料</div>
+        <div class="cd-q">先了解您的基本狀況</div>
+        <div class="cd-sub">這些都是<b>選填</b>，跳過也可以；若有填能讓建議更貼近您</div>
+      </div>
+    </div>
+
+    <!-- 姓名 / 病歷號 -->
+    <div class="info-row">
+      <div class="info-fld">
+        <label class="info-lbl">病歷號</label>
+        <input id="pt-code" placeholder="例：A0042" maxlength="20" autocomplete="off">
+      </div>
+      <div class="info-fld">
+        <label class="info-lbl">姓名</label>
+        <input id="pt-name" placeholder="您的姓名" maxlength="20" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- 年齡 -->
+    <div class="info-block">
+      <div class="info-block-lbl">
+        <span class="info-block-tag">年齡</span>
+        <span class="info-block-hint">影響化療藥物選擇</span>
+      </div>
+      <div class="age-grid">
+        <button type="button" class="age-btn" data-val="lt70" onclick="pickAge(this)">
+          <b>&lt; 70 歲</b>
+          <i>標準劑量</i>
+        </button>
+        <button type="button" class="age-btn" data-val="ge70" onclick="pickAge(this)">
+          <b>≥ 70 歲</b>
+          <i>建議改 Carboplatin</i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ECOG -->
+    <div class="info-block">
+      <div class="info-block-lbl">
+        <span class="info-block-tag">日常生活狀態 (ECOG)</span>
+        <span class="info-block-hint">癌症對活動力的影響</span>
+      </div>
+      <div class="ecog-grid">
+        <button type="button" class="ecog-btn" data-val="01" onclick="pickEcog(this)">
+          <span class="ic" style="background:#dcfce7;color:#15803d">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="2.5"/><path d="M9 11h6l-1 5h2l1 4M10 11l-1 5H7l-1 4"/><path d="M5 13l3-1M19 13l-3-1"/></svg>
+          </span>
+          <div class="ecog-info">
+            <div class="ecog-tt">沒什麼影響</div>
+            <div class="ecog-ss">PS 0-1 · 完全或大部分時間能照常活動</div>
+          </div>
+        </button>
+        <button type="button" class="ecog-btn" data-val="2" onclick="pickEcog(this)">
+          <span class="ic" style="background:#fef3c7;color:#a16207">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="2.5"/><path d="M12 8.5v6"/><path d="M9 11h6"/><path d="M12 14.5l-2 5M12 14.5l2 5"/><path d="M14 17h-4" stroke-dasharray="2 2"/></svg>
+          </span>
+          <div class="ecog-info">
+            <div class="ecog-tt">常隱受症狀</div>
+            <div class="ecog-ss">PS 2 · 有症狀但白天大半時間仍能起身活動</div>
+          </div>
+        </button>
+        <button type="button" class="ecog-btn" data-val="34" onclick="pickEcog(this)">
+          <span class="ic" style="background:#fee2e2;color:#b91c1c">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="18" height="6" rx="1.5"/><circle cx="7" cy="9" r="2"/><path d="M9 11h7v2"/><path d="M3 19v2M21 19v2"/></svg>
+          </span>
+          <div class="ecog-info">
+            <div class="ecog-tt">安床休息為主</div>
+            <div class="ecog-ss">PS 3-4 · 大部分時間躺床或需人照顧</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Q2: 肺癌類型 ─── -->
+<div class="page" id="p-q2">
+  <div class="cd">
+    <div class="cd-head">
+      <div class="cd-head-l">
+        <div class="cd-step">第 2 步 / 肺癌類型</div>
         <div class="cd-q">您的肺癌類型？</div>
         <div class="cd-sub">病理報告會註明組織型態</div>
       </div>
@@ -475,17 +604,11 @@ body{
         </div>
       </button>
     </div>
-
-    <div class="opt-fld">
-      <span class="opt-fld-lbl">選填</span>
-      <input id="pt-code" placeholder="病歷號" maxlength="20">
-      <input id="pt-name" placeholder="姓名" maxlength="20">
-    </div>
   </div>
 </div>
 
 <!-- ─── Q2: TNM ─── -->
-<div class="page" id="p-q2">
+<div class="page" id="p-q3">
   <div class="cd">
     <div class="cd-head">
       <div class="cd-head-l">
@@ -609,7 +732,7 @@ body{
 </div>
 
 <!-- ─── Q3: Mutation (NSCLC) / Brain Met (SCLC) ─── -->
-<div class="page" id="p-q3">
+<div class="page" id="p-q4">
   <div class="cd">
     <div class="cd-head">
       <div class="cd-head-l">
@@ -803,15 +926,25 @@ body{
    STATE
 ═══════════════════════════════════════════════════ */
 const S = {
-  type:'', t:'', n:'', m:'', stage:'', stageCat:'',
-  mut:'',          // NSCLC: 基因/PD-L1
-  brainMet:'',    // SCLC: '' / 'no' / 'yes' / 'unknown'
-  code:'', name:'', consult:{}
+  // V2.9.0: Q1 基本資料
+  age:'',          // '' / 'lt70' / 'ge70'
+  ecog:'',         // '' / '01' / '2' / '34'
+  code:'', name:'',
+  // Q2 類型
+  type:'',
+  // Q3 分期 (TNM 或 SCLC limited/extensive)
+  t:'', n:'', m:'', stage:'', stageCat:'',
+  // Q4 基因/腦轉移
+  mut:'',          // NSCLC
+  brainMet:'',     // SCLC: '' / 'no' / 'yes' / 'unknown'
+  // 醫師選擇（總覽頁可選）
+  consult:{},
 };
 let stepIdx = 0;
 let tnmAdv = false;
 let q2Mode = 'tnm';  // 'tnm' (NSCLC) or 'sclc' (SCLC 兩段式)
-const PAGES = ['p-q1','p-q2','p-q3','p-sum'];
+// V2.9.0: 5 頁流程 — Q1 基本 / Q2 類型 / Q3 分期 / Q4 基因或腦 / 總覽
+const PAGES = ['p-q1','p-q2','p-q3','p-q4','p-sum'];
 
 function isNSCLC(){ return S.type==='NSCLC_NS' || S.type==='NSCLC_SQ'; }
 function isSCLC(){  return S.type==='SCLC'; }
@@ -861,16 +994,23 @@ function stageToCategory(stage){
   return '';
 }
 
-// Q3 是否需要顯示？
+// Q4 是否需要顯示？
 // NSCLC：局部晚期或轉移期（需要 mut/PD-L1 決定藥物）
-// SCLC：擴散期（腦轉移影響免疫使用）— 侷限期可選擇性問
-function q3Needed(){
+// SCLC：兩種期都問腦轉移（影響 PCI 與免疫使用）
+function q4Needed(){
   if(isNSCLC()) return S.stageCat==='LOCAL' || S.stageCat==='META';
-  if(isSCLC())  return S.stageCat==='META' || S.stageCat==='LOCAL'; // SCLC 兩種期都問腦轉移（影響 PCI）
+  if(isSCLC())  return S.stageCat==='META' || S.stageCat==='LOCAL';
   return false;
 }
-// Backward-compat alias used elsewhere
-function mutNeeded(){ return q3Needed(); }
+// Backward-compat alias
+function q3Needed(){ return q4Needed(); }
+function mutNeeded(){ return q4Needed(); }
+
+// V2.9.0: 年齡與 ECOG helper
+function isElderly(){ return S.age === 'ge70'; }
+function isPS2()    { return S.ecog === '2'; }
+function isPS34()   { return S.ecog === '34'; }
+function isPSLow()  { return S.ecog === '2' || S.ecog === '34'; }
 
 /* ═══════════════════════════════════════════════════
    CARE TEAM — 同步 lung.html CFG.team.depts
@@ -939,6 +1079,57 @@ const DRUGS = {
    PATHWAY ENGINE
 ═══════════════════════════════════════════════════ */
 function buildPath(){
+  // V2.9.0: 先跑原本 type×stage×mut/brain 的邏輯，再依 age/ecog 動態加註與調整
+  const r = buildPathRaw();
+  applyAgeEcog(r);
+  return r;
+}
+
+/**
+ * V2.9.0: 依 S.age 與 S.ecog 對 result 的 steps/warns 做注入
+ * 規則:
+ *  - 高齡 (≥70): 化療鉑類首選 Carboplatin（提示）；CCRT 同步毒性高，可改序貫
+ *  - PS 2: 化療單藥優先；CCRT 改序貫；免疫單藥需謹慎
+ *  - PS 3-4: 以支持性療法為主，化療毒性風險高，需個別評估
+ */
+function applyAgeEcog(r){
+  if(!r || !S.age && !S.ecog) return;
+  const elderly = S.age === 'ge70';
+  const ps2 = S.ecog === '2';
+  const ps34 = S.ecog === '34';
+  const tags = [];
+  if(elderly) tags.push('高齡');
+  if(ps2)     tags.push('PS 2');
+  if(ps34)    tags.push('PS 3-4');
+
+  // 1) 在 step 的 note 後面追加細節（針對含化療/CCRT 的 step）
+  for(const step of r.steps){
+    const title = step.title || '';
+    const hasChemo = /(化療|CCRT|含鉑|鉑類|Cisplatin|Carboplatin)/.test(title) ||
+                     (step.drugs && step.drugs.some(d=>/Cisplatin|Carboplatin|Etoposide|Pemetrexed|Paclitaxel|化療|鉑類/.test(d.n||'')));
+    const hasCCRT = /CCRT|同步化放療/.test(title);
+    const note = step.note || '';
+    const adjs = [];
+    if(elderly && hasChemo) adjs.push('您 ≥70 歲：化療建議改 Carboplatin（毒性較低）');
+    if(ps2 && hasCCRT)      adjs.push('PS 2：CCRT 毒性風險高，可考慮改序貫（先化後放）');
+    if(ps34 && hasChemo)    adjs.push('PS 3-4：化療需審慎評估，可能以支持性療法為主');
+    if(adjs.length){
+      step.note = note + (note ? '　/　' : '') + '【依您狀況】' + adjs.join('；');
+    }
+  }
+
+  // 2) 動態加 warns
+  if(elderly) r.warns.unshift('您填寫年齡 ≥70 歲：化療鉑類首選 Carboplatin；藥物劑量會調整');
+  if(ps2)     r.warns.unshift('您填寫 PS 2（常隱受症狀）：化療多以單藥優先；CCRT 可改序貫；免疫單藥需謹慎');
+  if(ps34)    r.warns.unshift('您填寫 PS 3-4（安床休息為主）：以症狀控制與支持性療法為主，是否化療由主治醫師個別評估');
+
+  // 3) 修正 pwTxt（極端 PS 3-4 或高齡 + 局晚的情境）
+  if(ps34 && r.stageTxt && /局部晚期|擴散|轉移/.test(r.stageTxt)){
+    r.pwTxt = '以症狀控制與支持性療法為主（依您填寫的 PS 3-4 調整）';
+  }
+}
+
+function buildPathRaw(){
   const t = S.type, st = S.stageCat, m = S.mut, brain = S.brainMet;
   // SCLC special
   if(t==='SCLC'){
@@ -1170,6 +1361,12 @@ function renderSummary(){
     const bLabel = ({yes:'有腦/脊髓轉移', no:'無腦/脊髓轉移', unknown:'腦/脊髓轉移未明'})[S.brainMet] || '';
     if(bLabel) meta += ' · ' + bLabel;
   }
+  // V2.9.0: 顯示年齡 + ECOG
+  if(S.age){ meta += ' · ' + (S.age==='ge70' ? '≥70 歲' : '<70 歲'); }
+  if(S.ecog){
+    const eL = ({'01':'PS 0-1','2':'PS 2','34':'PS 3-4'})[S.ecog] || '';
+    if(eL) meta += ' · ' + eL;
+  }
   if(S.code) meta += ' · ' + S.code;
   if(S.name) meta += ' ' + S.name;
   document.getElementById('sum-meta').textContent = meta;
@@ -1248,6 +1445,8 @@ function buildEduPayload(){
     s: S.stage || (isSCLC() ? (S.stageCat==='META'?'Extensive':'Limited') : ''),
     m: S.mut || '',
     b: S.brainMet || '',          // SCLC 腦/脊髓轉移
+    a: S.age || '',                // V2.9.0: 年齡 lt70/ge70
+    e: S.ecog || '',               // V2.9.0: ECOG 01/2/34
     tm: TEAM.depts.map(d => S.consult[d.id] || ''),
     c: TEAM.caseManager.name,
     d: today,
@@ -1340,13 +1539,14 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;
 ═══════════════════════════════════════════════════ */
 function showPage(idx){
   let pageId = PAGES[idx];
-  if(idx===2 && !q3Needed()){
+  // 進 Q4 時，若不需要（早期/不知 type），跳到總覽
+  if(idx===3 && !q4Needed()){
     pageId = 'p-sum';
-    stepIdx = 3;
+    stepIdx = 4;
   }
   PAGES.forEach(id => document.getElementById(id).classList.toggle('active', id===pageId));
-  // progress dots
-  const totalSteps = q3Needed() ? 4 : 3;
+  // progress dots: 4 步（不問 Q4）或 5 步（含 Q4）
+  const totalSteps = q4Needed() ? 5 : 4;
   document.querySelectorAll('.pdot').forEach((d,i)=>{
     const visible = i < totalSteps;
     d.style.display = visible ? '' : 'none';
@@ -1356,28 +1556,24 @@ function showPage(idx){
       else if(i === stepIdx) d.classList.add('active');
     }
   });
-  // Q2 模式切換 — 進 Q2 前依 type 決定預設模式
-  if(pageId==='p-q2'){
-    // 第一次進 Q2，依 type 設定預設模式
+  // 進 Q3（分期）前，依 type 決定 TNM 或 SCLC 模式
+  if(pageId==='p-q3'){
     if(isSCLC() && q2Mode==='tnm' && !S.t && !S.n && !S.m){
-      // 從 NSCLC 切到 SCLC 的初始狀態：用 sclc 模式
       q2Mode = 'sclc';
     } else if(!isSCLC() && q2Mode==='sclc'){
-      // 從 SCLC 切回 NSCLC：強制 tnm 模式
       q2Mode = 'tnm';
     }
     applyQ2Mode();
   }
-  // Q3 模式切換 — 進 Q3 前依 type 決定要顯示 mut grid 還是 brain grid
-  if(pageId==='p-q3'){
-    applyQ3Mode();
+  // 進 Q4（基因/腦轉移）前，依 type 切換 mut grid 或 brain grid
+  if(pageId==='p-q4'){
+    applyQ3Mode();  // 函式內部依 isSCLC 切換
   }
   updateActBar();
-  // V2.8.11: 進總覽頁時加 body.summary，讓手機 CSS 解鎖捲動
+  // V2.8.11: 進總覽頁時加 body.summary 解鎖手機捲動
   document.body.classList.toggle('summary', pageId==='p-sum');
   if(pageId==='p-sum'){
     renderSummary();
-    // 確保進入時從頁首開始（避免從 Q3 點完到總覽，捲動位置奇怪）
     window.scrollTo({top:0, behavior:'auto'});
   }
 }
@@ -1448,34 +1644,34 @@ function updateActBar(){
   const back = document.getElementById('bt-back');
   const next = document.getElementById('bt-next');
   const restart = document.getElementById('bt-restart');
-  // 上一題的 svg
   const prevSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>';
+  const nextSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
 
-  // Summary page: 顯示「返回（上一題）」+ 「重新查詢」
-  if(stepIdx >= 3){
-    back.style.display='';
-    back.innerHTML = prevSvg + ' 返回';   // 跨層回到問答流程
-    next.style.display='none';
-    restart.style.display='';
+  // Summary page (stepIdx === 4): 顯示「返回」+「重新查詢」
+  if(stepIdx >= 4){
+    back.style.display = '';
+    back.innerHTML = prevSvg + ' 返回';   // 跨層回問答流程
+    next.style.display = 'none';
+    restart.style.display = '';
     return;
   }
-  back.style.display = (stepIdx>0) ? '' : 'none';
-  back.innerHTML = prevSvg + ' 上一題';   // 問答之間退一題
+
+  back.style.display = (stepIdx > 0) ? '' : 'none';
+  back.innerHTML = prevSvg + ' 上一題';
   next.style.display = '';
   restart.style.display = 'none';
 
+  // canNext 條件
   let canNext = false;
-  if(stepIdx===0) canNext = !!S.type;
-  else if(stepIdx===1) canNext = !!S.stageCat;
-  else if(stepIdx===2){
-    canNext = isSCLC() ? !!S.brainMet : !!S.mut;
-  }
+  if(stepIdx === 0) canNext = true;                                    // Q1 基本資料：永遠可進
+  else if(stepIdx === 1) canNext = !!S.type;                           // Q2 類型：必選
+  else if(stepIdx === 2) canNext = !!S.stageCat;                       // Q3 分期：必算出
+  else if(stepIdx === 3) canNext = isSCLC() ? !!S.brainMet : !!S.mut;  // Q4 基因/腦：必選
   next.disabled = !canNext;
 
-  const isLast = (stepIdx===2) || (stepIdx===1 && !q3Needed() && S.stageCat);
-  next.innerHTML = isLast
-    ? '看治療路徑 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>'
-    : '下一題 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
+  // 「下一題」 vs 「看治療路徑」
+  const isLast = (stepIdx === 3) || (stepIdx === 2 && !q4Needed() && S.stageCat);
+  next.innerHTML = (isLast ? '看治療路徑 ' : '下一題 ') + nextSvg;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1596,27 +1792,45 @@ function setStageUnknown(){
   setTimeout(()=>goNext(), 250);
 }
 
+/* V2.9.0: Q1 基本資料 picker */
+function pickAge(btn){
+  const v = btn.dataset.val;
+  S.age = (S.age === v) ? '' : v;  // 再點同一顆 = 取消
+  document.querySelectorAll('#p-q1 .age-btn').forEach(b=>b.classList.toggle('selected', S.age===b.dataset.val));
+}
+function pickEcog(btn){
+  const v = btn.dataset.val;
+  S.ecog = (S.ecog === v) ? '' : v;
+  document.querySelectorAll('#p-q1 .ecog-btn').forEach(b=>b.classList.toggle('selected', S.ecog===b.dataset.val));
+}
+
 function goNext(){
+  // 離開 Q1 時抓基本資料（age / ecog 已 pick 時即時存）
   if(stepIdx===0){
     S.code = (document.getElementById('pt-code').value||'').trim();
     S.name = (document.getElementById('pt-name').value||'').trim();
   }
-  if(stepIdx===1 && !mutNeeded()){
-    stepIdx = 3; showPage(3); return;
+  // Q3 → 若 q4 不需要，跳總覽
+  if(stepIdx===2 && !q4Needed()){
+    stepIdx = 4; showPage(4); return;
   }
-  if(stepIdx<3){ stepIdx++; showPage(stepIdx); }
+  if(stepIdx<4){ stepIdx++; showPage(stepIdx); }
 }
 
 function goPrev(){
   if(stepIdx<=0) return;
-  if(stepIdx===3 && !mutNeeded()){ stepIdx = 1; showPage(1); return; }
+  // 從總覽返回：若沒問 Q4，直接回 Q3
+  if(stepIdx===4 && !q4Needed()){ stepIdx = 2; showPage(2); return; }
   stepIdx--; showPage(stepIdx);
 }
 
 function restart(){
-  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet=''; S.code=''; S.name=''; S.consult={};
+  // 全清
+  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
+  S.age=''; S.ecog='';
+  S.code=''; S.name=''; S.consult={};
   stepIdx=0; tnmAdv=false; q2Mode='tnm';
-  document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn, .brain-btn, .sclc-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn, .brain-btn, .sclc-btn, .age-btn, .ecog-btn').forEach(b=>b.classList.remove('selected'));
   document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display='');
   document.querySelectorAll('.tnm-adv').forEach(el=>el.style.display='none');
   const tt = document.getElementById('tnm-toggle');
