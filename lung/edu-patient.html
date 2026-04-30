@@ -116,53 +116,52 @@ const DRUGS = {
     {n:'Osimertinib',z:'泰格莎'},{n:'Gefitinib',z:'艾瑞莎'},
     {n:'Erlotinib',z:'得舒緩'},{n:'Afatinib',z:'妥復克'},
     {n:'Dacomitinib',z:'肺欣妥'}],
-    note:'五藥擇一不互換。Dacomitinib 限無腦轉移者。'},
+    note:'五藥擇一。Dacomitinib 限無腦轉移。'},
   EGFR_BRAIN: {line:'一線（合併）', nhi:'NHI', list:[{n:'Erlotinib + Bevacizumab',z:'得舒緩 + 癌思停'}],
-    note:'限 EGFR L858R 突變且有腦轉移者。'},
+    note:'限 EGFR L858R 突變 + 腦轉移。'},
   ALK: {line:'一線標靶', nhi:'NHI', list:[
     {n:'Alectinib',z:'安立適'},{n:'Lorlatinib',z:'瘤利欣'},
     {n:'Ceritinib',z:'立克癌'},{n:'Brigatinib',z:'癌倍利'},
     {n:'Crizotinib',z:'截克瘤'}],
-    note:'五藥擇一。Lorlatinib 也可用於其他 ALK TKI 失敗後。'},
+    note:'五藥擇一。'},
   ROS1: {line:'一線標靶', nhi:'NHI', list:[{n:'Crizotinib',z:'截克瘤'},{n:'Entrectinib',z:'羅思克'}],
-    note:'擇一不互換。'},
+    note:'擇一。'},
   BRAF: {line:'二線（含鉑後）', nhi:'NHI', list:[{n:'Dabrafenib + Trametinib',z:'泰伏樂 + 麥欣寧'}],
-    note:'限 BRAF V600E 突變、第一線含鉑化療失敗後。'},
+    note:'限 BRAF V600E 突變、含鉑化療失敗後。'},
   MET: {line:'不分線', nhi:'NHI', list:[{n:'Tepotinib',z:'特癌適'}],
-    note:'限 MET exon 14 skipping 突變。'},
+    note:'限 MET exon 14 跳躍突變。'},
   KRAS: {line:'二線', nhi:'SELF', list:[{n:'Sotorasib',z:'魯瑪克拉斯'}],
-    note:'限 KRAS G12C 突變。健保尚未給付，需自費。'},
-  NS_PDL1H: {line:'一線（IO+化療）', nhi:'NHI', list:[
+    note:'限 KRAS G12C 突變，健保事審。'},
+  NS_PDL1H: {line:'一線（免疫+化療）', nhi:'NHI', list:[
     {n:'Pembrolizumab + Pemetrexed + 鉑類',z:'吉舒達 + 愛寧達 + 鉑類'},
     {n:'Atezolizumab + Bevacizumab + Carboplatin + Paclitaxel',z:'癌自禦 + 癌思停 + 鉑類 + 紫杉醇'}],
-    note:'非鱗狀，原生型，PD-L1 ≥ 50% 健保事審。'},
-  NS_PDL1L: {line:'一線（化療±IO）', nhi:'NHI', list:[
+    note:'非鱗狀，原生型，PD-L1 ≥ 50%。'},
+  NS_PDL1L: {line:'一線（化療±免疫）', nhi:'NHI', list:[
     {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類雙藥'},
     {n:'± Pembrolizumab',z:'± 吉舒達'}],
-    note:'非鱗狀原生型；PD-L1 1–49% 加免疫須符合 ICI 9.69 規範。'},
-  SQ_PDL1H: {line:'一線（IO+化療）', nhi:'NHI', list:[{n:'Pembrolizumab + Carboplatin + Paclitaxel',z:'吉舒達 + 鉑類 + 紫杉醇'}],
-    note:'鱗狀，原生型，PD-L1 ≥ 50% 健保事審。'},
-  SQ_PDL1L: {line:'一線（化療±IO）', nhi:'NHI', list:[
+    note:'非鱗狀原生型。'},
+  SQ_PDL1H: {line:'一線（免疫+化療）', nhi:'NHI', list:[{n:'Pembrolizumab + Carboplatin + Paclitaxel',z:'吉舒達 + 鉑類 + 紫杉醇'}],
+    note:'鱗狀，原生型，PD-L1 ≥ 50%。'},
+  SQ_PDL1L: {line:'一線（化療±免疫）', nhi:'NHI', list:[
     {n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'},
     {n:'± Pembrolizumab',z:'± 吉舒達'}],
-    note:'鱗狀原生型；PD-L1 1–49% 加免疫須符合 ICI 9.69 規範。'},
+    note:'鱗狀原生型。'},
   CONSOLIDATION: {line:'同步化放療後鞏固', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
-    note:'Stage III 同步化放療後無惡化、PD-L1≥1%，健保事審，至多 12 個月（PACIFIC 模式）。'},
+    note:'限 PD-L1 ≥1%，至多 12 個月。'},
   SCLC_ES: {line:'一線', nhi:'NHI', list:[
     {n:'Atezolizumab + Carboplatin + Etoposide',z:'癌自禦 + 鉑類 + 滅必治'},
     {n:'Durvalumab + Etoposide + Cisplatin/Carboplatin',z:'抑癌寧 + 滅必治 + 鉑類'}],
-    note:'SCLC 擴散期、無腦/脊髓轉移，健保事審。'},
+    note:'限無腦/脊髓轉移，健保事審。'},
   SCLC_LS_CCRT: {line:'侷限期同步化放療', nhi:'NHI', list:[{n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'}],
-    note:'同步化放療為主。治療反應佳者可與主治醫師討論預防性全腦照射 (PCI)。'},
+    note:''},
   SCLC_2L: {line:'二線', nhi:'NHI', list:[{n:'Topotecan',z:'喜樹鹼'}],
-    note:'第一線含鉑治療後復發。'},
+    note:'含鉑治療後復發使用。'},
 };
 
 /* ═══════════════════════════════════════════════════
    PATHWAY ENGINE
 ═══════════════════════════════════════════════════ */
 function buildPathFromData(d){
-  // V2.9.1: edu-patient.html 入口 — 接受 schema d，包裝成原本 patient state 後跑
   const r = buildPathRawFromData(d);
   applyAgeEcogFromData(r, d);
   return r;
@@ -170,22 +169,17 @@ function buildPathFromData(d){
 
 /**
  * V2.9.0: 依 S.age 與 S.ecog 對 result 的 steps/warns 做注入
- * 規則:
- *  - 高齡 (≥70): 化療鉑類首選 Carboplatin（提示）；同步化放療毒性高，可改序貫
- *  - PS 2: 化療單藥優先；同步化放療改序貫；免疫單藥需謹慎
- *  - PS 3-4: 以支持性療法為主，化療毒性風險高，需個別評估
+ *  - 高齡 (≥70): 化療鉑類首選 Carboplatin
+ *  - PS 2: 同步化放療可改序貫
+ *  - PS 3-4: 以支持性療法為主
  */
 function applyAgeEcogFromData(r, d){
   if(!r || !d.a && !d.e) return;
   const elderly = d.a === 'ge70';
   const ps2 = d.e === '2';
   const ps34 = d.e === '34';
-  const tags = [];
-  if(elderly) tags.push('高齡');
-  if(ps2)     tags.push('PS 2');
-  if(ps34)    tags.push('PS 3-4');
 
-  // 1) 在 step 的 note 後面追加細節（針對含化療/同步化放療的 step）
+  // 1) 在 step 的 note 後追加個人化提示
   for(const step of r.steps){
     const title = step.title || '';
     const hasChemo = /(化療|同步化放療|含鉑|鉑類|Cisplatin|Carboplatin)/.test(title) ||
@@ -193,22 +187,22 @@ function applyAgeEcogFromData(r, d){
     const hasCCRT = /同步化放療/.test(title);
     const note = step.note || '';
     const adjs = [];
-    if(elderly && hasChemo) adjs.push('您 ≥70 歲：化療建議改 Carboplatin（毒性較低）');
-    if(ps2 && hasCCRT)      adjs.push('PS 2：同步化放療毒性風險高，可考慮改序貫（先化後放）');
-    if(ps34 && hasChemo)    adjs.push('PS 3-4：化療需審慎評估，可能以支持性療法為主');
+    if(elderly && hasChemo) adjs.push('≥70 歲：化療建議改 Carboplatin');
+    if(ps2 && hasCCRT)      adjs.push('PS 2：可考慮改序貫（先化後放）');
+    if(ps34 && hasChemo)    adjs.push('PS 3-4：化療需審慎評估');
     if(adjs.length){
       step.note = note + (note ? '　/　' : '') + '【依您狀況】' + adjs.join('；');
     }
   }
 
   // 2) 動態加 warns
-  if(elderly) r.warns.unshift('您填寫年齡 ≥70 歲：化療鉑類首選 Carboplatin；藥物劑量會調整');
-  if(ps2)     r.warns.unshift('您填寫 PS 2（常隱受症狀）：化療多以單藥優先；同步化放療可改序貫；免疫單藥需謹慎');
-  if(ps34)    r.warns.unshift('您填寫 PS 3-4（安床休息為主）：以症狀控制與支持性療法為主，是否化療由主治醫師個別評估');
+  if(elderly) r.warns.unshift('≥70 歲：化療鉑類首選 Carboplatin');
+  if(ps2)     r.warns.unshift('PS 2：化療多以單藥；同步化放療可改序貫');
+  if(ps34)    r.warns.unshift('PS 3-4：以症狀控制與支持性療法為主');
 
-  // 3) 修正 pwTxt（極端 PS 3-4 或高齡 + 局晚的情境）
+  // 3) 修正 pwTxt（PS 3-4 + 局晚/轉移）
   if(ps34 && r.stageTxt && /局部晚期|擴散|轉移/.test(r.stageTxt)){
-    r.pwTxt = '以症狀控制與支持性療法為主（依您填寫的 PS 3-4 調整）';
+    r.pwTxt = '支持性療法為主（PS 3-4）';
   }
 }
 
@@ -219,36 +213,36 @@ function buildPathRawFromData(d){
     if(st==='META'){
       // 擴散型
       const steps = [];
-      const warns = ['SCLC 進展快，建議盡早展開治療','PS 3-4 因癌症導致：化療±放療；非癌症導致：以支持性療法為主'];
+      const warns = ['SCLC 進展快，建議盡早展開治療'];
       // 依腦/脊髓轉移調整第一線
       if(brain==='no'){
         steps.push({ title:'第一線：化療 + 免疫治療', line:DRUGS.SCLC_ES.line, nhi:'NHI', drugs: DRUGS.SCLC_ES.list, note: DRUGS.SCLC_ES.note });
       } else if(brain==='yes'){
-        steps.push({ title:'第一線：化療（無腦/脊髓轉移者才可加免疫，本案不適用）', line:'一線', nhi:'NHI',
+        steps.push({ title:'第一線：化療（免疫不適用）', line:'一線', nhi:'NHI',
           drugs:[{n:'Cisplatin/Carboplatin + Etoposide',z:'鉑類 + 滅必治'}],
-          note:'健保 ICI 9.69 規範限「無腦/脊髓轉移」者才能合併免疫治療。' });
-        steps.push({ title:'腦轉移處理：依症狀決定放射線治療時機', line:'並行',
-          note:'有症狀（頭痛/神經症狀）或大病灶：先做全腦放射線治療或立體定位放射線治療再化療；無症狀小病灶：可先化療同時 MRI 監測，必要時再放射線治療' });
+          note:'有腦/脊髓轉移者免疫不在健保給付範圍。' });
+        steps.push({ title:'腦轉移處理：依症狀決定放療時機', line:'並行',
+          note:'有症狀或大病灶：先放療再化療；無症狀小病灶：先化療同時 MRI 監測。' });
         warns.push('腦轉移使免疫治療不適用，預後相對較差');
       } else {
         // unknown
-        steps.push({ title:'第一線：化療為基礎，是否加免疫須先確認腦/脊髓影像', line:'一線', nhi:'NHI',
+        steps.push({ title:'第一線：化療為基礎，是否加免疫須先確認腦影像', line:'一線', nhi:'NHI',
           drugs: DRUGS.SCLC_ES.list,
-          note:'若已排除腦/脊髓轉移：可加免疫（健保事審）；尚未排除：先化療等影像結果' });
-        warns.push('建議完成腦部 MRI 後再決定是否加入免疫治療');
+          note:'已排除腦/脊髓轉移可加免疫；否則先化療等影像。' });
+        warns.push('建議先做腦 MRI 再決定是否加免疫');
       }
-      // PCI 鞏固 — 擴散期 PCI 證據近年已弱化（Takahashi 2017），改為 MRI 監測為合理替代
+      // PCI 鞏固
       if(brain==='yes'){
-        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放射線治療（針對病灶），由放射腫瘤科醫師與您討論' });
+        steps.push({ title:'已有腦轉移：不做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）。' });
       } else if(brain==='no'){
-        steps.push({ title:'治療反應佳後鞏固：MRI 監測 或 預防性全腦照射 (PCI)', line:'鞏固', note:'擴散期 PCI 對整體存活的助益已較不明確（Takahashi 2017）；多數中心改用每 3 個月腦 MRI 追蹤；PCI 與否由放射腫瘤科醫師與您討論' });
+        steps.push({ title:'治療反應佳後鞏固：MRI 監測 或 PCI', line:'鞏固', note:'擴散期 PCI 對存活的助益不明確；多數中心改用每 3 個月腦 MRI 追蹤。' });
       } else {
-        steps.push({ title:'治療反應佳後依腦影像決定鞏固策略', line:'鞏固', note:'先做腦 MRI；陰性者可選 MRI 監測或預防性全腦照射 (PCI)，由放射腫瘤科醫師與您討論' });
+        steps.push({ title:'治療反應佳後依腦影像決定鞏固', line:'鞏固', note:'先做腦 MRI；陰性者選 MRI 監測 或 PCI。' });
       }
       steps.push({ title:'治療失敗或復發：二線', line:DRUGS.SCLC_2L.line, nhi:'NHI', drugs: DRUGS.SCLC_2L.list, note: DRUGS.SCLC_2L.note });
 
       return {
-        stageTxt:'SCLC 擴散型 (Extensive)', pwTxt: brain==='yes' ? '化療為主（不適用免疫）+ 放射線治療控制腦病灶' : '全身性化療 + 免疫治療',
+        stageTxt:'SCLC 擴散型 (Extensive)', pwTxt: brain==='yes' ? '化療為主 + 放療控制腦病灶' : '全身性化療 + 免疫治療',
         steps, warns,
       };
     }
@@ -256,22 +250,22 @@ function buildPathRawFromData(d){
       // 侷限型
       const steps = [
         { title:'同步化放療 — 主要治療', line:DRUGS.SCLC_LS_CCRT.line, nhi:'NHI', drugs: DRUGS.SCLC_LS_CCRT.list, note: DRUGS.SCLC_LS_CCRT.note },
-        { title:'極早期（T1-2 N0）可考慮先手術切除', line:'替代方案', note:'肺葉切除 + 淋巴結廓清；術後追加化療' },
+        { title:'極早期（T1-2 N0）可考慮先手術切除', line:'替代方案', note:'肺葉切除 + 淋巴結廓清；術後追加化療。' },
       ];
       // PCI 依 brainMet
       if(brain==='yes'){
-        steps.push({ title:'已有腦轉移者不再做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放射線治療（針對病灶），由放射腫瘤科醫師與您討論' });
+        steps.push({ title:'已有腦轉移：不做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）。' });
       } else if(brain==='no'){
-        steps.push({ title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'可顯著降低腦轉移風險；劑量與療程由放射腫瘤科醫師與您討論' });
+        steps.push({ title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'可顯著降低腦轉移風險。' });
       } else {
-        steps.push({ title:'治療反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'放射腫瘤科評估前需確認腦部 MRI 無轉移' });
+        steps.push({ title:'治療反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'評估前需先做腦 MRI。' });
       }
-      const warns = ['年齡 ≥70 或 PS≥2：同步化放療可調整為序貫治療'];
-      if(brain==='yes') warns.push('已有腦轉移：屬於擴散期，治療策略要修正（請與主治醫師確認）');
+      const warns = ['高齡或體力較差：同步化放療可改序貫'];
+      if(brain==='yes') warns.push('已有腦轉移：屬擴散期，治療策略需修正');
       return { stageTxt:'SCLC 侷限型 (Limited)', pwTxt:'同步化放療為主', steps, warns };
     }
     return { stageTxt:'小細胞肺癌', pwTxt:'依分期決定方向',
-      steps:[{ title:'請先完成完整影像檢查（CT、腦 MRI、骨掃描）以確認分期', note:'分期確認後才能決定治療策略' }],
+      steps:[{ title:'請先完成完整影像檢查（CT、腦 MRI、骨掃描）', note:'分期確認後才能決定治療。' }],
       warns:['SCLC 進展較快，請盡早回診確認分期'] };
   }
 
@@ -281,24 +275,23 @@ function buildPathRawFromData(d){
 
   if(st==='EARLY'){
     const steps = [
-      { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清術', line:'主要治療', note:'NSCLC 早期（I-II）治療首選；極早期 T1a/T1b 可考慮節段切除（segmentectomy）' },
-      { title:'不適合手術：立體定位放射線治療 (SBRT)', line:'替代手術', note:'最適 T1-T2a N0 周邊型病灶；高齡、心肺功能不佳或拒絕手術者考慮' },
-      { title:'部分 II-IIIA 可切除者：術前化療 ± 免疫', line:'術前輔助', note:'CheckMate-816 顯示 nivolumab + 化療術前可改善病理反應；健保尚未給付，需自費或臨床試驗' },
-      { title:'術後輔助化療（若為 II 期或高風險 IB）', line:'術後輔助', nhi:'NHI', drugs:[
+      { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清', line:'主要治療', note:'極早期 T1a/T1b 可考慮節段切除。' },
+      { title:'不適合手術：立體定位放射線治療 (SBRT)', line:'替代手術', note:'限 T1-T2a N0 周邊型病灶。' },
+      { title:'部分 II-IIIA 可切除者：術前化療 ± 免疫', line:'術前輔助', note:'術前免疫合併化療健保尚未給付，需自費或臨床試驗。' },
+      { title:'術後輔助化療（II 期或高風險 IB）', line:'術後輔助', nhi:'NHI', drugs:[
           {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
           {n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}],
-        note:'4 個療程；高齡（≥70）或腎功能不佳可改 Carboplatin' },
+        note:'4 個療程。' },
     ];
     if(isNS){
-      steps.push({ title:'EGFR 陽性術後鞏固：Osimertinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'IB-IIIA 期切除後 EGFR(+)，術後鞏固至多 3 年（ADAURA 模式）' });
-      steps.push({ title:'ALK 陽性術後鞏固：Alectinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Alectinib',z:'安立適'}], note:'IB-IIIA 期切除後 ALK 重組者，術後鞏固至多 2 年（ALINA 模式）' });
+      steps.push({ title:'EGFR 陽性術後鞏固：Osimertinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'IB-IIIA 切除後 EGFR(+)，至多 3 年。' });
+      steps.push({ title:'ALK 陽性術後鞏固：Alectinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Alectinib',z:'安立適'}], note:'IB-IIIA 切除後 ALK(+)，至多 2 年。' });
     }
     return {
       stageTxt:`${typeLabel} 早期 (I-II)`, pwTxt:'手術切除為主',
       steps,
       warns:[
-        'IB 期具高風險因子（腫瘤≥4cm、血管侵犯、臟層肋膜侵犯、淋巴管侵犯）建議輔助化療',
-        '高齡（≥70）或 PS≥2：化療劑量需調整或改 Carboplatin 雙藥',
+        'IB 期具高風險因子（腫瘤≥4cm、血管/臟層肋膜/淋巴管侵犯）建議輔助化療',
         '建議切除後做 EGFR、ALK 檢測，影響術後鞏固藥物選擇',
       ],
     };
@@ -311,37 +304,37 @@ function buildPathRawFromData(d){
         { title:'同步化放療 — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
             {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'},
             {n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'鉑類 + 紫杉醇 + 放射線治療'}],
-          note:'4-6 個療程化療同步進行；放射線治療劑量與次數由放射腫瘤科醫師依您病情決定' },
+          note:'化療與放射線治療同步 4-6 個療程。' },
         { title:'同步化放療後無惡化：Durvalumab 免疫鞏固', line:DRUGS.CONSOLIDATION.line, nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note },
-        { title:'可切除型 IIIA：先手術 + 術後輔助化療 ± 標靶/免疫', line:'替代方案', note:'侷限 N1 或單站 N2 可手術；多站 N2 或大腫瘤通常先做同步化放療' },
-        ...(isNS ? [{ title:'IIIA 切除術後 EGFR(+) / ALK(+)：標靶鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib (EGFR)',z:'泰格莎'},{n:'Alectinib (ALK)',z:'安立適'}], note:'術後依基因檢測結果加鞏固治療（ADAURA / ALINA 模式）' }] : []),
+        { title:'可切除型 IIIA：先手術 + 術後輔助化療 ± 標靶/免疫', line:'替代方案', note:'侷限 N1 或單站 N2 可手術；多站 N2 或大腫瘤通常先做同步化放療。' },
+        ...(isNS ? [{ title:'IIIA 切除術後 EGFR(+) / ALK(+)：標靶鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib (EGFR)',z:'泰格莎'},{n:'Alectinib (ALK)',z:'安立適'}], note:'依術後基因檢測結果加鞏固治療。' }] : []),
       ],
       warns:[
-        '高齡（>70）或 PS >1：同步化放療毒性高，可改序貫（先化療後放射線治療），需與醫師討論',
-        'Durvalumab 鞏固限 PD-L1 ≥1%、同步化放療結束後 6 週內開始，至多 12 個月（PACIFIC 模式）',
-        '建議診斷時即做 EGFR / ALK / PD-L1 檢測，影響鞏固治療選擇',
+        '高齡或體力較差：同步化放療毒性高，可改序貫（先化療後放射線治療）',
+        'Durvalumab 鞏固限 PD-L1 ≥1%，至多 12 個月',
+        '建議診斷時即做 EGFR / ALK / PD-L1 檢測',
       ],
     };
   }
 
   if(st==='META'){
     let steps = [];
-    let warns = ['年齡 ≥70 或 PS≥2：化療劑量需調整或改 Carboplatin'];
+    let warns = [];
     if(m==='EGFR'){
       steps = [
         { title:'第一線：EGFR TKI 標靶', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
         { title:'EGFR L858R + 腦轉移：合併方案', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI', drugs: DRUGS.EGFR_BRAIN.list, note: DRUGS.EGFR_BRAIN.note },
-        { title:'惡化後：抗藥機制檢測', line:'惡化評估', note:'若一線非 Osimertinib 且 T790M 陽性 → 換 Osimertinib 二線；其他抗藥機制需再評估' },
+        { title:'惡化後：抗藥機制檢測', line:'惡化評估', note:'若一線非 Osimertinib 且 T790M(+)，可換 Osimertinib。' },
         { title:'Osimertinib 失敗後：化療 ± 免疫 / Amivantamab', line:'後線', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'},
-            {n:'Amivantamab + 化療（MARIPOSA-2）',z:'瑞普替（自費為主）'}],
-          note:'非鱗狀標準後線。Amivantamab 為 EGFR/MET 雙特異抗體，台灣 2025 起部分適應症健保給付' },
+            {n:'Amivantamab + 化療',z:'瑞普替（部分自費）'}],
+          note:'非鱗狀標準後線。' },
       ];
     } else if(m==='ALK'){
       steps = [
         { title:'第一線：ALK TKI 標靶', line:DRUGS.ALK.line, nhi:'NHI', drugs: DRUGS.ALK.list, note: DRUGS.ALK.note },
-        { title:'耐藥後：依抗藥機制換次線 ALK TKI', line:'二線', note:'Lorlatinib 可用於 alectinib/ceritinib/brigatinib 失敗後' },
-        { title:'多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'非鱗狀後線標準' },
+        { title:'耐藥後：依抗藥機制換次線 ALK TKI', line:'二線', note:'Lorlatinib 可用於其他 ALK TKI 失敗後。' },
+        { title:'多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'非鱗狀後線標準。' },
       ];
     } else if(m==='ROS1'){
       steps = [
@@ -350,42 +343,39 @@ function buildPathRawFromData(d){
       ];
     } else if(m==='BRAF'){
       steps = [
-        { title:'第一線：含鉑化療', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin（非鱗狀）',z:'愛寧達 + 鉑類'}], note:'鱗狀者 Paclitaxel + Carboplatin' },
+        { title:'第一線：含鉑化療', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin（非鱗狀）',z:'愛寧達 + 鉑類'}], note:'鱗狀者改用 Paclitaxel + Carboplatin。' },
         { title:'第二線（含鉑後）：BRAF + MEK 標靶', line:DRUGS.BRAF.line, nhi:'NHI', drugs: DRUGS.BRAF.list, note: DRUGS.BRAF.note },
       ];
     } else if(m==='MET'){
       steps = [
         { title:'標靶：MET 抑制劑', line:DRUGS.MET.line, nhi:'NHI', drugs: DRUGS.MET.list, note: DRUGS.MET.note },
-        { title:'若無法使用標靶：含鉑化療 ± 免疫', line:'替代', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin ± Pembrolizumab',z:'愛寧達 + 鉑類 ± 吉舒達'}], note:'' },
+        { title:'若無法用標靶：含鉑化療 ± 免疫', line:'替代', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin ± Pembrolizumab',z:'愛寧達 + 鉑類 ± 吉舒達'}], note:'' },
       ];
     } else if(m==='KRAS'){
       steps = [
-        { title:'第一線：含鉑化療 + 免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin + Pembrolizumab',z:'愛寧達 + 鉑類 + 吉舒達'}], note:'依 PD-L1 表現考慮 IO；KRAS G12C 病人通常 PD-L1 偏高、免疫反應佳' },
+        { title:'第一線：含鉑化療 + 免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin + Pembrolizumab',z:'愛寧達 + 鉑類 + 吉舒達'}], note:'KRAS G12C 病人多 PD-L1 偏高，免疫反應佳。' },
         { title:'第二線：KRAS G12C 標靶', line:DRUGS.KRAS.line, nhi:'SELF', drugs: DRUGS.KRAS.list, note: DRUGS.KRAS.note },
       ];
-      warns.push('KRAS G12C 標靶 Sotorasib 健保給付狀態請確認最新事審條件（規範變動快）');
-      warns.push('Adagrasib (Krazati) 為另一個 KRAS G12C 藥物，台灣尚未上市');
+      warns.push('KRAS G12C 標靶 Sotorasib 健保給付請確認最新事審條件');
     } else if(m==='PDL1_HIGH'){
       const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
       steps = [
-        { title:'第一線（首選）：Pembrolizumab 單藥免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'PD-L1 ≥50% 可不加化療（KEYNOTE-024）；PS 0-1、無標靶可用基因突變者' },
-        { title:'第一線（合併）：免疫 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note + '腫瘤負荷大、有症狀者可考慮加化療快速控制' },
-        { title:'惡化後：化療後線 / 加做 NGS', line:'後線', note:'進一步分子檢測（如 KRAS、HER2、NTRK），若新發現可治療突變則改用對應標靶' },
+        { title:'第一線（首選）：Pembrolizumab 單藥免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'PD-L1 ≥50% 可不加化療。' },
+        { title:'第一線（合併）：免疫 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note:'腫瘤負荷大或有症狀者可加化療快速控制。' },
+        { title:'惡化後：化療後線 / 加做 NGS', line:'後線', note:'NGS 找其他可治療突變（KRAS、HER2、NTRK 等）。' },
       ];
     } else if(m==='PDL1_LOW'){
       const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
       steps = [
         { title:'第一線：化療 ± 免疫', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
-        { title:'惡化後：後線化療或加做 NGS', line:'後線', note:'進一步分子檢測（如 KRAS、HER2、NTRK）' },
+        { title:'惡化後：後線化療或加做 NGS', line:'後線', note:'NGS 找其他可治療突變。' },
       ];
-      warns.push('PS 2：以單獨化療為主');
-      warns.push('PS 3-4：以支持性療法為主');
     } else {
       // NONE
       steps = [
-        { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'EGFR / ALK / ROS1 / BRAF / MET / KRAS / NTRK + PD-L1' },
+        { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'EGFR / ALK / ROS1 / BRAF / MET / KRAS / NTRK + PD-L1。' },
         { title:'等報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
-        { title:'依檢測結果再個人化治療', line:'後續', note:'有突變→標靶；無突變且 PD-L1 高→免疫加化療' },
+        { title:'依檢測結果個人化', line:'後續', note:'有突變→標靶；PD-L1 高→免疫 + 化療。' },
       ];
       warns.push('基因檢測會大幅影響可用藥物，請務必完成');
     }
@@ -393,9 +383,10 @@ function buildPathRawFromData(d){
   }
 
   return { stageTxt: typeLabel + '（分期待定）', pwTxt:'請先完成完整分期檢查',
-    steps:[{ title:'請與主治醫師討論完整分期計畫（CT、PET、腦 MRI）', note:'分期確認後才能個人化治療' }],
+    steps:[{ title:'與主治醫師討論完整分期計畫（CT、PET、腦 MRI）', note:'分期確認後才能個人化治療。' }],
     warns:['未明確分期前的建議僅供參考'] };
 }
+
 
 
 

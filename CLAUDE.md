@@ -17,7 +17,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.9.2"
+VERSION="2.9.3"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -198,6 +198,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.9.3 | V1.7.3 | 2026-04-30 | 民眾版說明精簡（刪「醫師討論」客套話、刪試驗代號、note 瘦身）|
 | V2.9.2 | V1.7.2 | 2026-04-30 | portal.html UI 重構（清爽收斂、header 收縮、role 卡瘦身、quick-tools 改同節奏 section）|
 | V2.9.1 | V1.7.1 | 2026-04-29 | 民眾版字樣全面平民化（CCRT→同步化放療、RT→放射線治療）+ 隱藏放療劑量（由主治溝通）|
 | V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
@@ -459,4 +460,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.9.2 修 V2.9.1 portal 排版淩亂的問題 — header 從 ~232px 收到 ~104px、role 卡 padding 砍半、quick-tools 改成跟其他區塊同節奏的 section（不再用獨立虛線分隔）、footer 三段合一行貼底。整體高度從 ~600px → ~405px。功能無變動。下版第一優先：Sela 拿院內指引一條條比對治療路徑。
+V2.9.3 民眾版文字大瘦身 — Sela 反映「醫師會與您討論」這類客套話可刪、整體說明太囉唆。這版砍掉所有「由 X 與您討論」「需與醫師討論」「由主治個別評估」客套句、試驗代號（PACIFIC/ADAURA/ALINA/KEYNOTE/MARIPOSA/Takahashi）民眾不認得也砍掉、applyAgeEcog 提示也大量瘦身（30+ 字 → 15 字內）。1152/1152 回歸 + 客套話殘餘 0 處。下版第一優先：Sela 拿院內指引一條條比對。
