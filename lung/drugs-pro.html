@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<title>健保肺癌藥物總整理（醫護版） — 彰濱秀傳癌症中心</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#0d9488; --teal2:#0f766e; --teal-d:#115e59;
+  --teal-bg:rgba(13,148,136,.08); --teal-bdr:rgba(13,148,136,.22);
+  --teal-soft:#e6f5f3;
+  --bg:#F4F8F8; --card:#FFF; --bdr:#D8E5E4; --bdr2:#E8EFEE;
+  --tx:#1e3a3a; --tx2:#5A6B6B; --tx3:#8A9595;
+  --amber:#d97706; --amber-bg:#fef3c7;
+  --self:#94703f; --self-bg:#fef9e7;
+  --blue:#1d4ed8; --blue-bg:#dbeafe;
+  --purple:#7c3aed; --purple-bg:#ede9fe;
+  --green:#059669; --green-bg:#d1fae5;
+  --red:#dc2626; --red-bg:#FEF2F2;
+}
+html,body{min-height:100%}
+body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.55}
+
+/* Header */
+.hdr{background:linear-gradient(135deg,#115e59 0%,#0f766e 50%,#0d9488 100%);color:#fff;padding:18px 18px 24px;text-align:left}
+.hdr-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.home-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;border:1px solid rgba(255,255,255,.22)}
+.home-btn:hover{background:rgba(255,255,255,.26)}
+.hdr-title{flex:1;min-width:0}
+.hdr-title h1{font-size:18px;font-weight:900;letter-spacing:.5px}
+.hdr-title p{font-size:11.5px;opacity:.78;margin-top:2px;letter-spacing:.5px}
+@media(min-width:640px){
+  .hdr-title h1{font-size:22px}
+  .hdr-title p{font-size:13px}
+}
+
+/* Main */
+.main{max-width:1100px;margin:-12px auto 0;padding:0 14px 40px;position:relative;z-index:2}
+
+/* Filter bar */
+.filterbar{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 10px rgba(15,118,110,.06);margin-bottom:14px}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:10px;padding:8px 12px;transition:border-color .2s}
+.search-box:focus-within{border-color:var(--teal)}
+.search-box svg{color:var(--tx3);flex-shrink:0}
+.search-box input{flex:1;border:none;outline:none;background:transparent;font-size:14px;font-family:inherit;color:var(--tx)}
+.search-box input::placeholder{color:var(--tx3)}
+.search-box .clear-btn{background:transparent;border:none;cursor:pointer;color:var(--tx3);padding:2px;display:none}
+.search-box .clear-btn.show{display:flex}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--card);border:1.5px solid var(--bdr);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--teal);color:var(--teal)}
+.chip.active{background:var(--teal);border-color:var(--teal);color:#fff}
+.chip .ct{font-size:10.5px;opacity:.85}
+
+/* Result count */
+.result-count{font-size:11.5px;color:var(--tx3);padding:0 4px}
+.result-count b{color:var(--teal-d);font-weight:800}
+
+/* Drug grid */
+.drugs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px}
+@media(max-width:480px){
+  .drugs-grid{grid-template-columns:1fr;gap:8px}
+}
+
+.drug{background:var(--card);border:1px solid var(--bdr);border-radius:13px;padding:13px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .2s,border-color .2s}
+.drug:hover{box-shadow:0 4px 14px rgba(15,118,110,.1);border-color:var(--teal-bdr)}
+
+.drug-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.drug-names{flex:1;min-width:0}
+.drug-en{font-size:15px;font-weight:900;color:var(--teal-d);letter-spacing:.2px;line-height:1.3;word-break:break-word}
+.drug-zh{font-size:12.5px;color:var(--tx2);font-weight:700;margin-top:1px}
+.drug-badges{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0}
+.b{font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:5px;display:inline-block;line-height:1.3;white-space:nowrap}
+.b-nhi{background:var(--teal);color:#fff}
+.b-self{background:var(--self-bg);color:var(--self);border:1px solid #e6d3a7}
+.b-target{background:var(--purple-bg);color:var(--purple);border:1px solid #d6cdf2}
+.b-immuno{background:var(--blue-bg);color:var(--blue);border:1px solid #c8d6f9}
+.b-chemo{background:var(--green-bg);color:var(--green);border:1px solid #b3e6d2}
+.b-line{background:var(--bg);color:var(--tx2);border:1px solid var(--bdr);font-size:9px}
+
+.drug-meta{font-size:11px;color:var(--tx3);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.drug-meta .lbl{font-weight:700;color:var(--tx2)}
+
+.drug-indi{background:var(--teal-soft);border-left:3px solid var(--teal);border-radius:6px;padding:6px 9px;font-size:12px;color:var(--teal-d);font-weight:700;line-height:1.45}
+
+.drug-rule{font-size:11.5px;color:var(--tx2);line-height:1.55;padding:6px 9px;background:#fff8eb;border-left:3px solid var(--amber);border-radius:6px}
+.drug-rule:empty{display:none}
+
+/* V2.9.5 醫護版進階欄位 */
+.d-rows{display:flex;flex-direction:column;gap:3px;margin-top:2px}
+.d-row{font-size:11px;color:var(--tx2);display:flex;gap:6px;align-items:flex-start;line-height:1.45}
+.d-row .d-lbl{flex-shrink:0;font-weight:800;color:var(--tx);background:var(--bg);padding:1px 6px;border-radius:4px;font-size:10px;letter-spacing:.3px;min-width:60px;text-align:center}
+.d-row .d-val{flex:1;min-width:0}
+.d-row.d-prereq .d-lbl{background:#fef3c7;color:var(--amber)}
+.d-appears{margin-top:4px;padding:6px 8px;background:var(--bg);border-radius:6px;border:1px dashed var(--bdr)}
+.d-appears-h{font-size:10px;font-weight:800;color:var(--tx3);letter-spacing:.5px;margin-bottom:4px}
+.d-stage{display:inline-block;font-size:10.5px;font-weight:600;color:var(--teal-d);background:var(--teal-soft);padding:2px 7px;border-radius:99px;margin:2px 3px 0 0;line-height:1.4}
+
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--tx3)}
+.empty svg{margin-bottom:10px}
+.empty h3{font-size:14px;font-weight:700;color:var(--tx2);margin-bottom:4px}
+.empty p{font-size:12px}
+
+/* Footer note */
+.foot{margin-top:24px;padding:14px 18px;background:var(--teal-bg);border-left:3px solid var(--teal);border-radius:8px;font-size:12px;color:var(--teal-d);line-height:1.65}
+.foot strong{font-weight:800}
+
+/* Disclaimer */
+.disc{margin-top:10px;font-size:10.5px;color:var(--tx3);text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <a href="../" class="home-btn" title="回首頁">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    </a>
+    <div class="hdr-title">
+      <h1>健保肺癌藥物總整理 <span style="font-size:11px;font-weight:600;background:rgba(255,255,255,.2);padding:3px 8px;border-radius:6px;margin-left:6px;letter-spacing:1px;vertical-align:3px">醫護版</span></h1>
+      <p>依《健保第 9 章》與《附件 2 修訂對照表》彙整 · 2026/04 版</p>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Filter bar -->
+  <div class="filterbar">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" placeholder="搜尋藥名（中文或英文）、適應症（如 EGFR、ALK、PD-L1）" oninput="onSearch()">
+      <button class="clear-btn" id="clear-btn" onclick="clearSearch()" title="清除搜尋">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="chip-row" id="cat-chips">
+      <button class="chip active" data-cat="ALL" onclick="setCat('ALL')">全部</button>
+      <button class="chip" data-cat="TARGET" onclick="setCat('TARGET')">標靶</button>
+      <button class="chip" data-cat="IMMUNO" onclick="setCat('IMMUNO')">免疫</button>
+      <button class="chip" data-cat="CHEMO" onclick="setCat('CHEMO')">化療</button>
+      <button class="chip" data-cat="OTHER" onclick="setCat('OTHER')">其他</button>
+    </div>
+    <div class="chip-row" id="nhi-chips">
+      <button class="chip active" data-nhi="ALL" onclick="setNhi('ALL')">不分給付</button>
+      <button class="chip" data-nhi="NHI" onclick="setNhi('NHI')">健保給付</button>
+      <button class="chip" data-nhi="SELF" onclick="setNhi('SELF')">自費</button>
+    </div>
+    <div class="result-count" id="result-count"></div>
+  </div>
+
+  <div class="drugs-grid" id="grid"></div>
+
+  <div class="foot">
+    <strong>📋 使用說明</strong>　本表彙整自衛福部《全民健康保險藥物給付項目及支付標準》第 9 章「藥品給付規定」與《附件 2 修訂對照表》，
+    為民眾教育用途。實際用藥須依主治醫師判斷與最新健保事審結果為準。
+    健保事審條件可能隨健保署公告調整，使用前請與藥師或主治醫師確認。
+  </div>
+
+  <p class="disc">彰濱秀傳紀念醫院 癌症中心 · 不分線/不分組 = 健保條件不限定治療線；事審 = 需事前審查；ICI 9.69 = 第 9 章第 69 節免疫檢查點抑制劑規範</p>
+
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   全部肺癌藥物資料庫
+   cat: TARGET / IMMUNO / CHEMO / OTHER
+   nhi: NHI / SELF
+   indi: 適應症（給民眾看的關鍵字）
+   line: 線數標記
+   rule: 健保規範摘要
+═══════════════════════════════════════════════════ */
+const ALL_DRUGS = [
+  // ─── EGFR 標靶（NSCLC） ───
+  { en:'Osimertinib',   zh:'泰格莎',   cat:'TARGET', nhi:'NHI',
+    indi:'EGFR exon19 del / L858R',  line:'一線、二線(T790M+)、術後鞏固',
+    nccn:'NSCLC IV EGFR(+) Cat 1 一線首選；術後 ADAURA Cat 1',
+    nhi_ref:'9.5.1 / 9.5.2（事審）',
+    prereq:'第二線需 T790M(+)；術後鞏固限 IB-IIIA 切除後',
+    rule:'第一線：EGFR exon19 deletion 或 L858R 突變；第二線（T790M）：第一線 EGFR TKI 失敗後；術後輔助：IB-IIIA 切除後 EGFR(+)，至多 3 年。',
+    appearsIn:['NSCLC EARLY (EGFR+ 術後鞏固)','NSCLC LOCAL III (IIIA 切除術後鞏固)','NSCLC IV EGFR']},
+  { en:'Gefitinib',     zh:'艾瑞莎',   cat:'TARGET', nhi:'NHI',
+    indi:'EGFR exon19 del / L858R',  line:'一線',
+    nccn:'NSCLC IV EGFR(+) Cat 1 一線（早期 EGFR TKI）',
+    nhi_ref:'9.5.1（事審）',
+    prereq:'',
+    rule:'EGFR exon19 deletion 或 L858R 第一線。與 Erlotinib/Afatinib/Dacomitinib 擇一不互換。',
+    appearsIn:['NSCLC IV EGFR']},
+  { en:'Erlotinib',     zh:'得舒緩',   cat:'TARGET', nhi:'NHI',
+    indi:'EGFR exon19 del / L858R',  line:'一線',
+    nccn:'NSCLC IV EGFR(+) Cat 1 一線',
+    nhi_ref:'9.5.1（事審）',
+    prereq:'',
+    rule:'EGFR 第一代 TKI；exon19 del 或 L858R 第一線。可與 Bevacizumab 合併用於 EGFR L858R 且有腦轉移者。擇一不互換。',
+    appearsIn:['NSCLC IV EGFR']},
+  { en:'Afatinib',      zh:'妥復克',   cat:'TARGET', nhi:'NHI',
+    indi:'EGFR exon19 del / L858R',  line:'一線',
+    nccn:'NSCLC IV EGFR(+) Cat 1 一線',
+    nhi_ref:'9.5.1（事審）',
+    prereq:'',
+    rule:'EGFR 第二代 TKI；exon19 del / L858R 第一線。擇一不互換。',
+    appearsIn:['NSCLC IV EGFR']},
+  { en:'Dacomitinib',   zh:'肺欣妥',   cat:'TARGET', nhi:'NHI',
+    indi:'EGFR exon19 del / L858R（無腦轉移）',  line:'一線',
+    nccn:'NSCLC IV EGFR(+) Cat 1 一線',
+    nhi_ref:'9.5.1（事審）',
+    prereq:'限無腦轉移者',
+    rule:'EGFR 第二代 TKI；exon19 del 或 L858R 第一線。限「無腦轉移」者使用。擇一不互換。',
+    appearsIn:['NSCLC IV EGFR (無腦轉移)']},
+  { en:'Erlotinib + Bevacizumab', zh:'得舒緩 + 癌思停', cat:'TARGET', nhi:'NHI',
+    indi:'EGFR L858R + 腦轉移', line:'一線（合併）',
+    nccn:'NSCLC IV EGFR L858R + 腦轉移',
+    nhi_ref:'9.5.1（事審）',
+    prereq:'限 EGFR L858R 突變且有腦轉移',
+    rule:'限 EGFR L858R 突變且有腦轉移者；事前審查。',
+    appearsIn:['NSCLC IV EGFR L858R + 腦轉移']},
+
+  // ─── ALK / ROS1 標靶 ───
+  { en:'Alectinib',     zh:'安立適',   cat:'TARGET', nhi:'NHI',
+    indi:'ALK 重組 NSCLC / 術後鞏固',   line:'一線、術後鞏固',
+    nccn:'NSCLC IV ALK(+) Cat 1 一線首選；術後 ALINA Cat 1',
+    nhi_ref:'9.5.3（事審）',
+    prereq:'術後鞏固限 IB-IIIA 切除後 ALK(+)',
+    rule:'ALK 重組 NSCLC 第一線首選（CNS 穿透佳）；術後鞏固至多 2 年。五個 ALK TKI 擇一不互換。',
+    appearsIn:['NSCLC EARLY (ALK+ 術後鞏固)','NSCLC LOCAL III (IIIA 切除術後鞏固)','NSCLC IV ALK']},
+  { en:'Lorlatinib',    zh:'瘤利欣',   cat:'TARGET', nhi:'NHI',
+    indi:'ALK 重組 NSCLC',   line:'一線、後線',
+    nccn:'NSCLC IV ALK(+) Cat 1 一線；其他 ALK TKI 失敗後',
+    nhi_ref:'9.5.3（事審）',
+    prereq:'',
+    rule:'第三代 ALK TKI；可用於第一線，或 alectinib/ceritinib/brigatinib 失敗後。',
+    appearsIn:['NSCLC IV ALK']},
+  { en:'Ceritinib',     zh:'立克癌',   cat:'TARGET', nhi:'NHI',
+    indi:'ALK 重組 NSCLC',   line:'一線',
+    nccn:'NSCLC IV ALK(+) 一線',
+    nhi_ref:'9.5.3（事審）',
+    prereq:'',
+    rule:'ALK 重組 NSCLC 第一線；五個 ALK TKI 擇一不互換。',
+    appearsIn:['NSCLC IV ALK']},
+  { en:'Brigatinib',    zh:'癌倍利',   cat:'TARGET', nhi:'NHI',
+    indi:'ALK 重組 NSCLC',   line:'一線',
+    nccn:'NSCLC IV ALK(+) 一線',
+    nhi_ref:'9.5.3（事審）',
+    prereq:'',
+    rule:'ALK 重組 NSCLC 第一線；五個 ALK TKI 擇一不互換。',
+    appearsIn:['NSCLC IV ALK']},
+  { en:'Crizotinib',    zh:'截克瘤',   cat:'TARGET', nhi:'NHI',
+    indi:'ALK 或 ROS1 融合', line:'一線',
+    nccn:'NSCLC IV ALK / ROS1(+) 一線（早期 TKI）',
+    nhi_ref:'9.5.3 (ALK) / 9.5.4 (ROS1)（事審）',
+    prereq:'',
+    rule:'ALK 重組（早期 TKI）或 ROS1 融合第一線。Entrectinib 為 ROS1 替代。',
+    appearsIn:['NSCLC IV ALK','NSCLC IV ROS1']},
+  { en:'Entrectinib',   zh:'羅思克',   cat:'TARGET', nhi:'NHI',
+    indi:'ROS1 融合 / NTRK 融合',  line:'一線',
+    nccn:'NSCLC IV ROS1(+) / NTRK(+) 一線',
+    nhi_ref:'9.5.4（事審）',
+    prereq:'',
+    rule:'ROS1 融合或 NTRK 融合第一線標靶；與 Crizotinib 擇一不互換。',
+    appearsIn:['NSCLC IV ROS1']},
+
+  // ─── BRAF / MET / KRAS 標靶 ───
+  { en:'Dabrafenib + Trametinib', zh:'泰伏樂 + 麥欣寧', cat:'TARGET', nhi:'NHI',
+    indi:'BRAF V600E NSCLC', line:'二線（含鉑後）',
+    nccn:'NSCLC IV BRAF V600E(+) Cat 2A',
+    nhi_ref:'9.5.5（事審）',
+    prereq:'限第一線含鉑化療失敗後',
+    rule:'限 BRAF V600E 突變、第一線含鉑化療失敗後使用；事前審查。',
+    appearsIn:['NSCLC IV BRAF']},
+  { en:'Tepotinib',     zh:'特癌適',   cat:'TARGET', nhi:'NHI',
+    indi:'MET exon 14 跳躍突變', line:'不分線',
+    nccn:'NSCLC IV MET ex14 Cat 2A',
+    nhi_ref:'9.5.6（事審）',
+    prereq:'限 MET exon 14 skipping 突變',
+    rule:'限 MET exon 14 skipping mutation；事前審查。',
+    appearsIn:['NSCLC IV MET']},
+  { en:'Sotorasib',     zh:'魯瑪克拉斯', cat:'TARGET', nhi:'SELF',
+    indi:'KRAS G12C NSCLC', line:'二線',
+    nccn:'NSCLC IV KRAS G12C(+) Cat 2A',
+    nhi_ref:'健保給付狀態變動快，請洽藥劑科',
+    prereq:'限第一線含鉑治療失敗後',
+    rule:'KRAS G12C 突變 NSCLC，第一線含鉑治療失敗後。',
+    appearsIn:['NSCLC IV KRAS']},
+  { en:'Amivantamab',   zh:'瑞普替',    cat:'TARGET', nhi:'NHI',
+    indi:'EGFR ex20 ins / ex19+L858R 後線', line:'後線',
+    nccn:'NSCLC IV EGFR ex20 ins Cat 2A；MARIPOSA-2 後線',
+    nhi_ref:'部分適應症給付，請洽藥劑科',
+    prereq:'限 EGFR TKI 治療失敗後 / EGFR exon20 insertion',
+    rule:'EGFR/MET 雙特異抗體；用於 EGFR exon20 insertion 一線或常見 EGFR 突變治療失敗後合併化療。',
+    appearsIn:['NSCLC IV EGFR (Osimertinib 失敗後)']},
+
+  // ─── 免疫檢查點抑制劑（ICI）───
+  { en:'Pembrolizumab', zh:'吉舒達 (Keytruda)', cat:'IMMUNO', nhi:'NHI',
+    indi:'NSCLC PD-L1 表現 / SCLC（合併化療）', line:'一線、後線',
+    nccn:'NSCLC IV PD-L1 ≥50% Cat 1 單藥；PD-L1 1-49% Cat 1 + 化療',
+    nhi_ref:'9.69（ICI 規範事審）',
+    prereq:'NSCLC 一線單藥需 PD-L1 ≥50% + 原生型；無腦/脊髓轉移',
+    rule:'NSCLC 一線：原生型 + PD-L1 ≥50% 可單藥（KEYNOTE-024），或合併化療；ICI 9.69 規範。SCLC 擴散期可合併化療。',
+    appearsIn:['NSCLC IV PD-L1 ≥50% (單藥)','NSCLC IV PD-L1 < 50% (合併化療)','NSCLC IV KRAS','SCLC Extensive (no brain met)']},
+  { en:'Atezolizumab',  zh:'癌自禦 (Tecentriq)', cat:'IMMUNO', nhi:'NHI',
+    indi:'NSCLC（IMpower150）/ SCLC 擴散期', line:'一線',
+    nccn:'NSCLC IV 非鱗狀 IMpower150 Cat 1；SCLC ES Cat 1',
+    nhi_ref:'9.69（ICI 規範事審）',
+    prereq:'SCLC 限無腦/脊髓轉移；NSCLC 限無 EGFR/ALK 突變',
+    rule:'NSCLC 非鱗狀：可與 Bevacizumab + Carboplatin + Paclitaxel（IMpower150）合併。SCLC 擴散期合併化療。事前審查。',
+    appearsIn:['NSCLC IV PD-L1 ≥50% (合併方案)','SCLC Extensive (no brain met)']},
+  { en:'Durvalumab',    zh:'抑癌寧 (Imfinzi)',   cat:'IMMUNO', nhi:'NHI',
+    indi:'Stage III NSCLC 鞏固 / SCLC 擴散期', line:'鞏固、一線',
+    nccn:'NSCLC IIIA-IIIB 同步化放療後 PACIFIC Cat 1；SCLC ES Cat 1',
+    nhi_ref:'9.69（ICI 規範事審）',
+    prereq:'NSCLC 鞏固需同步化放療後無惡化、PD-L1 ≥1%、6 週內開始',
+    rule:'Stage III NSCLC 同步化放療後無惡化、PD-L1 ≥1%，至多 12 個月（PACIFIC）。SCLC 擴散期合併化療。',
+    appearsIn:['NSCLC LOCAL III (CCRT 後鞏固)','SCLC Extensive (no brain met)']},
+
+  // ─── 抗血管新生 ───
+  { en:'Bevacizumab',   zh:'癌思停 (Avastin)',  cat:'TARGET', nhi:'NHI',
+    indi:'NSCLC 非鱗狀（合併化療或標靶）', line:'一線',
+    nccn:'NSCLC IV 非鱗狀合併方案',
+    nhi_ref:'9.5.7（事審）',
+    prereq:'限非鱗狀 NSCLC；鱗狀禁忌（出血風險）',
+    rule:'非鱗狀 NSCLC 第一線合併化療（如 Pemetrexed + Carboplatin）；或合併 Erlotinib 用於 EGFR L858R + 腦轉移者。鱗狀禁忌。',
+    appearsIn:['NSCLC IV 非鱗 PD-L1 ≥50% (IMpower150)','NSCLC IV EGFR L858R + 腦轉移']},
+
+  // ─── 化療（NSCLC 與 SCLC 通用） ───
+  { en:'Cisplatin',     zh:'順鉑',     cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC / SCLC 化療基礎藥', line:'各線',
+    nccn:'多項方案的鉑類核心藥',
+    nhi_ref:'不需事審',
+    prereq:'腎功能評估',
+    rule:'鉑類雙藥組合的核心藥，常與 Pemetrexed（非鱗狀）/ Paclitaxel（鱗狀）/ Etoposide（SCLC）合併。腎功能不佳或高齡可改 Carboplatin。',
+    appearsIn:['NSCLC EARLY 術後輔助','NSCLC LOCAL III CCRT','NSCLC IV 後線','SCLC Limited / Extensive']},
+  { en:'Carboplatin',   zh:'碳鉑',     cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC / SCLC 化療', line:'各線',
+    nccn:'Cisplatin 替代藥（高齡 / 腎功能不佳）',
+    nhi_ref:'不需事審',
+    prereq:'',
+    rule:'Cisplatin 替代藥；高齡（≥70）或腎功能不佳優先選擇。',
+    appearsIn:['NSCLC EARLY 術後輔助','NSCLC LOCAL III CCRT','NSCLC IV 後線','SCLC Limited / Extensive']},
+  { en:'Pemetrexed',    zh:'愛寧達',   cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC 非鱗狀', line:'一線、維持',
+    nccn:'NSCLC 非鱗狀標準化療藥',
+    nhi_ref:'不需事審',
+    prereq:'限非鱗狀（鱗狀禁忌）',
+    rule:'限非鱗狀 NSCLC。鉑類雙藥組合或維持治療。鱗狀禁忌。',
+    appearsIn:['NSCLC EARLY 術後輔助','NSCLC IV 一線（非鱗）','NSCLC IV 後線（非鱗）']},
+  { en:'Paclitaxel',    zh:'紫杉醇',   cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC 鱗狀為主 / SCLC', line:'一線、後線',
+    nccn:'NSCLC 鱗狀一線；非鱗狀 IMpower150',
+    nhi_ref:'不需事審',
+    prereq:'',
+    rule:'鱗狀 NSCLC 第一線常用。也可用於非鱗狀後線或 IMpower150 模式。',
+    appearsIn:['NSCLC LOCAL III CCRT (鱗狀)','NSCLC IV 鱗狀','NSCLC IV 非鱗 IMpower150']},
+  { en:'Vinorelbine',   zh:'溫諾平',   cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC 術後輔助 / 後線', line:'術後輔助、後線',
+    nccn:'NSCLC 術後輔助化療常用組合',
+    nhi_ref:'不需事審',
+    prereq:'',
+    rule:'NSCLC 術後輔助化療常用組合（與 Cisplatin 合併）。',
+    appearsIn:['NSCLC EARLY 術後輔助','NSCLC IV 後線']},
+  { en:'Docetaxel',     zh:'剋癌易',   cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC 後線', line:'二線',
+    nccn:'NSCLC IV 二線化療',
+    nhi_ref:'不需事審',
+    prereq:'',
+    rule:'NSCLC 第二線化療，可與 Nintedanib 合併（事審）。',
+    appearsIn:['NSCLC IV 後線']},
+  { en:'Etoposide',     zh:'滅必治',   cat:'CHEMO', nhi:'NHI',
+    indi:'SCLC 一線', line:'一線',
+    nccn:'SCLC EP/EC regimen 核心',
+    nhi_ref:'不需事審',
+    prereq:'',
+    rule:'SCLC 化療基石，與 Cisplatin/Carboplatin 合併（EP/EC regimen）。',
+    appearsIn:['SCLC Limited','SCLC Extensive']},
+  { en:'Topotecan',     zh:'喜樹鹼',   cat:'CHEMO', nhi:'NHI',
+    indi:'SCLC 二線', line:'二線',
+    nccn:'SCLC 二線標準',
+    nhi_ref:'不需事審',
+    prereq:'限第一線含鉑後復發',
+    rule:'SCLC 第一線含鉑治療失敗後使用。',
+    appearsIn:['SCLC Extensive 二線']},
+  { en:'Gemcitabine',   zh:'健擇',     cat:'CHEMO', nhi:'NHI',
+    indi:'NSCLC 鱗狀', line:'一線、後線',
+    nccn:'NSCLC 鱗狀替代方案',
+    nhi_ref:'不需事審',
+    prereq:'',
+    rule:'NSCLC 鱗狀第一線替代方案，常與 Cisplatin 合併。',
+    appearsIn:['NSCLC IV 鱗狀']},
+
+  // ─── 其他輔助 ───
+  { en:'Nintedanib',    zh:'欣銳擇',   cat:'OTHER', nhi:'NHI',
+    indi:'NSCLC 腺癌（合併 Docetaxel）', line:'二線',
+    nccn:'NSCLC 非鱗 二線合併 Docetaxel',
+    nhi_ref:'事審',
+    prereq:'限非鱗狀 + 第一線含鉑失敗後',
+    rule:'限非鱗狀 NSCLC，第一線含鉑治療失敗後與 Docetaxel 合併使用。事前審查。',
+    appearsIn:['NSCLC IV 非鱗 後線']},
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE & FILTERING
+═══════════════════════════════════════════════════ */
+let curCat = 'ALL';
+let curNhi = 'ALL';
+let curQ = '';
+
+function getFiltered(){
+  return ALL_DRUGS.filter(d=>{
+    if(curCat !== 'ALL' && d.cat !== curCat) return false;
+    if(curNhi !== 'ALL' && d.nhi !== curNhi) return false;
+    if(curQ){
+      const q = curQ.toLowerCase();
+      const haystack = (d.en + ' ' + d.zh + ' ' + d.indi + ' ' + (d.rule||'')).toLowerCase();
+      if(!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function render(){
+  const items = getFiltered();
+  const grid = document.getElementById('grid');
+  const ct = document.getElementById('result-count');
+
+  // Update chip counts (recompute from full set with current other filters)
+  updateChipCounts();
+
+  // Result count
+  if(items.length === ALL_DRUGS.length){
+    ct.innerHTML = `共 <b>${items.length}</b> 種藥物`;
+  } else {
+    ct.innerHTML = `符合篩選 <b>${items.length}</b> / ${ALL_DRUGS.length} 種`;
+  }
+
+  if(!items.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <h3>找不到符合條件的藥物</h3>
+      <p>請試試不同的搜尋字詞或調整篩選</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(d=>{
+    const catLabel = ({TARGET:'標靶',IMMUNO:'免疫',CHEMO:'化療',OTHER:'其他'})[d.cat] || d.cat;
+    const catCls = ({TARGET:'b-target',IMMUNO:'b-immuno',CHEMO:'b-chemo',OTHER:'b-line'})[d.cat] || 'b-line';
+    const nhiLabel = d.nhi === 'NHI' ? '健保' : '自費';
+    const nhiCls = d.nhi === 'NHI' ? 'b-nhi' : 'b-self';
+
+    // V2.9.5 醫護版進階欄位
+    const nccnHtml = d.nccn ? `<div class="d-row"><span class="d-lbl">NCCN</span><span class="d-val">${esc(d.nccn)}</span></div>` : '';
+    const nhiRefHtml = d.nhi_ref ? `<div class="d-row"><span class="d-lbl">健保條文</span><span class="d-val">${esc(d.nhi_ref)}</span></div>` : '';
+    const prereqHtml = d.prereq ? `<div class="d-row d-prereq"><span class="d-lbl">必試/限制</span><span class="d-val">${esc(d.prereq)}</span></div>` : '';
+    const appearsHtml = (d.appearsIn && d.appearsIn.length) ? `<div class="d-appears"><div class="d-appears-h">在以下情境會用到 (${d.appearsIn.length})</div>${d.appearsIn.map(s=>`<span class="d-stage">${esc(s)}</span>`).join('')}</div>` : '';
+
+    return `<div class="drug" data-cat="${d.cat}" data-nhi="${d.nhi}">
+      <div class="drug-head">
+        <div class="drug-names">
+          <div class="drug-en">${esc(d.en)}</div>
+          <div class="drug-zh">${esc(d.zh)}</div>
+        </div>
+        <div class="drug-badges">
+          <span class="b ${nhiCls}">${nhiLabel}</span>
+          <span class="b ${catCls}">${catLabel}</span>
+        </div>
+      </div>
+      <div class="drug-indi">${esc(d.indi)}</div>
+      <div class="drug-meta">
+        <span class="b b-line">${esc(d.line||'不分線')}</span>
+      </div>
+      <div class="d-rows">
+        ${nccnHtml}
+        ${nhiRefHtml}
+        ${prereqHtml}
+      </div>
+      ${d.rule ? `<div class="drug-rule">${esc(d.rule)}</div>` : ''}
+      ${appearsHtml}
+    </div>`;
+  }).join('');
+}
+
+function updateChipCounts(){
+  // 計算每個 cat / nhi 篩選結果的數量
+  const byCat = {ALL:ALL_DRUGS.length, TARGET:0, IMMUNO:0, CHEMO:0, OTHER:0};
+  const byNhi = {ALL:ALL_DRUGS.length, NHI:0, SELF:0};
+  for(const d of ALL_DRUGS){
+    byCat[d.cat] = (byCat[d.cat]||0) + 1;
+    byNhi[d.nhi] = (byNhi[d.nhi]||0) + 1;
+  }
+  document.querySelectorAll('#cat-chips .chip').forEach(c=>{
+    const k = c.dataset.cat;
+    const old = c.querySelector('.ct'); if(old) old.remove();
+    if(byCat[k] !== undefined){
+      const sp = document.createElement('span');
+      sp.className = 'ct';
+      sp.textContent = byCat[k];
+      c.appendChild(sp);
+    }
+  });
+  document.querySelectorAll('#nhi-chips .chip').forEach(c=>{
+    const k = c.dataset.nhi;
+    const old = c.querySelector('.ct'); if(old) old.remove();
+    if(byNhi[k] !== undefined){
+      const sp = document.createElement('span');
+      sp.className = 'ct';
+      sp.textContent = byNhi[k];
+      c.appendChild(sp);
+    }
+  });
+}
+
+function setCat(cat){
+  curCat = cat;
+  document.querySelectorAll('#cat-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.cat===cat));
+  render();
+}
+function setNhi(nhi){
+  curNhi = nhi;
+  document.querySelectorAll('#nhi-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.nhi===nhi));
+  render();
+}
+function onSearch(){
+  curQ = (document.getElementById('q').value||'').trim();
+  document.getElementById('clear-btn').classList.toggle('show', !!curQ);
+  render();
+}
+function clearSearch(){
+  document.getElementById('q').value='';
+  curQ='';
+  document.getElementById('clear-btn').classList.remove('show');
+  render();
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// init
+render();
+</script>
+</body>
+</html>

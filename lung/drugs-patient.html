@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<title>肺癌常用藥物（民眾版） — 彰濱秀傳癌症中心</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#0d9488; --teal2:#0f766e; --teal-d:#115e59;
+  --teal-bg:rgba(13,148,136,.08); --teal-bdr:rgba(13,148,136,.22); --teal-soft:#e6f5f3;
+  --bg:#F4F8F8; --card:#FFF; --bdr:#D8E5E4; --bdr2:#E8EFEE;
+  --tx:#1e3a3a; --tx2:#5A6B6B; --tx3:#8A9595;
+  --amber:#d97706; --amber-bg:#fef3c7;
+  --self:#94703f; --self-bg:#fef9e7;
+  --rose:#dc2626; --rose-bg:#FEF2F2;
+  --green:#059669; --green-bg:#d1fae5;
+  --blue:#1d4ed8; --blue-bg:#dbeafe;
+  --purple:#7c3aed; --purple-bg:#ede9fe;
+}
+html,body{min-height:100%}
+body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.55}
+
+/* Header */
+.hdr{background:linear-gradient(135deg,#115e59 0%,#0f766e 50%,#0d9488 100%);color:#fff;padding:18px 18px 22px;text-align:left}
+.hdr-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.home-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;border:1px solid rgba(255,255,255,.22)}
+.home-btn:hover{background:rgba(255,255,255,.26)}
+.hdr-title{flex:1;min-width:0}
+.hdr-title h1{font-size:18px;font-weight:900;letter-spacing:.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hdr-title h1 .badge-ver{font-size:10.5px;font-weight:600;background:rgba(255,255,255,.2);padding:2px 7px;border-radius:6px;letter-spacing:1px;line-height:1.4}
+.hdr-title p{font-size:11.5px;opacity:.78;margin-top:2px;letter-spacing:.5px}
+@media(min-width:640px){
+  .hdr-title h1{font-size:21px}
+  .hdr-title p{font-size:12.5px}
+}
+
+/* Main */
+.main{max-width:1100px;margin:-12px auto 0;padding:0 14px 40px;position:relative;z-index:2}
+
+/* Personalized banner (when query param matches) */
+.match-banner{
+  background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;
+  border-radius:13px;padding:12px 14px;margin-bottom:14px;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 4px 14px rgba(15,118,110,.2);
+}
+.match-banner .ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.match-banner .body{flex:1;min-width:0;line-height:1.5}
+.match-banner .title{font-size:13.5px;font-weight:800;letter-spacing:.3px}
+.match-banner .sub{font-size:11.5px;opacity:.85;margin-top:1px;line-height:1.5}
+.match-banner .clear{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:7px;cursor:pointer;font-family:inherit;flex-shrink:0;text-decoration:none}
+.match-banner .clear:hover{background:rgba(255,255,255,.26)}
+
+/* Filter bar */
+.filterbar{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 10px rgba(15,118,110,.06);margin-bottom:14px}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:10px;padding:8px 12px;transition:border-color .2s}
+.search-box:focus-within{border-color:var(--teal)}
+.search-box svg{color:var(--tx3);flex-shrink:0}
+.search-box input{flex:1;border:none;outline:none;background:transparent;font-size:16px;font-family:inherit;color:var(--tx)}
+@media(min-width:481px){.search-box input{font-size:14px}}
+.search-box input::placeholder{color:var(--tx3)}
+.search-box .clear-btn{background:transparent;border:none;cursor:pointer;color:var(--tx3);padding:2px;display:none}
+.search-box .clear-btn.show{display:flex}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip-row-label{font-size:11px;font-weight:800;color:var(--tx3);letter-spacing:.5px;margin-right:2px;align-self:center}
+.chip{background:var(--card);border:1.5px solid var(--bdr);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--teal);color:var(--teal-d)}
+.chip.active{background:var(--teal);border-color:var(--teal);color:#fff}
+.chip .ct{font-size:10.5px;opacity:.85}
+
+.result-count{font-size:11.5px;color:var(--tx3);padding:0 4px}
+.result-count b{color:var(--teal-d);font-weight:800}
+
+/* Drug grid */
+.drugs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px;margin-top:12px}
+@media(max-width:480px){.drugs-grid{grid-template-columns:1fr;gap:8px}}
+
+.drug{background:var(--card);border:1px solid var(--bdr);border-radius:13px;padding:13px;display:flex;flex-direction:column;gap:9px;transition:box-shadow .2s,border-color .2s}
+.drug:hover{box-shadow:0 4px 14px rgba(15,118,110,.1);border-color:var(--teal-bdr)}
+
+/* Highlighted (matched by query) */
+.drug.match{border-color:var(--teal);box-shadow:0 0 0 2px rgba(13,148,136,.15)}
+.drug.match::before{content:'符合您的狀況';display:inline-block;background:var(--teal);color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:5px;align-self:flex-start;margin-bottom:-4px}
+
+/* Drug head */
+.drug-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.drug-names{flex:1;min-width:0}
+.drug-zh{font-size:16px;font-weight:900;color:var(--tx);letter-spacing:.3px;line-height:1.3}
+.drug-en{font-size:12.5px;color:var(--teal-d);font-weight:700;margin-top:1px;word-break:break-word}
+.drug-badges{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0}
+.b{font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:3px 10px;border-radius:6px;display:inline-block;line-height:1.3;white-space:nowrap}
+.b-nhi{background:var(--teal);color:#fff}
+.b-self{background:var(--self-bg);color:var(--self);border:1px solid #e6d3a7}
+.b-target{background:var(--purple-bg);color:var(--purple);border:1px solid #d6cdf2}
+.b-immuno{background:var(--blue-bg);color:var(--blue);border:1px solid #c8d6f9}
+.b-chemo{background:var(--green-bg);color:var(--green);border:1px solid #b3e6d2}
+.b-other{background:var(--bg);color:var(--tx2);border:1px solid var(--bdr)}
+
+/* Sections */
+.d-sec{font-size:13px;line-height:1.6}
+.d-sec-h{font-size:10.5px;font-weight:800;color:var(--tx3);letter-spacing:.8px;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.d-sec-h .ic{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;background:var(--teal-bg);color:var(--teal);flex-shrink:0}
+.d-sec-h.warn .ic{background:var(--amber-bg);color:var(--amber)}
+.d-purpose{color:var(--tx);font-weight:600}
+.d-target{color:var(--teal-d);background:var(--teal-soft);border-radius:7px;padding:6px 9px;font-weight:700}
+.d-side{color:#7a4f00;background:#fff8eb;border-left:3px solid var(--amber);border-radius:6px;padding:6px 9px;font-size:12px;line-height:1.55}
+
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--tx3)}
+.empty svg{margin-bottom:10px}
+.empty h3{font-size:14px;font-weight:700;color:var(--tx2);margin-bottom:4px}
+.empty p{font-size:12px}
+
+/* Footer note */
+.foot{margin-top:24px;padding:14px 18px;background:var(--teal-bg);border-left:3px solid var(--teal);border-radius:8px;font-size:12px;color:var(--teal-d);line-height:1.7}
+.foot strong{font-weight:800}
+.disc{margin-top:10px;font-size:10.5px;color:var(--tx3);text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <a href="../" class="home-btn" title="回首頁">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    </a>
+    <div class="hdr-title">
+      <h1>肺癌常用藥物 <span class="badge-ver">民眾版</span></h1>
+      <p>讓您快速了解每種藥的用途、健保是否給付、常見副作用</p>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 個人化匹配 banner（從 patient.html 帶 query 過來時顯示） -->
+  <div id="match-banner" style="display:none"></div>
+
+  <!-- Filter bar -->
+  <div class="filterbar">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" placeholder="搜尋藥名（中文或英文）" oninput="onSearch()">
+      <button class="clear-btn" id="clear-btn" onclick="clearSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="chip-row" id="nhi-chips">
+      <span class="chip-row-label">給付</span>
+      <button class="chip active" data-nhi="ALL" onclick="setNhi('ALL')">全部</button>
+      <button class="chip" data-nhi="NHI" onclick="setNhi('NHI')">健保</button>
+      <button class="chip" data-nhi="SELF" onclick="setNhi('SELF')">自費</button>
+    </div>
+    <div class="chip-row" id="type-chips">
+      <span class="chip-row-label">類型</span>
+      <button class="chip active" data-type="ALL" onclick="setTypeF('ALL')">全部</button>
+      <button class="chip" data-type="NSCLC_NS" onclick="setTypeF('NSCLC_NS')">非小細胞肺癌（非鱗）</button>
+      <button class="chip" data-type="NSCLC_SQ" onclick="setTypeF('NSCLC_SQ')">非小細胞肺癌（鱗狀）</button>
+      <button class="chip" data-type="SCLC" onclick="setTypeF('SCLC')">小細胞肺癌</button>
+    </div>
+    <div class="result-count" id="result-count"></div>
+  </div>
+
+  <div class="drugs-grid" id="grid"></div>
+
+  <div class="foot">
+    <strong>📋 看本頁時注意：</strong>
+    這裡列出的是肺癌常用治療藥物，給民眾大致了解每種藥在做什麼。<strong>實際用藥要由您的主治醫師依完整檢查決定</strong>，可能跟這裡列的不同。健保給付狀況可能隨時調整，請以最新公告為準。
+  </div>
+
+  <p class="disc">彰濱秀傳紀念醫院 癌症中心 · 民眾教育用途</p>
+
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   民眾版藥物資料
+   每藥欄位：
+   - en / zh:    英中文藥名
+   - cat:        TARGET / IMMUNO / CHEMO / OTHER
+   - nhi:        NHI / SELF
+   - applyTo:    ['NSCLC_NS','NSCLC_SQ','SCLC'] 子集 — 屬於哪種肺癌
+   - target:     簡白「這藥用在誰身上」(短句)
+   - purpose:    一句話用途
+   - sideEff:    常見副作用 (民眾化詞彙)
+   - matchKey:   個人化匹配 key（type:stage:mut 模式）
+═══════════════════════════════════════════════════ */
+const ALL_DRUGS = [
+  // ─── EGFR 標靶 ───
+  { en:'Osimertinib',   zh:'泰格莎',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'EGFR 基因突變的非小細胞肺癌',
+    purpose:'阻斷腫瘤細胞 EGFR 訊號讓癌細胞停止生長；對腦部轉移效果好。',
+    sideEff:'皮疹、腹瀉、口腔潰瘍、指甲變化；少數心律或肺發炎需追蹤。',
+    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR','NSCLC_NS:EARLY:EGFR','NSCLC_NS:LOCAL:EGFR']},
+  { en:'Gefitinib',     zh:'艾瑞莎',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'EGFR 基因突變的非小細胞肺癌',
+    purpose:'第一代 EGFR 標靶藥，跟同類四種擇一使用。',
+    sideEff:'皮疹、腹瀉、肝指數上升；少數間質性肺炎。',
+    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+  { en:'Erlotinib',     zh:'得舒緩',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'EGFR 基因突變的非小細胞肺癌',
+    purpose:'第一代 EGFR 標靶藥，可與癌思停合併用於有腦轉移者。',
+    sideEff:'皮疹、腹瀉、口腔潰瘍、肝指數上升。',
+    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+  { en:'Afatinib',      zh:'妥復克',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'EGFR 基因突變的非小細胞肺癌',
+    purpose:'第二代 EGFR 標靶藥，副作用較第一代明顯但療效持久。',
+    sideEff:'腹瀉（較常見）、皮疹、甲溝炎、口腔潰瘍。',
+    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+  { en:'Dacomitinib',   zh:'肺欣妥',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'EGFR 基因突變、無腦轉移者',
+    purpose:'第二代 EGFR 標靶藥；限制無腦轉移者使用。',
+    sideEff:'腹瀉、皮疹、甲溝炎、口腔潰瘍。',
+    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+
+  // ─── ALK / ROS1 標靶 ───
+  { en:'Alectinib',     zh:'安立適',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'ALK 基因重組的非小細胞肺癌',
+    purpose:'針對 ALK 基因重組的肺癌；對腦部穿透效果佳，是一線首選。',
+    sideEff:'貧血、肌肉酸痛、便秘、肝指數上升、水腫。',
+    matchKey:['NSCLC_NS:META:ALK','NSCLC_SQ:META:ALK','NSCLC_NS:EARLY:ALK','NSCLC_NS:LOCAL:ALK']},
+  { en:'Lorlatinib',    zh:'瘤利欣',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'ALK 基因重組（其他 ALK 標靶失敗後）',
+    purpose:'第三代 ALK 標靶藥，可在其他 ALK 藥失敗後使用。',
+    sideEff:'血脂升高、體重增加、情緒/認知改變、水腫。',
+    matchKey:['NSCLC_NS:META:ALK','NSCLC_SQ:META:ALK']},
+  { en:'Ceritinib',     zh:'立克癌',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'ALK 基因重組的非小細胞肺癌',
+    purpose:'ALK 標靶選擇之一，與其他 ALK 藥擇一不互換。',
+    sideEff:'腹瀉、噁心嘔吐、肝指數上升、疲倦。',
+    matchKey:['NSCLC_NS:META:ALK','NSCLC_SQ:META:ALK']},
+  { en:'Brigatinib',    zh:'癌倍利',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'ALK 基因重組的非小細胞肺癌',
+    purpose:'ALK 標靶選擇之一，CNS 穿透良好。',
+    sideEff:'噁心、咳嗽、頭痛、高血壓、肝指數上升。',
+    matchKey:['NSCLC_NS:META:ALK','NSCLC_SQ:META:ALK']},
+  { en:'Crizotinib',    zh:'截克瘤',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'ALK 或 ROS1 基因融合',
+    purpose:'早期的 ALK / ROS1 標靶藥；現多用於 ROS1 一線。',
+    sideEff:'視力變化、腹瀉、便秘、噁心、水腫、肝指數上升。',
+    matchKey:['NSCLC_NS:META:ALK','NSCLC_SQ:META:ALK','NSCLC_NS:META:ROS1','NSCLC_SQ:META:ROS1']},
+  { en:'Entrectinib',   zh:'羅思克',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'ROS1 融合（或 NTRK 融合）',
+    purpose:'針對 ROS1 或 NTRK 基因融合的肺癌。',
+    sideEff:'味覺改變、頭暈、便秘、疲倦、體重增加。',
+    matchKey:['NSCLC_NS:META:ROS1','NSCLC_SQ:META:ROS1']},
+
+  // ─── BRAF / MET / KRAS ───
+  { en:'Dabrafenib + Trametinib', zh:'泰伏樂 + 麥欣寧', cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'BRAF V600E 突變、含鉑化療失敗後',
+    purpose:'BRAF 基因突變肺癌的雙標靶治療。',
+    sideEff:'發燒（最常見）、皮疹、噁心、疲倦。',
+    matchKey:['NSCLC_NS:META:BRAF','NSCLC_SQ:META:BRAF']},
+  { en:'Tepotinib',     zh:'特癌適',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'MET exon 14 跳躍突變',
+    purpose:'針對 MET 基因 exon 14 跳躍突變的肺癌。',
+    sideEff:'水腫（特別下肢）、噁心、腹瀉、肝指數上升。',
+    matchKey:['NSCLC_NS:META:MET','NSCLC_SQ:META:MET']},
+  { en:'Sotorasib',     zh:'魯瑪克拉斯', cat:'TARGET', nhi:'SELF', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'KRAS G12C 突變、含鉑化療失敗後',
+    purpose:'針對 KRAS G12C 基因突變的標靶藥（健保給付狀況請洽醫師）。',
+    sideEff:'腹瀉、肌肉酸痛、噁心、肝指數上升。',
+    matchKey:['NSCLC_NS:META:KRAS','NSCLC_SQ:META:KRAS']},
+  { en:'Amivantamab',   zh:'瑞普替',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'EGFR 標靶失敗後的後線',
+    purpose:'EGFR/MET 雙特異抗體；其他 EGFR 標靶失敗後可用。',
+    sideEff:'輸注反應（發燒、寒顫）、皮疹、甲溝炎、低血鎂。',
+    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+
+  // ─── 抗血管 ───
+  { en:'Bevacizumab',   zh:'癌思停',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS'],
+    target:'非鱗狀肺癌（鱗狀禁用）',
+    purpose:'抑制腫瘤血管新生，與化療或標靶合併使用。',
+    sideEff:'高血壓、流鼻血、蛋白尿、傷口癒合差、出血風險（鱗狀禁用）。',
+    matchKey:['NSCLC_NS:META:PDL1_HIGH','NSCLC_NS:META:EGFR']},
+
+  // ─── 免疫治療 ───
+  { en:'Pembrolizumab', zh:'吉舒達',   cat:'IMMUNO', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
+    target:'PD-L1 高表現 NSCLC、SCLC（合併化療）',
+    purpose:'活化自身免疫攻擊腫瘤；PD-L1 ≥50% 可單藥，否則合併化療。',
+    sideEff:'皮疹/搔癢、疲倦、腹瀉；少見但需注意：肺炎、肝/甲狀腺/腦下垂體發炎。',
+    matchKey:['NSCLC_NS:META:PDL1_HIGH','NSCLC_SQ:META:PDL1_HIGH','NSCLC_NS:META:PDL1_LOW','NSCLC_SQ:META:PDL1_LOW','NSCLC_NS:META:KRAS','NSCLC_SQ:META:KRAS']},
+  { en:'Atezolizumab',  zh:'癌自禦',   cat:'IMMUNO', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
+    target:'非鱗狀 NSCLC（IMpower150）/ SCLC 擴散期',
+    purpose:'活化免疫攻擊腫瘤；NSCLC 用於合併方案，SCLC 用於擴散期一線。',
+    sideEff:'疲倦、皮疹、腹瀉、肝/肺/內分泌發炎需注意。',
+    matchKey:['NSCLC_NS:META:PDL1_HIGH','SCLC:META:no','SCLC:META:unknown']},
+  { en:'Durvalumab',    zh:'抑癌寧',   cat:'IMMUNO', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
+    target:'Stage III 同步化放療後鞏固 / SCLC 擴散期',
+    purpose:'接續同步化放療後降低復發；SCLC 擴散期合併化療。',
+    sideEff:'疲倦、皮疹、咳嗽；少見但需注意：肺炎、肝/甲狀腺發炎。',
+    matchKey:['NSCLC_NS:LOCAL:','NSCLC_SQ:LOCAL:','SCLC:META:no','SCLC:META:unknown']},
+
+  // ─── 化療 ───
+  { en:'Cisplatin',     zh:'順鉑',     cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
+    target:'NSCLC / SCLC 化療基礎藥',
+    purpose:'破壞腫瘤細胞 DNA。鉑類雙藥的核心藥。',
+    sideEff:'噁心嘔吐、腎功能影響、聽力下降、神經麻痺、骨髓抑制。',
+    matchKey:['NSCLC_NS:EARLY:','NSCLC_SQ:EARLY:','NSCLC_NS:LOCAL:','NSCLC_SQ:LOCAL:','SCLC:LOCAL:','SCLC:META:']},
+  { en:'Carboplatin',   zh:'碳鉑',     cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
+    target:'NSCLC / SCLC 化療（高齡或腎不佳優先）',
+    purpose:'順鉑的替代藥，副作用較輕，腎功能影響較小。',
+    sideEff:'骨髓抑制（白血球/血小板下降）、噁心、疲倦。',
+    matchKey:['NSCLC_NS:EARLY:','NSCLC_SQ:EARLY:','NSCLC_NS:LOCAL:','NSCLC_SQ:LOCAL:','SCLC:LOCAL:','SCLC:META:']},
+  { en:'Pemetrexed',    zh:'愛寧達',   cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS'],
+    target:'非鱗狀 NSCLC（鱗狀禁用）',
+    purpose:'非鱗狀肺癌標準化療藥，常與鉑類合併。',
+    sideEff:'骨髓抑制、噁心、疲倦、皮疹、口腔潰瘍。',
+    matchKey:['NSCLC_NS:EARLY:','NSCLC_NS:LOCAL:','NSCLC_NS:META:']},
+  { en:'Paclitaxel',    zh:'紫杉醇',   cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'鱗狀 NSCLC 為主',
+    purpose:'抑制癌細胞分裂，鱗狀肺癌一線常用。',
+    sideEff:'骨髓抑制、神經麻痺（手腳麻）、過敏反應、掉髮。',
+    matchKey:['NSCLC_SQ:LOCAL:','NSCLC_SQ:META:','NSCLC_NS:META:PDL1_HIGH']},
+  { en:'Vinorelbine',   zh:'溫諾平',   cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'術後輔助、後線化療',
+    purpose:'NSCLC 術後輔助常用，與順鉑合併使用。',
+    sideEff:'骨髓抑制、便秘、靜脈炎、神經麻痺。',
+    matchKey:['NSCLC_NS:EARLY:','NSCLC_SQ:EARLY:']},
+  { en:'Etoposide',     zh:'滅必治',   cat:'CHEMO',  nhi:'NHI', applyTo:['SCLC'],
+    target:'SCLC 一線化療',
+    purpose:'小細胞肺癌化療基石，與鉑類合併（EP/EC 方案）。',
+    sideEff:'骨髓抑制、噁心、掉髮、疲倦。',
+    matchKey:['SCLC:LOCAL:','SCLC:META:']},
+  { en:'Topotecan',     zh:'喜樹鹼',   cat:'CHEMO',  nhi:'NHI', applyTo:['SCLC'],
+    target:'SCLC 二線（含鉑後復發）',
+    purpose:'SCLC 第一線化療失敗後的二線藥。',
+    sideEff:'骨髓抑制（嚴重）、腹瀉、噁心、疲倦。',
+    matchKey:['SCLC:META:']},
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE & FILTERING
+═══════════════════════════════════════════════════ */
+let curNhi = 'ALL';
+let curType = 'ALL';
+let curQ = '';
+let matchType = '';   // 從 query 帶來的 type
+let matchStage = '';
+let matchMut = '';
+
+function getFiltered(){
+  return ALL_DRUGS.filter(d=>{
+    if(curNhi !== 'ALL' && d.nhi !== curNhi) return false;
+    if(curType !== 'ALL' && !d.applyTo.includes(curType)) return false;
+    if(curQ){
+      const q = curQ.toLowerCase();
+      const hay = (d.en + ' ' + d.zh + ' ' + d.target + ' ' + d.purpose).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function isMatch(d){
+  if(!matchType) return false;
+  // 1) 完整 key: type:stage:mut
+  const fullKey = matchType + ':' + matchStage + ':' + (matchMut || '');
+  if(d.matchKey && d.matchKey.includes(fullKey)) return true;
+  // 2) fallback: type:stage:（沒 mut 條件 — 用於化療等通用藥）
+  if(matchMut){
+    const stageKey = matchType + ':' + matchStage + ':';
+    if(d.matchKey && d.matchKey.includes(stageKey)) return true;
+  }
+  return false;
+}
+
+function render(){
+  // Sort: matched first, then by category order
+  const items = getFiltered().slice().sort((a,b)=>{
+    const am = isMatch(a) ? 0 : 1;
+    const bm = isMatch(b) ? 0 : 1;
+    if(am !== bm) return am - bm;
+    return 0;
+  });
+  const grid = document.getElementById('grid');
+  const ct = document.getElementById('result-count');
+
+  updateChipCounts();
+
+  const matchCount = items.filter(isMatch).length;
+  if(matchType && matchCount){
+    ct.innerHTML = `符合您狀況 <b>${matchCount}</b> 種；其他可參考 <b>${items.length - matchCount}</b> 種`;
+  } else if(items.length === ALL_DRUGS.length){
+    ct.innerHTML = `共 <b>${items.length}</b> 種藥物`;
+  } else {
+    ct.innerHTML = `符合篩選 <b>${items.length}</b> / ${ALL_DRUGS.length} 種`;
+  }
+
+  if(!items.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <h3>找不到符合條件的藥物</h3>
+      <p>請調整篩選或清除搜尋</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(d=>{
+    const catLabel = ({TARGET:'標靶',IMMUNO:'免疫',CHEMO:'化療',OTHER:'其他'})[d.cat] || d.cat;
+    const catCls = ({TARGET:'b-target',IMMUNO:'b-immuno',CHEMO:'b-chemo',OTHER:'b-other'})[d.cat] || 'b-other';
+    const nhiLabel = d.nhi === 'NHI' ? '健保給付' : '自費';
+    const nhiCls = d.nhi === 'NHI' ? 'b-nhi' : 'b-self';
+    const matched = isMatch(d) ? ' match' : '';
+
+    return `<div class="drug${matched}">
+      <div class="drug-head">
+        <div class="drug-names">
+          <div class="drug-zh">${esc(d.zh)}</div>
+          <div class="drug-en">${esc(d.en)}</div>
+        </div>
+        <div class="drug-badges">
+          <span class="b ${nhiCls}">${nhiLabel}</span>
+          <span class="b ${catCls}">${catLabel}</span>
+        </div>
+      </div>
+      <div class="d-sec">
+        <div class="d-sec-h"><span class="ic"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg></span>誰會用到</div>
+        <div class="d-target">${esc(d.target)}</div>
+      </div>
+      <div class="d-sec">
+        <div class="d-sec-h"><span class="ic"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>用途</div>
+        <div class="d-purpose">${esc(d.purpose)}</div>
+      </div>
+      ${d.sideEff ? `<div class="d-sec">
+        <div class="d-sec-h warn"><span class="ic"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/></svg></span>常見副作用</div>
+        <div class="d-side">${esc(d.sideEff)}</div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function updateChipCounts(){
+  const byNhi = {ALL:ALL_DRUGS.length, NHI:0, SELF:0};
+  const byType = {ALL:ALL_DRUGS.length, NSCLC_NS:0, NSCLC_SQ:0, SCLC:0};
+  for(const d of ALL_DRUGS){
+    byNhi[d.nhi] = (byNhi[d.nhi]||0) + 1;
+    for(const t of d.applyTo){
+      byType[t] = (byType[t]||0) + 1;
+    }
+  }
+  document.querySelectorAll('#nhi-chips .chip').forEach(c=>{
+    const k = c.dataset.nhi;
+    const old = c.querySelector('.ct'); if(old) old.remove();
+    if(byNhi[k] !== undefined){
+      const sp = document.createElement('span');
+      sp.className = 'ct';
+      sp.textContent = byNhi[k];
+      c.appendChild(sp);
+    }
+  });
+  document.querySelectorAll('#type-chips .chip').forEach(c=>{
+    const k = c.dataset.type;
+    const old = c.querySelector('.ct'); if(old) old.remove();
+    if(byType[k] !== undefined){
+      const sp = document.createElement('span');
+      sp.className = 'ct';
+      sp.textContent = byType[k];
+      c.appendChild(sp);
+    }
+  });
+}
+
+function setNhi(nhi){
+  curNhi = nhi;
+  document.querySelectorAll('#nhi-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.nhi===nhi));
+  render();
+}
+function setTypeF(type){
+  curType = type;
+  document.querySelectorAll('#type-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.type===type));
+  render();
+}
+function onSearch(){
+  curQ = (document.getElementById('q').value||'').trim();
+  document.getElementById('clear-btn').classList.toggle('show', !!curQ);
+  render();
+}
+function clearSearch(){
+  document.getElementById('q').value='';
+  curQ='';
+  document.getElementById('clear-btn').classList.remove('show');
+  render();
+}
+function clearMatch(){
+  matchType=''; matchStage=''; matchMut='';
+  document.getElementById('match-banner').style.display='none';
+  // 順便清 type filter（讓使用者看全部）
+  setTypeF('ALL');
+  // remove URL params
+  if(window.history && window.history.replaceState){
+    window.history.replaceState({}, '', location.pathname);
+  }
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// 從 URL query 讀使用者狀況
+function readQueryMatch(){
+  const sp = new URLSearchParams(location.search);
+  const t = sp.get('type') || '';
+  const s = sp.get('stage') || '';
+  const m = sp.get('mut') || '';
+  if(!t) return;
+  matchType = t;
+  matchStage = s;
+  matchMut = m;
+  // 顯示 banner
+  const typeLabel = ({NSCLC_NS:'非小細胞肺癌（非鱗）',NSCLC_SQ:'非小細胞肺癌（鱗狀）',SCLC:'小細胞肺癌'})[t] || t;
+  const stageLabel = ({EARLY:'早期',LOCAL:'局部晚期',META:'轉移期/擴散期'})[s] || s;
+  const mutLabel = m ? ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:'尚未檢測'})[m] || m : '';
+  const banner = document.getElementById('match-banner');
+  banner.style.display = '';
+  banner.className = 'match-banner';
+  banner.innerHTML = `
+    <span class="ic">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+    </span>
+    <div class="body">
+      <div class="title">已依您填寫的狀況優先顯示</div>
+      <div class="sub">${esc(typeLabel)}　·　${esc(stageLabel)}${mutLabel ? '　·　' + esc(mutLabel) : ''}</div>
+    </div>
+    <a class="clear" onclick="clearMatch()">清除</a>
+  `;
+  // 自動套用 type filter
+  if(t === 'NSCLC_NS' || t === 'NSCLC_SQ' || t === 'SCLC'){
+    curType = t;
+    document.querySelectorAll('#type-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.type===t));
+  }
+}
+
+// init
+readQueryMatch();
+render();
+</script>
+</body>
+</html>

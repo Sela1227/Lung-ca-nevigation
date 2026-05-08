@@ -4,166 +4,278 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>彰濱秀傳癌症中心 — 癌症臨床路徑</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<meta name="theme-color" content="#37516b">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  /* Nordic misty blue palette */
   --primary:#5B8FB9;--primary-hover:#4A7A9E;--primary-light:rgba(91,143,185,0.10);
   --sidebar-bg:#37516b;
   --bg:#F7F9FB;--bg-card:#FFFFFF;--bg-hover:#F1F4F8;
   --border:#E2E8F0;--border-light:#EDF1F5;
   --text:#2C3E50;--text-secondary:#5A6B7C;--text-hint:#8A9BAA;
-  --radius:16px;
+  --radius:14px;--teal:#0d9488;--teal-light:rgba(13,148,136,0.08);
 }
-body{
-  font-family:'Noto Sans TC',system-ui,sans-serif;
-  background:var(--bg);color:var(--text);
-  min-height:100vh;display:flex;flex-direction:column;
-}
+html,body{min-height:100%}
+body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;line-height:1.55}
 
-/* ── Header ── */
+/* ── Header ── 緊湊版 ── */
 .header{
   background:linear-gradient(135deg,#37516b 0%,#4A7A9E 55%,#5B8FB9 100%);
-  color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden;
+  color:#fff;padding:24px 20px 16px;text-align:center;position:relative;overflow:hidden;
+  flex-shrink:0;
 }
-.header::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at 15% 85%,rgba(255,255,255,.06) 0%,transparent 50%),
-             radial-gradient(circle at 85% 15%,rgba(255,255,255,.04) 0%,transparent 40%);
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 85%,rgba(255,255,255,.06) 0%,transparent 50%),radial-gradient(circle at 85% 15%,rgba(255,255,255,.04) 0%,transparent 40%)}
+.hdr-inner{position:relative;z-index:1;max-width:600px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:10px}
+.logo-icon{width:42px;height:42px;background:rgba(255,255,255,.14);border-radius:11px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2)}
+.hdr-title{display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.hospital-name{font-size:22px;font-weight:900;letter-spacing:1.5px;text-shadow:0 1px 4px rgba(0,0,0,.12)}
+.subtitle{font-size:10.5px;opacity:.74;font-weight:500;letter-spacing:2px;margin-top:3px}
+@media(min-width:640px){
+  .hdr-inner{flex-direction:row;gap:14px}
+  .hdr-title{align-items:flex-start}
 }
-.header-inner{position:relative;z-index:1;max-width:800px;margin:0 auto}
-.logo-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:8px}
-.logo-icon{
-  width:60px;height:60px;background:rgba(255,255,255,.12);border-radius:18px;
-  display:flex;align-items:center;justify-content:center;font-size:30px;
-  backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);
-}
-.hospital-name{font-size:28px;font-weight:900;letter-spacing:1.5px;text-shadow:0 2px 8px rgba(0,0,0,.12)}
-.subtitle{font-size:13px;opacity:.82;font-weight:400;margin-top:6px;letter-spacing:1.5px}
 
 /* ── Main ── */
-.main{flex:1;max-width:1040px;width:100%;margin:-40px auto 0;padding:0 24px 48px;position:relative;z-index:2}
+.main{
+  flex:1;width:100%;max-width:980px;margin:0 auto;
+  padding:20px 18px 24px;display:flex;flex-direction:column;gap:16px;
+}
+@media(max-width:480px){.main{padding:16px 12px 16px}}
 
-/* ── Grid ── */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+/* ── Role selector ── */
+.role-section{display:flex;flex-direction:column;gap:10px}
+.role-label{font-size:11.5px;font-weight:800;color:var(--text-hint);letter-spacing:1.5px;text-align:center}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.role-card{
+  background:var(--bg-card);border:2px solid var(--border);border-radius:var(--radius);
+  padding:16px 14px;cursor:pointer;text-align:center;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.role-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(91,143,185,.10)}
+.role-card.active-pro{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.role-card.active-pat{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-light)}
+.role-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:transform .18s;flex-shrink:0}
+.role-card:hover .role-icon{transform:scale(1.06)}
+.role-icon.pro{background:var(--primary-light);color:var(--primary)}
+.role-icon.pat{background:var(--teal-light);color:var(--teal)}
+.role-icon svg{width:24px;height:24px}
+.role-title{font-size:16px;font-weight:800;letter-spacing:.3px}
+.role-sub{font-size:11.5px;color:var(--text-hint);line-height:1.55}
+@media(max-width:380px){
+  .role-grid{grid-template-columns:1fr}
+  .role-card{flex-direction:row;text-align:left;padding:12px 14px;gap:12px}
+  .role-card .role-info{flex:1;min-width:0}
+}
 
-/* ── Card ── */
+/* ── Cancer grid ── */
+.section-panel{display:none;animation:fadeSlide .3s ease}
+.section-panel.show{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-size:12.5px;font-weight:800;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:7px;letter-spacing:.5px}
+.section-title .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-pro{background:var(--primary)}
+.dot-pat{background:var(--teal)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+
+/* ── Cards ── */
 .card{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:28px 20px 22px;text-align:center;position:relative;overflow:hidden;
-  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:14px 12px 12px;text-align:center;position:relative;overflow:hidden;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
 }
 .card.active{cursor:pointer}
-.card.active:hover{
-  transform:translateY(-3px);
-  box-shadow:0 12px 28px rgba(91,143,185,.14);
-  border-color:var(--primary);
-}
-.card.wip{opacity:.5;cursor:default}
-.card-icon{
-  width:64px;height:64px;border-radius:18px;margin:0 auto 18px;
-  display:flex;align-items:center;justify-content:center;font-size:28px;
-  transition:transform .22s ease;
-  background:var(--primary-light);color:var(--primary);
-}
+.card.active:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(91,143,185,.10);border-color:var(--primary)}
+.card.active.pat-card:hover{border-color:var(--teal)}
+.card.wip{opacity:.42;cursor:default}
+.card-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;transition:transform .18s;flex-shrink:0}
 .card.active:hover .card-icon{transform:scale(1.06)}
-.card-title{font-size:17px;font-weight:800;margin-bottom:4px;color:var(--text);letter-spacing:.3px}
-.card-sub{font-size:12px;color:var(--text-hint);line-height:1.5}
-.card-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  margin-top:14px;padding:4px 12px;border-radius:99px;
-  font-size:11px;font-weight:700;letter-spacing:.3px;
-}
-.badge-active{background:var(--primary-light);color:var(--primary);border:1px solid rgba(91,143,185,.25)}
+.icon-pro{background:var(--primary-light);color:var(--primary)}
+.icon-pat{background:var(--teal-light);color:var(--teal)}
+.card-icon svg{width:22px;height:22px}
+.card-title{font-size:13.5px;font-weight:800;letter-spacing:.3px;line-height:1.25}
+.card-sub{font-size:10.5px;color:var(--text-hint);line-height:1.45}
+.card-badge{display:inline-flex;align-items:center;gap:3px;margin-top:4px;padding:2px 8px;border-radius:99px;font-size:9.5px;font-weight:700;letter-spacing:.2px}
+.badge-ready{background:var(--primary-light);color:var(--primary);border:1px solid rgba(91,143,185,.22)}
+.badge-ready-pat{background:var(--teal-light);color:var(--teal);border:1px solid rgba(13,148,136,.22)}
 .badge-wip{background:var(--bg-hover);color:var(--text-hint);border:1px solid var(--border-light)}
 
-/* ── Footer ── */
-.footer{
-  text-align:center;padding:28px 20px;font-size:12px;color:var(--text-hint);
-  border-top:1px solid var(--border-light);background:var(--bg-card);line-height:1.9;
+/* ── Quick tools ── 改成跟其他區同節奏 */
+.tools-section{display:flex;flex-direction:column;gap:10px}
+.qt-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);
+  transition:transform .18s,box-shadow .18s,border-color .18s;
 }
-.footer strong{color:var(--text-secondary);font-weight:600}
+.qt-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(91,143,185,.10);border-color:var(--primary)}
+.qt-ic{width:34px;height:34px;border-radius:9px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qt-body{flex:1;min-width:0}
+.qt-name{font-size:13.5px;font-weight:800;letter-spacing:.3px;color:var(--text)}
+.qt-sub{font-size:11px;color:var(--text-hint);margin-top:1px;line-height:1.45}
+.qt-arrow{color:var(--text-hint);flex-shrink:0;transition:transform .18s,color .18s}
+.qt-card:hover .qt-arrow{transform:translateX(3px);color:var(--primary)}
 
-/* ── Responsive ── */
-@media(max-width:640px){
-  .header{padding:36px 16px 52px}
-  .hospital-name{font-size:22px}
-  .logo-icon{width:48px;height:48px;font-size:24px;border-radius:14px}
-  .main{margin-top:-28px;padding:0 14px 32px}
-  .grid{grid-template-columns:repeat(2,1fr);gap:12px}
-  .card{padding:22px 14px 18px}
-  .card-icon{width:52px;height:52px;border-radius:14px;font-size:24px;margin-bottom:12px}
-  .card-title{font-size:15px}
-  .card-sub{font-size:11px}
-  .card-badge{font-size:10px;padding:3px 10px;margin-top:10px}
-}
-@media(max-width:380px){
-  .grid{grid-template-columns:1fr 1fr;gap:10px}
-  .card{padding:18px 10px 14px}
-  .card-icon{width:46px;height:46px;font-size:20px}
-  .card-title{font-size:14px}
-}
+/* ── Footer ── */
+.footer{flex-shrink:0;text-align:center;padding:14px 18px;font-size:11px;color:var(--text-hint);border-top:1px solid var(--border-light);background:var(--bg-card);line-height:1.7}
+.footer strong{color:var(--text-secondary);font-weight:700}
+.footer .sep{margin:0 6px;opacity:.4}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-inner">
-    <div class="logo-row">
-      <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
-      <div>
-        <div class="hospital-name">彰濱秀傳癌症中心</div>
-        <div class="subtitle">CANCER NAVIGATION SYSTEM</div>
-      </div>
+  <div class="hdr-inner">
+    <div class="logo-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V8l7-4 7 4v13"/><path d="M5 21h14"/><path d="M9 21v-5h6v5"/><path d="M12 8v4M10 10h4"/></svg>
+    </div>
+    <div class="hdr-title">
+      <div class="hospital-name">彰濱秀傳癌症中心</div>
+      <div class="subtitle">CANCER NAVIGATION SYSTEM</div>
     </div>
   </div>
 </div>
 
 <div class="main">
-  <div class="grid" id="grid"></div>
+  <!-- Role selector -->
+  <div class="role-section">
+    <div class="role-label">請選擇使用身份</div>
+    <div class="role-grid">
+      <div class="role-card" id="role-pro" onclick="selectRole('pro')">
+        <div class="role-icon pro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 21c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M9 12.5v3M11 14h-4"/></svg>
+        </div>
+        <div class="role-info">
+          <div class="role-title">醫護專業版</div>
+          <div class="role-sub">完整臨床路徑導航 · 分期、決策、追蹤</div>
+        </div>
+      </div>
+      <div class="role-card" id="role-pat" onclick="selectRole('pat')">
+        <div class="role-icon pat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 21c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/></svg>
+        </div>
+        <div class="role-info">
+          <div class="role-title">民眾簡易版</div>
+          <div class="role-sub">瞭解我的治療計畫 · 簡單易懂的照護指引</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Professional cancer grid -->
+  <div class="section-panel" id="panel-pro">
+    <div class="section-title"><span class="dot dot-pro"></span> 選擇癌別 — 醫護專業版</div>
+    <div class="grid" id="grid-pro"></div>
+  </div>
+
+  <!-- Patient cancer grid -->
+  <div class="section-panel" id="panel-pat">
+    <div class="section-title"><span class="dot dot-pat"></span> 選擇癌別 — 民眾簡易版</div>
+    <div class="grid" id="grid-pat"></div>
+  </div>
+
+  <!-- Quick tools (always visible regardless of role) -->
+  <div class="tools-section">
+    <div class="section-title"><span class="dot" style="background:var(--text-hint)"></span> 快速工具</div>
+    <a href="lung/drugs-pro.html" class="qt-card">
+      <span class="qt-ic" style="background:var(--primary-light);color:var(--primary)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+      </span>
+      <div class="qt-body">
+        <div class="qt-name">健保肺癌藥物總整理（醫護版）</div>
+        <div class="qt-sub">28 種藥物 · NCCN line / 健保事審 / 必試藥 / cross-reference</div>
+      </div>
+      <svg class="qt-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    <a href="lung/drugs-patient.html" class="qt-card">
+      <span class="qt-ic" style="background:var(--teal-light);color:var(--teal)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      </span>
+      <div class="qt-body">
+        <div class="qt-name">肺癌常用藥物（民眾版）</div>
+        <div class="qt-sub">用途 · 健保是否給付 · 常見副作用</div>
+      </div>
+      <svg class="qt-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+  </div>
 </div>
 
 <div class="footer">
-  <strong>彰濱秀傳紀念醫院 癌症中心</strong><br>
-  Cancer Navigation V2.4.0 &nbsp;·&nbsp; 僅供院內臨床人員使用
+  <strong>彰濱秀傳紀念醫院 癌症中心</strong>
+  <span class="sep">·</span>
+  Cancer Navigation V2.10.0
+  <span class="sep">·</span>
+  僅供院內臨床人員使用
 </div>
 
 <script>
 const CANCERS = [
-  {id:'lung',  name:'肺癌',     icon:'fa-solid fa-lungs',         url:'lung/', active:true},
-  {id:'breast',name:'乳癌',     icon:'fa-solid fa-ribbon',        url:'breast/'},
-  {id:'crc',   name:'大腸直腸癌',icon:'fa-solid fa-bacteria',     url:'crc/'},
-  {id:'esoph', name:'食道癌',    icon:'fa-solid fa-utensils',      url:'esoph/'},
-  {id:'hn',    name:'頭頸癌',    icon:'fa-solid fa-head-side-mask',url:'hn/'},
-  {id:'liver', name:'肝癌',      icon:'fa-solid fa-shield-virus',  url:'liver/'},
-  {id:'prost', name:'攝護腺癌',  icon:'fa-solid fa-mars',          url:'prost/'},
-  {id:'bladder',name:'膀胱癌',   icon:'fa-solid fa-droplet',       url:'bladder/'},
+  {id:'lung',  name:'肺癌',     active:true,
+    svg:`<path d="M12 4v9"/><path d="M5 9c0-1.7 1.3-3 3-3s4 1.5 4 4v8c-1.5 0-3-.5-4-1.5C6.5 15 5 13.5 5 9z"/><path d="M19 9c0-1.7-1.3-3-3-3s-4 1.5-4 4v8c1.5 0 3-.5 4-1.5 1.5-1.5 3-3 3-7.5z"/>`,
+    proUrl:'lung/', patUrl:'lung/patient.html'},
+  {id:'breast', name:'乳癌',
+    svg:`<path d="M5 9c1-3 4-5 7-5s6 2 7 5c.5 1.5.4 3.4-.5 5C17 16 14 19 12 19s-5-3-6.5-5C4.6 12.4 4.5 10.5 5 9z"/><circle cx="12" cy="11.5" r="1.6"/><path d="M12 9.9V8M10.5 11.5h-2M12 13.1V15M13.5 11.5h2"/>`,
+    proUrl:'breast/', patUrl:'breast/patient.html'},
+  {id:'crc',   name:'大腸直腸癌',
+    svg:`<path d="M6 5c2 0 3 1.5 3 3.5S7.5 11 6 11s-3 1-3 3 1 3 3 3h6c2 0 3-1 3-3s-1-3-3-3-3-1-3-3 1.5-3 3.5-3"/><circle cx="18" cy="6" r="1"/><circle cx="18" cy="14.5" r="1"/>`,
+    proUrl:'crc/', patUrl:'crc/patient.html'},
+  {id:'esoph', name:'食道癌',
+    svg:`<path d="M10 3v9"/><path d="M14 3v9"/><path d="M10 12c0 1.5 1 3 2 3s2-1.5 2-3"/><path d="M9.5 15c-1 1-2 2.5-2 4 0 1.5 1.5 3 3 3h3c1.5 0 3-1.5 3-3 0-1.5-1-2.5-2-4"/>`,
+    proUrl:'esoph/', patUrl:'esoph/patient.html'},
+  {id:'hn',    name:'頭頸癌',
+    svg:`<path d="M14 4c2.5 0 4 2 4 4.5 0 1-.3 2-.8 2.7L17 12c0 1.5-.5 2.5-1.5 3v3l1.5 2H7l1.5-2v-3.5c-1.7-.7-2.5-2.2-2.5-4 0-1 .4-2 1-3"/><path d="M9 8.5c0-1.5 1.5-3 3-3"/>`,
+    proUrl:'hn/', patUrl:'hn/patient.html'},
+  {id:'liver', name:'肝癌',
+    svg:`<path d="M3 9c0-1.5 1-3 3-3 4 0 6 2 8 2 3 0 5-1 6.5 1 1.2 1.6 1 4 .5 6-1 3.5-4 5.5-7.5 5.5-3 0-5-1-6.5-2.5C5 16.5 3 13 3 9z"/><path d="M9 11.5c0 1.5 1 2.5 2.5 2.5"/>`,
+    proUrl:'liver/', patUrl:'liver/patient.html'},
+  {id:'prost', name:'攝護腺癌',
+    svg:`<path d="M12 4c-3 0-5 2-5 5 0 4 2 7 5 11 3-4 5-7 5-11 0-3-2-5-5-5z"/><circle cx="12" cy="9.5" r="1.5"/><path d="M9.5 13.5h5"/>`,
+    proUrl:'prost/', patUrl:'prost/patient.html'},
+  {id:'bladder',name:'膀胱癌',
+    svg:`<path d="M11 4v3.5"/><path d="M13 4v3.5"/><path d="M5 12c0-2.5 2.5-4.5 7-4.5s7 2 7 4.5v3c0 3-3 5-7 5s-7-2-7-5z"/><path d="M9 14c1 1 2 1.5 3 1.5s2-.5 3-1.5"/>`,
+    proUrl:'bladder/', patUrl:'bladder/patient.html'},
 ];
 
-const grid = document.getElementById('grid');
-CANCERS.forEach(c=>{
-  const isActive = c.active;
-  const card = document.createElement('div');
-  card.className = `card ${isActive?'active':'wip'}`;
-  if(isActive) card.onclick = ()=> location.href = c.url;
-  card.innerHTML = `
-    <div class="card-icon">
-      <i class="${c.icon}"></i>
-    </div>
-    <div class="card-title">${c.name}</div>
-    <div class="card-sub">${isActive?'臨床路徑導航':'即將上線'}</div>
-    <div class="card-badge ${isActive?'badge-active':'badge-wip'}">
-      <i class="fa-solid ${isActive?'fa-circle-check':'fa-hammer'}" style="font-size:10px"></i>
-      ${isActive?'可使用':'建構中'}
-    </div>
-  `;
-  grid.appendChild(card);
-});
+function iconSvg(svgPath, size){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${svgPath}</svg>`;
+}
+
+function buildGrid(gridId, mode){
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  const isPat = mode === 'pat';
+  CANCERS.forEach(c => {
+    const isActive = c.active;
+    const card = document.createElement('div');
+    card.className = `card ${isActive?'active':'wip'}${isPat?' pat-card':''}`;
+    if(isActive) card.onclick = () => location.href = isPat ? c.patUrl : c.proUrl;
+    const checkSvg = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L20 7"/></svg>`;
+    const hammerSvg = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 7L4 14l3 3 7-7"/></svg>`;
+    card.innerHTML = `
+      <div class="card-icon ${isPat?'icon-pat':'icon-pro'}">${iconSvg(c.svg, 22)}</div>
+      <div class="card-title">${c.name}</div>
+      <div class="card-sub">${isActive?(isPat?'我的治療計畫':'臨床路徑導航'):'即將上線'}</div>
+      <div class="card-badge ${isActive?(isPat?'badge-ready-pat':'badge-ready'):'badge-wip'}">
+        ${isActive?checkSvg:hammerSvg}
+        ${isActive?'可使用':'建構中'}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+buildGrid('grid-pro', 'pro');
+buildGrid('grid-pat', 'pat');
+
+let currentRole = null;
+function selectRole(role){
+  currentRole = role;
+  document.getElementById('role-pro').className = `role-card${role==='pro'?' active-pro':''}`;
+  document.getElementById('role-pat').className = `role-card${role==='pat'?' active-pat':''}`;
+  document.getElementById('panel-pro').className = `section-panel${role==='pro'?' show':''}`;
+  document.getElementById('panel-pat').className = `section-panel${role==='pat'?' show':''}`;
+}
 </script>
 </body>
 </html>

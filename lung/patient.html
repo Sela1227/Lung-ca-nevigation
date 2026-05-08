@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d9488">
+<title>肺癌路徑查詢 — 彰濱秀傳癌症中心</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#0d9488; --teal2:#0f766e; --teal-d:#115e59;
+  --teal-bg:rgba(13,148,136,.08); --teal-bdr:rgba(13,148,136,.22);
+  --teal-soft:#e6f5f3;
+  --bg:#F4F8F8; --card:#FFF; --bdr:#D8E5E4; --bdr2:#E8EFEE;
+  --tx:#1e3a3a; --tx2:#5A6B6B; --tx3:#8A9595;
+  --red:#dc2626; --red-bg:#FEF2F2;
+  --amber:#d97706; --amber-bg:#fef3c7;
+  --green:#059669;
+  --self:#94703f; --self-bg:#fef9e7;
+
+  /* layout heights — keep every page the same size */
+  --hdr-h:72px;
+  --bar-h:60px;
+}
+@media(max-width:480px){
+  :root{ --hdr-h:60px; --bar-h:56px; }
+}
+
+html,body{height:100%}
+body{
+  font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--tx);font-size:14px;line-height:1.55;
+  display:flex;flex-direction:column;
+  height:100dvh;height:100vh;       /* fallback for older safari */
+  overflow:hidden;
+}
+
+/* ── Header ── */
+.hdr{
+  flex-shrink:0;height:var(--hdr-h);
+  background:linear-gradient(135deg,#115e59 0%,#0f766e 50%,#0d9488 100%);
+  color:#fff;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;position:relative;
+}
+.hdr-l{display:flex;align-items:center;gap:8px;min-width:0}
+.hdr-l .home-btn{
+  width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.14);
+  display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;
+}
+.hdr-l .home-btn:hover{background:rgba(255,255,255,.24)}
+.hdr-title{min-width:0}
+.hdr-title h1{font-size:15px;font-weight:900;letter-spacing:.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title p{font-size:10.5px;opacity:.78;letter-spacing:.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:481px){
+  .hdr-title h1{font-size:17px}
+  .hdr-title p{font-size:11.5px}
+}
+
+/* progress dots inline in header right side */
+.hdr-progress{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* V2.8.10: 藥物查詢按鈕 — 白底青字，跳出 header 背景明顯 */
+.drug-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 11px;border-radius:9px;
+  background:#fff;color:var(--teal-d);
+  text-decoration:none;font-family:inherit;font-size:12.5px;font-weight:800;letter-spacing:.3px;
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+  transition:transform .15s,box-shadow .2s,background .2s;
+  white-space:nowrap;
+}
+.drug-btn:hover{background:var(--teal-soft);transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.drug-btn:active{transform:scale(.96)}
+.drug-btn svg{flex-shrink:0}
+@media(max-width:380px){
+  /* 小手機：只顯示 icon，省空間 */
+  .drug-btn{padding:7px 9px}
+  .drug-btn-lbl{display:none}
+}
+.pdot{width:18px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);transition:background .2s,width .2s}
+.pdot.active{background:#fff;width:22px}
+.pdot.done{background:rgba(255,255,255,.65)}
+@media(max-width:380px){
+  .pdot{width:14px;height:4px}
+  .pdot.active{width:18px}
+}
+
+/* ── Main: flex:1, fills the rest, NO scrolling for Q-pages ── */
+.main{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:600px;margin:0 auto;padding:10px 12px 8px}
+
+/* Each page fills the main area exactly */
+.page{display:none;flex:1;min-height:0;flex-direction:column}
+.page.active{display:flex;animation:fadeIn .22s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* The card that holds question content */
+.cd{
+  flex:1;min-height:0;
+  background:var(--card);border:1px solid var(--bdr);border-radius:14px;
+  padding:14px 14px 12px;
+  box-shadow:0 2px 10px rgba(15,118,110,.05);
+  display:flex;flex-direction:column;gap:10px;
+  overflow:hidden;
+}
+
+/* V2.9.4: 手機版全頁解鎖捲動
+   問題：Q1-Q4 桌機鎖屏 OK，但手機 (≤640px) 內容超出時 .cd / .main 都 overflow:hidden 切掉看不見
+   修：手機加 body.questioning class 解開 body / main / page / cd 的 overflow，內容直接堆疊可向下捲
+   桌機 ≥641px 保留鎖屏行為（內容寬鬆夠裝）
+   showPage 進 Q1-Q4 時加 body.questioning，進 summary 時加 body.summary（已存在），切離時各自移除 */
+@media(max-width:640px){
+  body.questioning{
+    height:auto;min-height:100dvh;min-height:100vh;
+    overflow:auto;-webkit-overflow-scrolling:touch;
+  }
+  body.questioning .main{flex:1 0 auto;overflow:visible}
+  body.questioning .page.active{flex:none;min-height:0}
+  body.questioning .cd{flex:none;overflow:visible}
+  /* 各 Q 頁內部容器也解鎖，避免 grid/rows 被截 */
+  body.questioning .tnm-wrap,
+  body.questioning .tnm-rows,
+  body.questioning .sclc-wrap,
+  body.questioning .sclc-grid,
+  body.questioning .mut-grid,
+  body.questioning .brain-grid,
+  body.questioning .type-grid{
+    flex:none;overflow:visible;min-height:0;
+  }
+  /* actbar sticky 貼底（與 summary 模式一致） */
+  body.questioning .actbar{position:sticky;bottom:0;z-index:50}
+}
+
+/* Q-header inside card */
+.cd-head{flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:1px solid var(--bdr2);padding-bottom:8px}
+.cd-head-l{min-width:0;flex:1}
+.cd-step{font-size:10px;font-weight:800;color:var(--teal);letter-spacing:1.5px}
+.cd-q{font-size:16px;font-weight:900;color:var(--tx);letter-spacing:.5px;margin-top:1px}
+.cd-sub{font-size:11.5px;color:var(--tx2);margin-top:2px;line-height:1.45}
+.cd-sub a{color:var(--teal);font-weight:700;text-decoration:underline;cursor:pointer}
+.cd-head-r{font-size:11px;color:var(--tx3);text-align:right;flex-shrink:0;line-height:1.3}
+
+/* ── Q1: type — 2×2 grid (mobile 1col but compact) ── */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;min-height:0}
+.type-grid .btn-type{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:14px 10px;background:var(--card);border:2px solid var(--bdr);border-radius:11px;cursor:pointer;transition:transform .15s,border-color .15s,background .15s,box-shadow .15s;font-family:inherit;line-height:1.35}
+.type-grid .btn-type:hover{border-color:var(--teal);background:var(--teal-soft)}
+.type-grid .btn-type:active{transform:scale(.98)}
+.type-grid .btn-type.selected{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.type-grid .btn-type .ic{width:38px;height:38px;border-radius:11px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.type-grid .btn-type.muted{border-style:dashed}
+.type-grid .btn-type.muted .ic{background:#F1F4F4;color:var(--tx3)}
+.type-grid .bt-t{font-size:13.5px;font-weight:800;color:var(--tx);letter-spacing:.3px}
+.type-grid .bt-s{font-size:10.5px;color:var(--tx3);line-height:1.4}
+.type-grid .btn-type.selected .bt-t{color:var(--teal-d)}
+@media(max-width:380px){
+  .type-grid{grid-template-columns:1fr}
+  .type-grid .btn-type{flex-direction:row;text-align:left;padding:8px 10px;gap:9px}
+  .type-grid .btn-type .ic{width:32px;height:32px}
+  .type-grid .bt-info{flex:1;min-width:0}
+}
+
+/* Optional name/code field (Q1) */
+/* Optional name/code field (legacy, V2.9.0 起改用 info-row) */
+.opt-fld{flex-shrink:0;background:var(--bg);border:1px dashed var(--bdr);border-radius:9px;padding:7px 10px;display:flex;gap:8px;align-items:center}
+.opt-fld-lbl{font-size:10.5px;color:var(--tx3);flex-shrink:0;font-weight:600;letter-spacing:.3px}
+.opt-fld input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:13px;font-family:inherit;color:var(--tx);padding:2px 0;border-bottom:1px dotted var(--bdr2)}
+.opt-fld input::placeholder{color:var(--tx3);font-size:12px}
+.opt-fld input:focus{border-bottom-color:var(--teal)}
+
+/* V2.9.0: 基本資料頁 (Q1) */
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0}
+@media(max-width:380px){.info-row{grid-template-columns:1fr}}
+.info-fld{background:var(--bg);border:1px solid var(--bdr2);border-radius:9px;padding:7px 11px;display:flex;flex-direction:column;gap:2px}
+.info-lbl{font-size:10px;color:var(--tx3);font-weight:700;letter-spacing:.5px}
+.info-fld input{border:none;outline:none;background:transparent;font-size:16px;font-family:inherit;color:var(--tx);padding:2px 0;border-bottom:1px dotted var(--bdr2);scroll-margin-bottom:80px}
+.info-fld input:focus{border-bottom-color:var(--teal)}
+.info-fld input::placeholder{color:var(--tx3);font-size:12.5px}
+@media(min-width:481px){
+  .info-fld input{font-size:13.5px}
+  .info-fld input::placeholder{font-size:12px}
+}
+
+.info-block{flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.info-block-lbl{display:flex;align-items:baseline;gap:8px;padding-left:2px}
+.info-block-tag{font-size:11.5px;font-weight:800;color:var(--tx);letter-spacing:.3px}
+.info-block-hint{font-size:10px;color:var(--tx3)}
+
+/* 年齡 2 選 */
+.age-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.age-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:11px;padding:9px 8px;
+  cursor:pointer;font-family:inherit;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.3;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.age-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.age-btn:active{transform:scale(.97)}
+.age-btn.selected{border-color:var(--teal);background:var(--teal-soft)}
+.age-btn b{font-size:14px;font-weight:900;color:var(--tx)}
+.age-btn.selected b{color:var(--teal-d)}
+.age-btn i{font-size:10.5px;color:var(--tx3);font-style:normal;font-weight:600}
+
+/* ECOG 3 選 */
+.ecog-grid{display:flex;flex-direction:column;gap:6px}
+.ecog-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:11px;
+  padding:9px 11px;cursor:pointer;font-family:inherit;text-align:left;
+  display:flex;align-items:center;gap:11px;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.ecog-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.ecog-btn:active{transform:scale(.985)}
+.ecog-btn.selected{border-color:var(--teal);background:var(--teal-soft)}
+.ecog-btn .ic{width:38px;height:38px;border-radius:11px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ecog-info{flex:1;min-width:0}
+.ecog-tt{font-size:13.5px;font-weight:800;color:var(--tx);letter-spacing:.3px;line-height:1.3}
+.ecog-btn.selected .ecog-tt{color:var(--teal-d)}
+.ecog-ss{font-size:11px;color:var(--tx2);line-height:1.4;margin-top:1px}
+
+/* ── Q2: TNM ── */
+/* V2.10.0: 期別來源切換（臨床 vs 病理） */
+.stage-mode-row{flex-shrink:0;display:flex;gap:6px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:4px;margin-bottom:10px}
+.stage-mode-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:7px 6px;border:none;border-radius:7px;background:transparent;color:var(--tx2);cursor:pointer;transition:.15s;font-family:inherit}
+.stage-mode-btn .lbl{font-size:13px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:5px}
+.stage-mode-btn .ss{font-size:10.5px;font-weight:600;opacity:.72;letter-spacing:.2px}
+.stage-mode-btn:hover{color:var(--teal-d)}
+.stage-mode-btn.selected{background:var(--teal);color:#fff;box-shadow:0 1px 4px rgba(13,148,136,.28)}
+.stage-mode-btn.selected:hover{color:#fff}
+.stage-mode-btn.selected .ss{opacity:.92}
+.stage-mode-btn .ic{display:inline-flex;width:14px;height:14px}
+.stage-mode-btn .ic svg{width:100%;height:100%}
+@media(max-width:480px){
+  .stage-mode-btn{padding:6px 4px}
+  .stage-mode-btn .lbl{font-size:12px}
+  .stage-mode-btn .ss{font-size:10px}
+  .stage-mode-row{margin-bottom:8px}
+}
+/* postOp 視覺暗示：tnm-foot 與 cd-step 加 p- 前綴 */
+.cd.post-op .cd-step{color:var(--teal-d)}
+.tnm-foot.post-op .l{color:var(--teal-d);font-weight:900}
+.tnm-foot.post-op{border-color:var(--teal-bdr);background:var(--teal-soft)}
+
+/* SCLC brain/spine-met grid */
+.brain-grid{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.brain-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:12px;
+  padding:14px 14px;cursor:pointer;font-family:inherit;text-align:left;
+  display:flex;align-items:center;gap:12px;
+  transition:transform .15s,border-color .15s,background .15s,box-shadow .15s;
+}
+.brain-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.brain-btn:active{transform:scale(.985)}
+.brain-btn.selected{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.brain-btn .ic{width:46px;height:46px;border-radius:12px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brain-btn.muted{border-style:dashed}
+.brain-btn.muted .ic{background:#F1F4F4;color:var(--tx3)}
+.brain-info{flex:1;min-width:0}
+.brain-tt{font-size:14.5px;font-weight:900;color:var(--tx);letter-spacing:.3px;margin-bottom:2px}
+.brain-btn.selected .brain-tt{color:var(--teal-d)}
+.brain-ss{font-size:11.5px;color:var(--tx2);line-height:1.5}
+.tnm-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.tnm-rows{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+
+/* SCLC 兩段式 */
+.sclc-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.sclc-grid{flex:1;min-height:0;display:grid;grid-template-rows:1fr 1fr;gap:10px}
+@media(max-width:640px){
+  body.questioning .sclc-grid{grid-template-rows:auto auto}
+}
+.sclc-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:13px;
+  padding:16px 16px;cursor:pointer;font-family:inherit;text-align:left;
+  display:flex;align-items:center;gap:14px;
+  transition:transform .15s,border-color .15s,background .15s,box-shadow .15s;
+}
+.sclc-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.sclc-btn:active{transform:scale(.985)}
+.sclc-btn.selected{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.sclc-btn .ic{width:50px;height:50px;border-radius:13px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sclc-info{flex:1;min-width:0}
+.sclc-tt{font-size:16px;font-weight:900;color:var(--tx);letter-spacing:.3px;margin-bottom:3px}
+.sclc-btn.selected .sclc-tt{color:var(--teal-d)}
+.sclc-ss{font-size:11.5px;color:var(--tx2);line-height:1.5}
+
+.mode-link{flex-shrink:0;text-align:center;padding:4px 0}
+.mode-link a{font-size:11.5px;color:var(--tx3);text-decoration:underline;cursor:pointer;font-weight:600}
+.mode-link a:hover{color:var(--teal)}
+.tnm-row{background:var(--bg);border:1px solid var(--bdr2);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:10px}
+.tnm-letter{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--teal);color:#fff;font-size:14px;font-weight:900;flex-shrink:0}
+.tnm-letter[data-axis="n"]{background:#0f766e}
+.tnm-letter[data-axis="m"]{background:#115e59}
+.tnm-meta{flex-shrink:0;width:62px}
+.tnm-name{font-size:11.5px;font-weight:800;color:var(--tx);line-height:1.2}
+.tnm-hint{font-size:10px;color:var(--tx3);line-height:1.3;margin-top:1px}
+.tnm-btns{flex:1;display:grid;gap:5px;min-width:0}
+.tnm-btns[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+.tnm-btns[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
+.tnm-btns[data-cols="9"]{grid-template-columns:repeat(9,1fr)}
+.tnm-btns[data-cols="5"]{grid-template-columns:repeat(5,1fr)}
+
+/* V2.9.4: 小手機把 9 欄/5 欄 TNM 進階壓回 4 欄 wrap 多行（避免 25px 寬擠按鈕） */
+@media(max-width:480px){
+  .tnm-btns[data-cols="9"]{grid-template-columns:repeat(4,1fr)}
+  .tnm-btns[data-cols="5"]{grid-template-columns:repeat(4,1fr)}
+  /* tnm-row 直立排版：letter+meta 一排，按鈕拉到下一排佔滿 */
+  .tnm-row{flex-wrap:wrap}
+  .tnm-row .tnm-btns{flex-basis:100%}
+}
+.tnm-btn{padding:8px 4px;border:1.5px solid var(--bdr);border-radius:8px;background:var(--card);font-family:inherit;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s,background .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:42px}
+.tnm-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.tnm-btn:active{transform:scale(.95)}
+.tnm-btn.selected{border-color:var(--teal);background:var(--teal-soft);box-shadow:inset 0 0 0 1.5px var(--teal)}
+.tnm-btn b{font-size:12.5px;font-weight:900;color:var(--tx);letter-spacing:.2px;line-height:1}
+.tnm-btn.selected b{color:var(--teal-d)}
+.tnm-btn i{font-size:9.5px;color:var(--tx3);font-style:normal;line-height:1.15;font-weight:600}
+.tnm-btn.selected i{color:var(--teal2)}
+
+/* Q2 footer: stage preview + skip-link */
+.tnm-foot{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--teal-bg);border:1px dashed var(--teal-bdr);border-radius:10px;padding:7px 12px;margin-top:auto}
+.tnm-foot.empty{background:transparent;border-color:var(--bdr2)}
+.tnm-foot .l{font-size:11px;font-weight:700;color:var(--tx3);letter-spacing:.5px}
+.tnm-foot.empty .l{color:var(--tx3)}
+.tnm-foot .v{font-size:18px;font-weight:900;color:var(--teal-d);letter-spacing:.5px}
+.tnm-foot .v.empty{color:var(--tx3);font-size:13px}
+.tnm-foot .skip{font-size:11px;color:var(--tx2);text-decoration:underline;cursor:pointer;font-weight:600}
+
+/* ── Q3: mutation grid (3-col desktop, 2-col mobile) ── */
+.mut-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:7px;overflow:hidden}
+@media(max-width:480px){
+  .mut-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+}
+.mut-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 6px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s,background .15s;font-family:inherit;min-height:0}
+.mut-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.mut-btn:active{transform:scale(.97)}
+.mut-btn.selected{border-color:var(--teal);background:var(--teal-soft);box-shadow:inset 0 0 0 1.5px var(--teal)}
+.mut-btn.muted{border-style:dashed}
+.mut-tag{display:inline-block;padding:1px 6px;border-radius:5px;background:var(--teal-bg);color:var(--teal);font-size:10px;font-weight:900;letter-spacing:.2px;line-height:1.4}
+.mut-btn.pdl1 .mut-tag{background:#dbeafe;color:#1d4ed8}
+.mut-btn.muted .mut-tag{background:#F1F4F4;color:var(--tx3)}
+.mut-tt{font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.2px;line-height:1.25}
+.mut-btn.selected .mut-tt{color:var(--teal-d)}
+.mut-ss{font-size:10px;color:var(--tx3);line-height:1.3;font-weight:500}
+
+/* ── Summary ── */
+.sum-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+
+/* V2.8.11: 手機版總覽頁解鎖捲動 — 鎖屏在小螢幕擠成一坨，改開放讓藥物清單完整展開 */
+/* showPage() 進總覽時加 body.summary，離開時移除 */
+@media(max-width:640px){
+  body.summary{
+    height:auto;min-height:100dvh;min-height:100vh;
+    overflow:auto;-webkit-overflow-scrolling:touch;
+  }
+  body.summary .main{flex:1 0 auto}
+  body.summary .page#p-sum{height:auto;min-height:0;flex:none}
+  body.summary .sum-wrap{overflow:visible;flex:none;min-height:0}
+  body.summary .sum-drugs{flex:none}
+  body.summary .sum-drugs-body{overflow:visible;max-height:none}
+  body.summary .actbar{position:sticky;bottom:0;z-index:50}
+}
+
+/* hero band: 2-col on desktop, stacked on mobile */
+.sum-hero{flex-shrink:0;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;border-radius:13px;padding:11px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+@media(max-width:380px){
+  .sum-hero{grid-template-columns:auto 1fr auto;gap:8px;padding:9px 10px}
+  .sum-hero .stage-val{font-size:24px}
+}
+.sum-hero .l-stage{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border-right:1px solid rgba(255,255,255,.22);padding-right:14px}
+@media(max-width:380px){
+  .sum-hero .l-stage{padding-right:8px}
+}
+.sum-hero .stage-lbl{font-size:9.5px;opacity:.85;letter-spacing:1.5px;font-weight:700}
+.sum-hero .stage-val{font-size:30px;font-weight:900;letter-spacing:.5px;line-height:1}
+.sum-hero .r-info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sum-hero .pw-lbl{font-size:13px;font-weight:800;line-height:1.3}
+.sum-hero .meta{font-size:10.5px;opacity:.85;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qr-btn{
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);color:#fff;
+  border-radius:10px;padding:7px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;
+  font-family:inherit;font-size:9.5px;font-weight:800;letter-spacing:1px;line-height:1.1;
+  transition:background .2s,transform .12s;flex-shrink:0;
+}
+.qr-btn:hover{background:rgba(255,255,255,.28)}
+.qr-btn:active{transform:scale(.94)}
+
+/* QR modal */
+.qr-modal{position:fixed;inset:0;background:rgba(15,30,40,.55);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:20px;animation:fadeIn .2s ease}
+.qr-modal-box{background:#fff;border-radius:16px;padding:18px 18px 14px;max-width:300px;width:100%;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center}
+.qr-close{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;color:var(--tx2);display:flex;align-items:center;justify-content:center}
+.qr-close:hover{background:var(--bdr)}
+.qr-title{font-size:14px;font-weight:900;color:var(--tx);letter-spacing:.5px;margin-bottom:10px}
+.qr-canvas-wrap{padding:10px;background:var(--bg);border-radius:10px;display:flex;justify-content:center;margin-bottom:10px}
+.qr-canvas-wrap canvas,.qr-canvas-wrap img{border-radius:6px;background:#fff;padding:6px}
+.qr-meta{font-size:11px;color:var(--tx2);font-weight:700;line-height:1.5;margin-bottom:6px;word-break:break-all}
+.qr-foot{font-size:10px;color:var(--tx3);line-height:1.5}
+
+/* Drug list — main scrollable area */
+.sum-drugs{
+  flex:1;min-height:0;background:var(--card);border:1px solid var(--bdr);border-radius:13px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sum-drugs-hdr{flex-shrink:0;padding:9px 12px;border-bottom:1px solid var(--bdr2);display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:900;color:var(--tx);background:var(--bg)}
+.sum-drugs-hdr .ic{width:22px;height:22px;border-radius:7px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sum-drugs-hdr .ct{font-size:10.5px;font-weight:600;color:var(--tx3);margin-left:auto}
+.sum-drugs-body{flex:1;min-height:0;overflow-y:auto;padding:6px 12px 10px;-webkit-overflow-scrolling:touch}
+.sum-drugs-body::-webkit-scrollbar{width:6px}
+.sum-drugs-body::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:99px}
+
+/* Treatment step inside scrollable drug list */
+.tx-step{padding:9px 0;border-bottom:1px dashed var(--bdr2)}
+.tx-step:last-child{border-bottom:none}
+.tx-step:first-child{padding-top:6px}
+.tx-step-head{display:flex;gap:8px;align-items:flex-start}
+.tx-step-n{width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tx-step-title{flex:1;font-size:12.5px;font-weight:800;color:var(--tx);line-height:1.45}
+.tx-drugs-box{background:var(--teal-soft);border:1px solid var(--teal-bdr);border-radius:9px;padding:7px 10px;margin-top:6px;margin-left:30px}
+.tx-drugs-head{font-size:10px;font-weight:800;color:var(--teal-d);letter-spacing:.8px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.tx-drug-item{padding:4px 0;border-bottom:1px dotted rgba(13,148,136,.18)}
+.tx-drug-item:last-child{border-bottom:none;padding-bottom:0}
+.tx-drug-item:first-child{padding-top:0}
+.tx-drug-en{font-size:13px;font-weight:800;color:var(--teal-d);letter-spacing:.2px;line-height:1.35}
+.tx-drug-zh{font-size:11px;color:var(--tx2);font-weight:600;line-height:1.35}
+.tx-step-note{font-size:11px;color:var(--tx2);margin-top:5px;margin-left:30px;line-height:1.5;background:#fff8eb;padding:5px 8px;border-radius:6px;border-left:2.5px solid var(--amber)}
+.tx-step-line{font-size:9.5px;font-weight:800;letter-spacing:.5px;color:var(--teal);background:#fff;padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:1px;border:1px solid var(--teal-bdr)}
+.b-nhi{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;background:var(--teal);color:#fff;padding:1px 5px;border-radius:4px;margin-right:4px;vertical-align:1px}
+.b-self{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;background:var(--self-bg);color:var(--self);padding:1px 5px;border-radius:4px;margin-right:4px;vertical-align:1px;border:1px solid #e6d3a7}
+
+/* Bottom strip — team + warns + qr (compact, fixed height) */
+.sum-strip{flex-shrink:0;display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+
+/* V2.9.5: 個人化藥物按鈕 */
+.my-drugs-btn{
+  flex-shrink:0;display:flex;align-items:center;gap:11px;
+  background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;
+  border-radius:11px;padding:11px 14px;text-decoration:none;
+  box-shadow:0 4px 14px rgba(13,148,136,.18);
+  transition:transform .15s,box-shadow .2s;
+  margin-top:2px;
+}
+.my-drugs-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(13,148,136,.28)}
+.my-drugs-btn:active{transform:scale(.98)}
+.my-drugs-btn .ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.my-drugs-btn .lbl{flex:1;min-width:0;line-height:1.3}
+.my-drugs-btn .lbl .t{font-size:13.5px;font-weight:800;letter-spacing:.3px}
+.my-drugs-btn .lbl .s{font-size:10.5px;opacity:.85;margin-top:1px}
+.my-drugs-btn .arrow{flex-shrink:0;opacity:.7;transition:transform .15s,opacity .15s}
+.my-drugs-btn:hover .arrow{transform:translateX(3px);opacity:1}
+@media(max-width:480px){
+  .sum-strip{grid-template-columns:1fr}
+}
+.strip-card{background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:9px 11px;display:flex;flex-direction:column;gap:5px;min-height:0;max-height:100%;overflow-y:auto}
+.strip-card::-webkit-scrollbar{width:5px}
+.strip-card::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:99px}
+.strip-hd{font-size:11px;font-weight:900;color:var(--tx);letter-spacing:.3px;display:flex;align-items:center;gap:6px;padding-bottom:5px;border-bottom:1px solid var(--bdr2)}
+.strip-hd .ic{width:18px;height:18px;border-radius:6px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.strip-hd.warn-hd .ic{background:var(--amber-bg);color:var(--amber)}
+.strip-hd-hint{font-size:9.5px;color:var(--tx3);font-weight:600;letter-spacing:0;margin-left:auto}
+
+/* Team rows — collapsible per dept */
+.tm-dept{border-bottom:1px dashed var(--bdr2)}
+.tm-dept:last-of-type{border-bottom:none}
+.tm-dept-head{display:flex;justify-content:space-between;align-items:center;padding:6px 0;cursor:pointer;font-size:11px;gap:6px}
+.tm-dept-head:hover{color:var(--teal-d)}
+.tm-dept-head .l{color:var(--tx2);flex:1;min-width:0}
+.tm-dept-head .l b{color:var(--tx);font-weight:800}
+.tm-dept-head .l .h{color:var(--tx3);font-weight:600;font-size:10px;margin-left:4px}
+.tm-dept-head .v{font-weight:800;color:var(--teal-d);font-size:11px}
+.tm-dept-head .v.empty{color:var(--tx3);font-weight:600}
+.tm-dept-head .chev{width:14px;height:14px;color:var(--tx3);transition:transform .2s;flex-shrink:0}
+.tm-dept.open .tm-dept-head .chev{transform:rotate(90deg);color:var(--teal)}
+.tm-doctors{display:none;flex-wrap:wrap;gap:4px;padding:4px 0 8px}
+.tm-dept.open .tm-doctors{display:flex}
+.tm-doc-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--tx);transition:all .12s}
+.tm-doc-btn:hover{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-d)}
+.tm-doc-btn.selected{background:var(--teal);border-color:var(--teal);color:#fff}
+.tm-doc-btn.clear{border-style:dashed;color:var(--tx3);font-weight:600}
+.tm-doc-btn.clear:hover{color:var(--red);border-color:var(--red);background:var(--red-bg)}
+
+.strip-tm-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.strip-tm-row .l{color:var(--tx2)}
+.strip-tm-row .v{font-weight:800;color:var(--tx)}
+.strip-cm{margin-top:auto;padding:6px 8px;background:var(--teal-bg);border-radius:7px;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.strip-cm .l{color:var(--teal-d);font-weight:700}
+.strip-cm .v{color:var(--teal-d);font-weight:900}
+.strip-warn{font-size:10.5px;color:#7a4f00;line-height:1.45;padding:4px 0;border-bottom:1px dotted var(--bdr2)}
+.strip-warn:last-child{border-bottom:none}
+
+/* ── Bottom action bar ── */
+.actbar{
+  flex-shrink:0;min-height:var(--bar-h);
+  background:rgba(255,255,255,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-top:1px solid var(--bdr);padding:8px 14px;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom));
+  display:flex;gap:8px;align-items:stretch;
+}
+.act-btn{
+  flex:1;border:none;border-radius:10px;padding:0 12px;font-size:13px;font-weight:800;font-family:inherit;
+  cursor:pointer;transition:opacity .2s,background .2s,transform .12s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.act-btn:active{transform:scale(.98)}
+.act-back{background:var(--bg);color:var(--tx2);border:1.5px solid var(--bdr);max-width:100px}
+.act-back:hover{background:var(--bdr2)}
+.act-next{background:var(--teal);color:#fff}
+.act-next:hover{background:var(--teal2)}
+.act-next:disabled{background:var(--bdr);color:var(--tx3);cursor:not-allowed}
+.act-restart{background:var(--bg);color:var(--tx2);border:1.5px solid var(--bdr);max-width:120px}
+
+/* Print: show all pages, expanded */
+@media print{
+  body{height:auto;overflow:visible}
+  .actbar,.hdr-progress,.hdr-l .home-btn{display:none!important}
+  .page{display:block!important;page-break-after:always;height:auto}
+  .main{max-width:none;padding:10px 14px}
+  .cd{overflow:visible}
+  .sum-drugs-body{overflow:visible}
+  .sum-wrap{overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Header (compact, includes inline progress)   -->
+<!-- ════════════════════════════════════════════ -->
+<div class="hdr">
+  <div class="hdr-l">
+    <a href="../" class="home-btn" title="回首頁">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    </a>
+    <div class="hdr-title">
+      <h1>肺癌治療路徑查詢</h1>
+      <p>彰濱秀傳癌症中心 · 民眾簡易版</p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <a href="drugs-patient.html" class="drug-btn" title="肺癌常用藥物（民眾版）">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+      <span class="drug-btn-lbl">藥物查詢</span>
+    </a>
+    <div class="hdr-progress" id="progress">
+      <div class="pdot active" data-p="0"></div>
+      <div class="pdot" data-p="1"></div>
+      <div class="pdot" data-p="2"></div>
+      <div class="pdot" data-p="3"></div>
+      <div class="pdot" data-p="4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Main: pages (each fills the area exactly)    -->
+<!-- ════════════════════════════════════════════ -->
+<div class="main">
+
+<!-- ─── Q1: Type ─── -->
+<!-- ─── Q1: 基本資料（姓名 / 病歷號 / 年齡 / ECOG）── -->
+<div class="page active" id="p-q1">
+  <div class="cd">
+    <div class="cd-head">
+      <div class="cd-head-l">
+        <div class="cd-step">第 1 步 / 基本資料</div>
+        <div class="cd-q">先了解您的基本狀況</div>
+        <div class="cd-sub">這些都是<b>選填</b>，跳過也可以；若有填能讓建議更貼近您</div>
+      </div>
+    </div>
+
+    <!-- 姓名 / 病歷號 -->
+    <div class="info-row">
+      <div class="info-fld">
+        <label class="info-lbl">病歷號</label>
+        <input id="pt-code" placeholder="例：A0042" maxlength="20" autocomplete="off">
+      </div>
+      <div class="info-fld">
+        <label class="info-lbl">姓名</label>
+        <input id="pt-name" placeholder="您的姓名" maxlength="20" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- 年齡 -->
+    <div class="info-block">
+      <div class="info-block-lbl">
+        <span class="info-block-tag">年齡</span>
+        <span class="info-block-hint">影響化療藥物選擇</span>
+      </div>
+      <div class="age-grid">
+        <button type="button" class="age-btn" data-val="lt70" onclick="pickAge(this)">
+          <b>&lt; 70 歲</b>
+          <i>標準劑量</i>
+        </button>
+        <button type="button" class="age-btn" data-val="ge70" onclick="pickAge(this)">
+          <b>≥ 70 歲</b>
+          <i>建議改 Carboplatin</i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ECOG -->
+    <div class="info-block">
+      <div class="info-block-lbl">
+        <span class="info-block-tag">日常生活狀態 (ECOG)</span>
+        <span class="info-block-hint">癌症對活動力的影響</span>
+      </div>
+      <div class="ecog-grid">
+        <button type="button" class="ecog-btn" data-val="01" onclick="pickEcog(this)">
+          <span class="ic" style="background:#dcfce7;color:#15803d">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="2.5"/><path d="M9 11h6l-1 5h2l1 4M10 11l-1 5H7l-1 4"/><path d="M5 13l3-1M19 13l-3-1"/></svg>
+          </span>
+          <div class="ecog-info">
+            <div class="ecog-tt">沒什麼影響</div>
+            <div class="ecog-ss">PS 0-1 · 完全或大部分時間能照常活動</div>
+          </div>
+        </button>
+        <button type="button" class="ecog-btn" data-val="2" onclick="pickEcog(this)">
+          <span class="ic" style="background:#fef3c7;color:#a16207">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="2.5"/><path d="M12 8.5v6"/><path d="M9 11h6"/><path d="M12 14.5l-2 5M12 14.5l2 5"/><path d="M14 17h-4" stroke-dasharray="2 2"/></svg>
+          </span>
+          <div class="ecog-info">
+            <div class="ecog-tt">常隱受症狀</div>
+            <div class="ecog-ss">PS 2 · 有症狀但白天大半時間仍能起身活動</div>
+          </div>
+        </button>
+        <button type="button" class="ecog-btn" data-val="34" onclick="pickEcog(this)">
+          <span class="ic" style="background:#fee2e2;color:#b91c1c">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="18" height="6" rx="1.5"/><circle cx="7" cy="9" r="2"/><path d="M9 11h7v2"/><path d="M3 19v2M21 19v2"/></svg>
+          </span>
+          <div class="ecog-info">
+            <div class="ecog-tt">安床休息為主</div>
+            <div class="ecog-ss">PS 3-4 · 大部分時間躺床或需人照顧</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Q2: 肺癌類型 ─── -->
+<div class="page" id="p-q2">
+  <div class="cd">
+    <div class="cd-head">
+      <div class="cd-head-l">
+        <div class="cd-step">第 2 步 / 肺癌類型</div>
+        <div class="cd-q">您的肺癌類型？</div>
+        <div class="cd-sub">病理報告會註明組織型態</div>
+      </div>
+    </div>
+
+    <div class="type-grid" id="opt-type">
+      <button type="button" class="btn-type" data-val="NSCLC_NS" onclick="pickType(this)">
+        <span class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M5 9c0-1.7 1.3-3 3-3s4 1.5 4 4v8c-1.5 0-3-.5-4-1.5C6.5 15 5 13.5 5 9z"/><path d="M19 9c0-1.7-1.3-3-3-3s-4 1.5-4 4v8c1.5 0 3-.5 4-1.5 1.5-1.5 3-3 3-7.5z"/></svg>
+        </span>
+        <div class="bt-info">
+          <div class="bt-t">非小細胞肺癌 — 非鱗狀</div>
+          <div class="bt-s">腺癌 / 大細胞癌（最常見）</div>
+        </div>
+      </button>
+
+      <button type="button" class="btn-type" data-val="NSCLC_SQ" onclick="pickType(this)">
+        <span class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 12 4-6h10l4 6-4 6H7z"/><path d="M9 12h6"/></svg>
+        </span>
+        <div class="bt-info">
+          <div class="bt-t">非小細胞肺癌 — 鱗狀</div>
+          <div class="bt-s">SCC，多與吸菸相關</div>
+        </div>
+      </button>
+
+      <button type="button" class="btn-type" data-val="SCLC" onclick="pickType(this)">
+        <span class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="9" r="1.5"/><circle cx="13" cy="6" r="1.5"/><circle cx="18" cy="11" r="1.5"/><circle cx="9" cy="15" r="1.5"/><circle cx="16" cy="17" r="1.5"/><circle cx="6" cy="18" r="1.3"/></svg>
+        </span>
+        <div class="bt-info">
+          <div class="bt-t">小細胞肺癌</div>
+          <div class="bt-s">SCLC，惡性度較高</div>
+        </div>
+      </button>
+
+      <button type="button" class="btn-type muted" data-val="UNKNOWN" onclick="pickType(this)">
+        <span class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-1.5 2-2.5 3.5"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+        </span>
+        <div class="bt-info">
+          <div class="bt-t">不確定 / 還沒切片</div>
+          <div class="bt-s">先繼續，僅供參考</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Q2: TNM ─── -->
+<div class="page" id="p-q3">
+  <div class="cd" id="q3-cd">
+    <div class="cd-head">
+      <div class="cd-head-l">
+        <div class="cd-step" id="q2-step">第 2 步 / 分期</div>
+        <div class="cd-q" id="q2-q">您的分期是？</div>
+        <div class="cd-sub" id="q2-sub">主治醫師會告訴您 T、N、M 的數字。<a id="tnm-toggle" onclick="toggleTNMMode()">切換進階模式</a></div>
+      </div>
+    </div>
+
+    <!-- ── V2.10.0: 期別來源切換（臨床 vs 病理） ── -->
+    <div class="stage-mode-row" id="stage-mode-row">
+      <button type="button" class="stage-mode-btn selected" data-mode="clinical" onclick="pickStageMode('clinical')">
+        <span class="lbl">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </span>
+          影像 / 切片
+        </span>
+        <span class="ss">尚未手術</span>
+      </button>
+      <button type="button" class="stage-mode-btn" data-mode="pathological" onclick="pickStageMode('pathological')">
+        <span class="lbl">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6"/><path d="M9 14h6M9 17h4"/></svg>
+          </span>
+          病理報告
+        </span>
+        <span class="ss">已手術</span>
+      </button>
+    </div>
+
+    <!-- ── SCLC 兩段式（侷限/擴散）── -->
+    <div class="sclc-wrap" id="sclc-wrap" style="display:none">
+      <div class="sclc-grid">
+        <button type="button" class="sclc-btn" data-val="LIMITED" onclick="pickSCLC(this)">
+          <span class="ic">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9c0-1.7 1.3-3 3-3s4 1.5 4 4v8c-1.5 0-3-.5-4-1.5C6.5 15 5 13.5 5 9z"/><path d="M19 9c0-1.7-1.3-3-3-3s-4 1.5-4 4v8c1.5 0 3-.5 4-1.5 1.5-1.5 3-3 3-7.5z"/><circle cx="9" cy="11" r="1.2"/></svg>
+          </span>
+          <div class="sclc-info">
+            <div class="sclc-tt">侷限型 (Limited)</div>
+            <div class="sclc-ss">腫瘤侷限於單側胸腔，可用一個放射範圍涵蓋</div>
+          </div>
+        </button>
+        <button type="button" class="sclc-btn" data-val="EXTENSIVE" onclick="pickSCLC(this)">
+          <span class="ic">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><circle cx="6" cy="6" r="1.4"/><circle cx="18" cy="6" r="1.4"/><circle cx="5" cy="14" r="1.4"/><circle cx="18" cy="17" r="1.4"/><circle cx="9" cy="19" r="1.4"/><path d="m12 12-6-6M12 12l6-6M12 12l-7 2M12 12l6 5M12 12l-3 7" stroke-width="1.2"/></svg>
+          </span>
+          <div class="sclc-info">
+            <div class="sclc-tt">擴散型 (Extensive)</div>
+            <div class="sclc-ss">已轉移到對側胸腔、其他器官（肝、骨、腦…）</div>
+          </div>
+        </button>
+      </div>
+      <div class="mode-link">
+        <a onclick="setQ2Mode('tnm')">改用詳細 TNM 輸入 →</a>
+      </div>
+    </div>
+
+    <!-- ── NSCLC TNM 模式 ── -->
+    <div class="tnm-wrap" id="tnm-wrap">
+      <div class="tnm-rows">
+      <!-- T row -->
+      <div class="tnm-row">
+        <div class="tnm-letter" data-axis="t">T</div>
+        <div class="tnm-meta">
+          <div class="tnm-name">原發腫瘤</div>
+          <div class="tnm-hint">大小 / 範圍</div>
+        </div>
+        <div class="tnm-btns tnm-simple" data-axis="t" data-cols="4">
+          <button type="button" class="tnm-btn" data-val="T1" onclick="pickTNM('t', this)"><b>T1</b><i>≤ 3 cm</i></button>
+          <button type="button" class="tnm-btn" data-val="T2" onclick="pickTNM('t', this)"><b>T2</b><i>3-5 cm</i></button>
+          <button type="button" class="tnm-btn" data-val="T3" onclick="pickTNM('t', this)"><b>T3</b><i>5-7 cm</i></button>
+          <button type="button" class="tnm-btn" data-val="T4" onclick="pickTNM('t', this)"><b>T4</b><i>&gt; 7 cm</i></button>
+        </div>
+        <div class="tnm-btns tnm-adv" data-axis="t" data-cols="9" style="display:none">
+          <button type="button" class="tnm-btn" data-val="Tis" onclick="pickTNM('t', this)"><b>Tis</b><i>原位</i></button>
+          <button type="button" class="tnm-btn" data-val="T1mi" onclick="pickTNM('t', this)"><b>T1mi</b><i>微浸</i></button>
+          <button type="button" class="tnm-btn" data-val="T1a" onclick="pickTNM('t', this)"><b>T1a</b><i>≤1cm</i></button>
+          <button type="button" class="tnm-btn" data-val="T1b" onclick="pickTNM('t', this)"><b>T1b</b><i>1-2</i></button>
+          <button type="button" class="tnm-btn" data-val="T1c" onclick="pickTNM('t', this)"><b>T1c</b><i>2-3</i></button>
+          <button type="button" class="tnm-btn" data-val="T2a" onclick="pickTNM('t', this)"><b>T2a</b><i>3-4</i></button>
+          <button type="button" class="tnm-btn" data-val="T2b" onclick="pickTNM('t', this)"><b>T2b</b><i>4-5</i></button>
+          <button type="button" class="tnm-btn" data-val="T3" onclick="pickTNM('t', this)"><b>T3</b><i>5-7</i></button>
+          <button type="button" class="tnm-btn" data-val="T4" onclick="pickTNM('t', this)"><b>T4</b><i>&gt;7</i></button>
+        </div>
+      </div>
+
+      <!-- N row -->
+      <div class="tnm-row">
+        <div class="tnm-letter" data-axis="n">N</div>
+        <div class="tnm-meta">
+          <div class="tnm-name">淋巴結</div>
+          <div class="tnm-hint">轉移範圍</div>
+        </div>
+        <div class="tnm-btns tnm-simple" data-axis="n" data-cols="4">
+          <button type="button" class="tnm-btn" data-val="N0" onclick="pickTNM('n', this)"><b>N0</b><i>無轉移</i></button>
+          <button type="button" class="tnm-btn" data-val="N1" onclick="pickTNM('n', this)"><b>N1</b><i>同側肺門</i></button>
+          <button type="button" class="tnm-btn" data-val="N2" onclick="pickTNM('n', this)"><b>N2</b><i>同側縱膈</i></button>
+          <button type="button" class="tnm-btn" data-val="N3" onclick="pickTNM('n', this)"><b>N3</b><i>對側</i></button>
+        </div>
+        <div class="tnm-btns tnm-adv" data-axis="n" data-cols="5" style="display:none">
+          <button type="button" class="tnm-btn" data-val="N0" onclick="pickTNM('n', this)"><b>N0</b><i>無</i></button>
+          <button type="button" class="tnm-btn" data-val="N1" onclick="pickTNM('n', this)"><b>N1</b><i>同側肺門</i></button>
+          <button type="button" class="tnm-btn" data-val="N2a" onclick="pickTNM('n', this)"><b>N2a</b><i>單站縱膈</i></button>
+          <button type="button" class="tnm-btn" data-val="N2b" onclick="pickTNM('n', this)"><b>N2b</b><i>多站縱膈</i></button>
+          <button type="button" class="tnm-btn" data-val="N3" onclick="pickTNM('n', this)"><b>N3</b><i>對側</i></button>
+        </div>
+      </div>
+
+      <!-- M row -->
+      <div class="tnm-row">
+        <div class="tnm-letter" data-axis="m">M</div>
+        <div class="tnm-meta">
+          <div class="tnm-name">遠端轉移</div>
+          <div class="tnm-hint">是否擴散</div>
+        </div>
+        <div class="tnm-btns tnm-simple" data-axis="m" data-cols="2">
+          <button type="button" class="tnm-btn" data-val="M0" onclick="pickTNM('m', this)"><b>M0</b><i>無轉移</i></button>
+          <button type="button" class="tnm-btn" data-val="M1" onclick="pickTNM('m', this)"><b>M1</b><i>有轉移</i></button>
+        </div>
+        <div class="tnm-btns tnm-adv" data-axis="m" data-cols="4" style="display:none">
+          <button type="button" class="tnm-btn" data-val="M0" onclick="pickTNM('m', this)"><b>M0</b><i>無</i></button>
+          <button type="button" class="tnm-btn" data-val="M1a" onclick="pickTNM('m', this)"><b>M1a</b><i>胸內</i></button>
+          <button type="button" class="tnm-btn" data-val="M1b" onclick="pickTNM('m', this)"><b>M1b</b><i>單一遠端</i></button>
+          <button type="button" class="tnm-btn" data-val="M1c" onclick="pickTNM('m', this)"><b>M1c</b><i>多處遠端</i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage preview / fallback strip -->
+    <div class="tnm-foot empty" id="tnm-foot">
+      <div>
+        <div class="l">推算分期</div>
+        <div class="v empty" id="tnm-stage">— 請完整選擇 T、N、M —</div>
+      </div>
+      <a class="skip" onclick="setStageUnknown()">不知道 TNM？</a>
+    </div>
+    <div class="mode-link" id="tnm-back-sclc" style="display:none">
+      <a onclick="setQ2Mode('sclc')">← 改回侷限/擴散二選</a>
+    </div>
+    </div><!-- /tnm-wrap -->
+  </div>
+</div>
+
+<!-- ─── Q3: Mutation (NSCLC) / Brain Met (SCLC) ─── -->
+<div class="page" id="p-q4">
+  <div class="cd">
+    <div class="cd-head">
+      <div class="cd-head-l">
+        <div class="cd-step">第 3 步（最後一題）</div>
+        <div class="cd-q" id="q3-q">基因 / PD-L1 結果？</div>
+        <div class="cd-sub" id="q3-sub">這會決定可用的標靶或免疫藥物</div>
+      </div>
+    </div>
+
+    <!-- NSCLC: mutation grid -->
+    <div class="mut-grid" id="opt-mut">
+      <button type="button" class="mut-btn" data-val="EGFR" onclick="pickMut(this)">
+        <span class="mut-tag">EGFR</span>
+        <div class="mut-tt">EGFR (+)</div>
+        <div class="mut-ss">東方人較多</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="ALK" onclick="pickMut(this)">
+        <span class="mut-tag">ALK</span>
+        <div class="mut-tt">ALK 融合 (+)</div>
+        <div class="mut-ss">基因重組</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="ROS1" onclick="pickMut(this)">
+        <span class="mut-tag">ROS1</span>
+        <div class="mut-tt">ROS1 融合 (+)</div>
+        <div class="mut-ss">較少見</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="BRAF" onclick="pickMut(this)">
+        <span class="mut-tag">BRAF</span>
+        <div class="mut-tt">BRAF V600E (+)</div>
+        <div class="mut-ss">標靶聯合</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="MET" onclick="pickMut(this)">
+        <span class="mut-tag">MET</span>
+        <div class="mut-tt">MET ex14 (+)</div>
+        <div class="mut-ss">跳躍突變</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="KRAS" onclick="pickMut(this)">
+        <span class="mut-tag">KRAS</span>
+        <div class="mut-tt">KRAS G12C (+)</div>
+        <div class="mut-ss">較新藥</div>
+      </button>
+      <button type="button" class="mut-btn pdl1" data-val="PDL1_HIGH" onclick="pickMut(this)">
+        <span class="mut-tag">PD-L1 ≥ 50%</span>
+        <div class="mut-tt">原生 + 高表現</div>
+        <div class="mut-ss">免疫效果佳</div>
+      </button>
+      <button type="button" class="mut-btn pdl1" data-val="PDL1_LOW" onclick="pickMut(this)">
+        <span class="mut-tag">PD-L1 &lt; 50%</span>
+        <div class="mut-tt">原生 + 低/中</div>
+        <div class="mut-ss">化療為主</div>
+      </button>
+      <button type="button" class="mut-btn muted" data-val="NONE" onclick="pickMut(this)">
+        <span class="mut-tag">未驗</span>
+        <div class="mut-tt">尚未檢測</div>
+        <div class="mut-ss">先看一般原則</div>
+      </button>
+    </div>
+
+    <!-- SCLC: brain / spinal-cord metastasis -->
+    <div class="brain-grid" id="opt-brain" style="display:none">
+      <button type="button" class="brain-btn" data-val="no" onclick="pickBrain(this)">
+        <span class="ic" style="background:#dcfce7;color:#15803d">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5C7 4.5 5.5 6 5.5 8c-.8.5-1.5 1.5-1.5 2.5 0 1.4 1 2.5 2.2 2.7C6 14 6.5 15 8 15.5V18c0 .8.6 1.5 1.5 1.5h5c.9 0 1.5-.7 1.5-1.5v-2.5c1.5-.5 2-1.5 1.8-2.3 1.2-.2 2.2-1.3 2.2-2.7 0-1-.7-2-1.5-2.5C18.5 6 17 4.5 15 4.5c-1 0-2 .5-2.5 1.3-.5-.8-1.5-1.3-2.5-1.3-.5 0-1 .1-1.5.3"/><path d="M9 17l3-3 3 3" stroke="#15803d" stroke-width="2"/></svg>
+        </span>
+        <div class="brain-info">
+          <div class="brain-tt">無腦/脊髓轉移</div>
+          <div class="brain-ss">影像未發現腦或脊髓擴散</div>
+        </div>
+      </button>
+      <button type="button" class="brain-btn" data-val="yes" onclick="pickBrain(this)">
+        <span class="ic" style="background:#fee2e2;color:#b91c1c">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5C7 4.5 5.5 6 5.5 8c-.8.5-1.5 1.5-1.5 2.5 0 1.4 1 2.5 2.2 2.7C6 14 6.5 15 8 15.5V18c0 .8.6 1.5 1.5 1.5h5c.9 0 1.5-.7 1.5-1.5v-2.5c1.5-.5 2-1.5 1.8-2.3 1.2-.2 2.2-1.3 2.2-2.7 0-1-.7-2-1.5-2.5C18.5 6 17 4.5 15 4.5c-1 0-2 .5-2.5 1.3-.5-.8-1.5-1.3-2.5-1.3-.5 0-1 .1-1.5.3"/><circle cx="10" cy="10" r="1.4" fill="#b91c1c" stroke="none"/><circle cx="15" cy="12" r="1.1" fill="#b91c1c" stroke="none"/></svg>
+        </span>
+        <div class="brain-info">
+          <div class="brain-tt">有腦/脊髓轉移</div>
+          <div class="brain-ss">影像確認腦或脊髓有轉移</div>
+        </div>
+      </button>
+      <button type="button" class="brain-btn muted" data-val="unknown" onclick="pickBrain(this)">
+        <span class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-1.5 2-2.5 3.5"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+        </span>
+        <div class="brain-info">
+          <div class="brain-tt">不確定</div>
+          <div class="brain-ss">尚未做腦部影像或不清楚</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Summary ─── -->
+<div class="page" id="p-sum">
+  <div class="sum-wrap">
+
+    <!-- hero band -->
+    <div class="sum-hero">
+      <div class="l-stage">
+        <div class="stage-lbl">分期</div>
+        <div class="stage-val" id="sum-stage">—</div>
+      </div>
+      <div class="r-info">
+        <div class="pw-lbl" id="sum-pw">—</div>
+        <div class="meta" id="sum-meta">—</div>
+      </div>
+      <button class="qr-btn" onclick="openQR()" title="顯示 QR 識別碼">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14h-1M14 21h7M17 18v3"/></svg>
+        <span>QR</span>
+      </button>
+    </div>
+
+    <!-- drug list (scrollable area) -->
+    <div class="sum-drugs">
+      <div class="sum-drugs-hdr">
+        <span class="ic">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+        </span>
+        治療方向與藥物
+        <span class="ct" id="sum-tx-ct"></span>
+      </div>
+      <div class="sum-drugs-body" id="sum-tx"></div>
+    </div>
+
+    <!-- bottom strip: team + warns -->
+    <div class="sum-strip">
+      <div class="strip-card">
+        <div class="strip-hd">
+          <span class="ic">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.4"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M14 19a4 4 0 0 1 7 0"/></svg>
+          </span>
+          照護團隊
+          <span class="strip-hd-hint">點科別選主治</span>
+        </div>
+        <div id="team-list"></div>
+        <div class="strip-cm">
+          <span class="l">個案管理師</span>
+          <span class="v" id="cm-name">—</span>
+        </div>
+      </div>
+
+      <div class="strip-card" id="card-warn">
+        <div class="strip-hd warn-hd">
+          <span class="ic">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+          </span>
+          注意事項
+        </div>
+        <div id="sum-warn"></div>
+      </div>
+    </div>
+
+    <!-- V2.9.5: 依使用者狀況推薦個人化藥物頁 -->
+    <a href="javascript:void(0)" id="my-drugs-btn" class="my-drugs-btn">
+      <span class="ic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+      </span>
+      <div class="lbl">
+        <div class="t">看適合您狀況的藥物</div>
+        <div class="s">含用途、健保是否給付、常見副作用</div>
+      </div>
+      <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+
+  </div>
+</div>
+
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- QR Modal (shown on demand from summary)      -->
+<!-- ════════════════════════════════════════════ -->
+<div class="qr-modal" id="qr-modal" onclick="closeQRBackdrop(event)" style="display:none">
+  <div class="qr-modal-box">
+    <button class="qr-close" onclick="closeQR()" title="關閉">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="qr-title">您的隨身識別</div>
+    <div class="qr-canvas-wrap"><div id="qr-canvas"></div></div>
+    <div class="qr-meta" id="qr-meta">—</div>
+    <div class="qr-foot">掃描可在他處快速查閱您的治療路徑摘要</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- Action bar                                    -->
+<!-- ════════════════════════════════════════════ -->
+<div class="actbar" id="actbar">
+  <button class="act-btn act-back" id="bt-back" onclick="goPrev()" style="display:none"></button>
+  <button class="act-btn act-next" id="bt-next" onclick="goNext()" disabled>
+    下一題
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+  </button>
+  <button class="act-btn act-restart" id="bt-restart" onclick="restart()" style="display:none">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+    重新查詢
+  </button>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const S = {
+  // V2.9.0: Q1 基本資料
+  age:'',          // '' / 'lt70' / 'ge70'
+  ecog:'',         // '' / '01' / '2' / '34'
+  code:'', name:'',
+  // Q2 類型
+  type:'',
+  // Q3 分期 (TNM 或 SCLC limited/extensive)
+  t:'', n:'', m:'', stage:'', stageCat:'',
+  // V2.10.0: 期別來源 — false = 臨床期別 (cTNM)；true = 病理期別 (pTNM, 已手術)
+  postOp:false,
+  // Q4 基因/腦轉移
+  mut:'',          // NSCLC
+  brainMet:'',     // SCLC: '' / 'no' / 'yes' / 'unknown'
+  // 醫師選擇（總覽頁可選）
+  consult:{},
+};
+let stepIdx = 0;
+let tnmAdv = false;
+let q2Mode = 'tnm';  // 'tnm' (NSCLC) or 'sclc' (SCLC 兩段式)
+// V2.9.0: 5 頁流程 — Q1 基本 / Q2 類型 / Q3 分期 / Q4 基因或腦 / 總覽
+const PAGES = ['p-q1','p-q2','p-q3','p-q4','p-sum'];
+
+function isNSCLC(){ return S.type==='NSCLC_NS' || S.type==='NSCLC_SQ'; }
+function isSCLC(){  return S.type==='SCLC'; }
+
+/* AJCC 9th — same as lung.html (incl. BUG-13 N2a/N2b 修正) */
+function computeAJCC(t, n, m){
+  if(!t || !n || !m) return '';
+  if(m !== 'M0'){
+    if(m === 'M1a' || m === 'M1b') return 'IVA';
+    return 'IVB';
+  }
+  const isT1 = /^T1/.test(t), isT2 = /^T2/.test(t), isN2 = /^N2/.test(n);
+  if(n === 'N0'){
+    if(t === 'Tis') return '0';
+    if(t === 'T1mi' || t === 'T1a') return 'IA1';
+    if(t === 'T1b') return 'IA2';
+    if(t === 'T1c') return 'IA3';
+    if(t === 'T1') return 'IA';
+    if(t === 'T2a') return 'IB';
+    if(t === 'T2b') return 'IIA';
+    if(t === 'T2') return 'IB';
+    if(t === 'T3') return 'IIB';
+    if(t === 'T4') return 'IIIA';
+  }
+  if(n === 'N1'){
+    if(isT1 || isT2) return 'IIB';
+    if(t === 'T3' || t === 'T4') return 'IIIA';
+  }
+  if(n === 'N2a'){ if(isT1) return 'IIB'; if(isT2 || t==='T3') return 'IIIA'; if(t==='T4') return 'IIIB'; }
+  if(n === 'N2b'){ if(isT1) return 'IIIA'; if(isT2 || t==='T3') return 'IIIB'; if(t==='T4') return 'IIIB'; }
+  if(isN2){
+    if(isT1 || isT2) return 'IIIA';
+    if(t === 'T3' || t === 'T4') return 'IIIB';
+  }
+  if(n === 'N3'){
+    if(isT1 || isT2) return 'IIIB';
+    if(t === 'T3' || t === 'T4') return 'IIIC';
+  }
+  return '';
+}
+
+function stageToCategory(stage){
+  if(!stage) return '';
+  if(/^IV/.test(stage)) return 'META';
+  if(/^III/.test(stage)) return 'LOCAL';
+  if(/^(0|I|II)/.test(stage)) return 'EARLY';
+  return '';
+}
+
+// Q4 是否需要顯示？
+// NSCLC：局部晚期或轉移期（需要 mut/PD-L1 決定藥物）
+// SCLC：兩種期都問腦轉移（影響 PCI 與免疫使用）
+function q4Needed(){
+  if(isNSCLC()) return S.stageCat==='LOCAL' || S.stageCat==='META';
+  if(isSCLC())  return S.stageCat==='META' || S.stageCat==='LOCAL';
+  return false;
+}
+// Backward-compat alias
+function q3Needed(){ return q4Needed(); }
+function mutNeeded(){ return q4Needed(); }
+
+// V2.9.0: 年齡與 ECOG helper
+function isElderly(){ return S.age === 'ge70'; }
+function isPS2()    { return S.ecog === '2'; }
+function isPS34()   { return S.ecog === '34'; }
+function isPSLow()  { return S.ecog === '2' || S.ecog === '34'; }
+
+/* ═══════════════════════════════════════════════════
+   CARE TEAM — 同步 lung.html CFG.team.depts
+   注意：胸腔內科 / 血腫科 在 lung 是合在一個 dept，醫師混排
+═══════════════════════════════════════════════════ */
+const TEAM = {
+  depts: [
+    {id:'surgery',  name:'胸腔外科',         hint:'手術評估', doctors:['李佳穎','黃榆涵']},
+    {id:'medicine', name:'胸腔內科 / 血腫科', hint:'擇一即可', doctors:['張竣期','張正雄','吳敬炫','劉大智']},
+    {id:'radonc',   name:'放射腫瘤科',       hint:'放療評估', doctors:['熊敬業','劉育昌','林伯儒']},
+  ],
+  caseManager: { name:'郭美伶', title:'個案管理師' },
+};
+
+/* ═══════════════════════════════════════════════════
+   NHI DRUG DATABASE
+═══════════════════════════════════════════════════ */
+const DRUGS = {
+  EGFR: {line:'一線標靶', nhi:'NHI', list:[
+    {n:'Osimertinib',z:'泰格莎'},{n:'Gefitinib',z:'艾瑞莎'},
+    {n:'Erlotinib',z:'得舒緩'},{n:'Afatinib',z:'妥復克'},
+    {n:'Dacomitinib',z:'肺欣妥'}],
+    note:'五藥擇一。Dacomitinib 限無腦轉移。'},
+  EGFR_BRAIN: {line:'一線（合併）', nhi:'NHI', list:[{n:'Erlotinib + Bevacizumab',z:'得舒緩 + 癌思停'}],
+    note:'限 EGFR L858R 突變 + 腦轉移。'},
+  ALK: {line:'一線標靶', nhi:'NHI', list:[
+    {n:'Alectinib',z:'安立適'},{n:'Lorlatinib',z:'瘤利欣'},
+    {n:'Ceritinib',z:'立克癌'},{n:'Brigatinib',z:'癌倍利'},
+    {n:'Crizotinib',z:'截克瘤'}],
+    note:'五藥擇一。'},
+  ROS1: {line:'一線標靶', nhi:'NHI', list:[{n:'Crizotinib',z:'截克瘤'},{n:'Entrectinib',z:'羅思克'}],
+    note:'擇一。'},
+  BRAF: {line:'二線（含鉑後）', nhi:'NHI', list:[{n:'Dabrafenib + Trametinib',z:'泰伏樂 + 麥欣寧'}],
+    note:'限 BRAF V600E 突變、含鉑化療失敗後。'},
+  MET: {line:'不分線', nhi:'NHI', list:[{n:'Tepotinib',z:'特癌適'}],
+    note:'限 MET exon 14 跳躍突變。'},
+  KRAS: {line:'二線', nhi:'SELF', list:[{n:'Sotorasib',z:'魯瑪克拉斯'}],
+    note:'限 KRAS G12C 突變，健保事審。'},
+  NS_PDL1H: {line:'一線（免疫+化療）', nhi:'NHI', list:[
+    {n:'Pembrolizumab + Pemetrexed + 鉑類',z:'吉舒達 + 愛寧達 + 鉑類'},
+    {n:'Atezolizumab + Bevacizumab + Carboplatin + Paclitaxel',z:'癌自禦 + 癌思停 + 鉑類 + 紫杉醇'}],
+    note:'非鱗狀，原生型，PD-L1 ≥ 50%。'},
+  NS_PDL1L: {line:'一線（化療±免疫）', nhi:'NHI', list:[
+    {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類雙藥'},
+    {n:'± Pembrolizumab',z:'± 吉舒達'}],
+    note:'非鱗狀原生型。'},
+  SQ_PDL1H: {line:'一線（免疫+化療）', nhi:'NHI', list:[{n:'Pembrolizumab + Carboplatin + Paclitaxel',z:'吉舒達 + 鉑類 + 紫杉醇'}],
+    note:'鱗狀，原生型，PD-L1 ≥ 50%。'},
+  SQ_PDL1L: {line:'一線（化療±免疫）', nhi:'NHI', list:[
+    {n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'},
+    {n:'± Pembrolizumab',z:'± 吉舒達'}],
+    note:'鱗狀原生型。'},
+  CONSOLIDATION: {line:'同步化放療後鞏固', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
+    note:'限 PD-L1 ≥1%，至多 12 個月。'},
+  SCLC_ES: {line:'一線', nhi:'NHI', list:[
+    {n:'Atezolizumab + Carboplatin + Etoposide',z:'癌自禦 + 鉑類 + 滅必治'},
+    {n:'Durvalumab + Etoposide + Cisplatin/Carboplatin',z:'抑癌寧 + 滅必治 + 鉑類'}],
+    note:'限無腦/脊髓轉移，健保事審。'},
+  SCLC_LS_CCRT: {line:'侷限期同步化放療', nhi:'NHI', list:[{n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'}],
+    note:''},
+  SCLC_2L: {line:'二線', nhi:'NHI', list:[{n:'Topotecan',z:'喜樹鹼'}],
+    note:'含鉑治療後復發使用。'},
+};
+
+/* ═══════════════════════════════════════════════════
+   PATHWAY ENGINE
+═══════════════════════════════════════════════════ */
+function buildPath(){
+  // V2.9.0: 先跑原本 type×stage×mut/brain 的邏輯，再依 age/ecog 動態加註與調整
+  const r = buildPathRaw();
+  applyAgeEcog(r);
+  return r;
+}
+
+/**
+ * V2.9.0: 依 S.age 與 S.ecog 對 result 的 steps/warns 做注入
+ *  - 高齡 (≥70): 化療鉑類首選 Carboplatin
+ *  - PS 2: 同步化放療可改序貫
+ *  - PS 3-4: 以支持性療法為主
+ */
+function applyAgeEcog(r){
+  if(!r || !S.age && !S.ecog) return;
+  const elderly = S.age === 'ge70';
+  const ps2 = S.ecog === '2';
+  const ps34 = S.ecog === '34';
+
+  // 1) 在 step 的 note 後追加個人化提示
+  for(const step of r.steps){
+    const title = step.title || '';
+    const hasChemo = /(化療|同步化放療|含鉑|鉑類|Cisplatin|Carboplatin)/.test(title) ||
+                     (step.drugs && step.drugs.some(d=>/Cisplatin|Carboplatin|Etoposide|Pemetrexed|Paclitaxel|化療|鉑類/.test(d.n||'')));
+    const hasCCRT = /同步化放療/.test(title);
+    const note = step.note || '';
+    const adjs = [];
+    if(elderly && hasChemo) adjs.push('≥70 歲：化療建議改 Carboplatin');
+    if(ps2 && hasCCRT)      adjs.push('PS 2：可考慮改序貫（先化後放）');
+    if(ps34 && hasChemo)    adjs.push('PS 3-4：化療需審慎評估');
+    if(adjs.length){
+      step.note = note + (note ? '　/　' : '') + '【依您狀況】' + adjs.join('；');
+    }
+  }
+
+  // 2) 動態加 warns
+  if(elderly) r.warns.unshift('≥70 歲：化療鉑類首選 Carboplatin');
+  if(ps2)     r.warns.unshift('PS 2：化療多以單藥；同步化放療可改序貫');
+  if(ps34)    r.warns.unshift('PS 3-4：以症狀控制與支持性療法為主');
+
+  // 3) 修正 pwTxt（PS 3-4 + 局晚/轉移）
+  if(ps34 && r.stageTxt && /局部晚期|擴散|轉移/.test(r.stageTxt)){
+    r.pwTxt = '支持性療法為主（PS 3-4）';
+  }
+}
+
+function buildPathRaw(){
+  const t = S.type, st = S.stageCat, m = S.mut, brain = S.brainMet;
+  const postOp = !!S.postOp;
+
+  // V2.10.0: postOp 分支 — 已手術，跳過手術建議直接走術後輔助 + 鞏固 + 追蹤
+  if(postOp && (st==='EARLY' || st==='LOCAL' || st==='META')){
+    return buildPostOpPath(t, st, m, brain);
+  }
+
+  // SCLC special
+  if(t==='SCLC'){
+    if(st==='META'){
+      // 擴散型
+      const steps = [];
+      const warns = ['SCLC 進展快，建議盡早展開治療'];
+      // 依腦/脊髓轉移調整第一線
+      if(brain==='no'){
+        steps.push({ title:'第一線：化療 + 免疫治療', line:DRUGS.SCLC_ES.line, nhi:'NHI', drugs: DRUGS.SCLC_ES.list, note: DRUGS.SCLC_ES.note });
+      } else if(brain==='yes'){
+        steps.push({ title:'第一線：化療（免疫不適用）', line:'一線', nhi:'NHI',
+          drugs:[{n:'Cisplatin/Carboplatin + Etoposide',z:'鉑類 + 滅必治'}],
+          note:'有腦/脊髓轉移者免疫不在健保給付範圍。' });
+        steps.push({ title:'腦轉移處理：依症狀決定放療時機', line:'並行',
+          note:'有症狀或大病灶：先放療再化療；無症狀小病灶：先化療同時 MRI 監測。' });
+        warns.push('腦轉移使免疫治療不適用，預後相對較差');
+      } else {
+        // unknown
+        steps.push({ title:'第一線：化療為基礎，是否加免疫須先確認腦影像', line:'一線', nhi:'NHI',
+          drugs: DRUGS.SCLC_ES.list,
+          note:'已排除腦/脊髓轉移可加免疫；否則先化療等影像。' });
+        warns.push('建議先做腦 MRI 再決定是否加免疫');
+      }
+      // PCI 鞏固
+      if(brain==='yes'){
+        steps.push({ title:'已有腦轉移：不做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）。' });
+      } else if(brain==='no'){
+        steps.push({ title:'治療反應佳後鞏固：MRI 監測 或 PCI', line:'鞏固', note:'擴散期 PCI 對存活的助益不明確；多數中心改用每 3 個月腦 MRI 追蹤。' });
+      } else {
+        steps.push({ title:'治療反應佳後依腦影像決定鞏固', line:'鞏固', note:'先做腦 MRI；陰性者選 MRI 監測 或 PCI。' });
+      }
+      steps.push({ title:'治療失敗或復發：二線', line:DRUGS.SCLC_2L.line, nhi:'NHI', drugs: DRUGS.SCLC_2L.list, note: DRUGS.SCLC_2L.note });
+
+      return {
+        stageTxt:'SCLC 擴散型 (Extensive)', pwTxt: brain==='yes' ? '化療為主 + 放療控制腦病灶' : '全身性化療 + 免疫治療',
+        steps, warns,
+      };
+    }
+    if(st==='EARLY' || st==='LOCAL'){
+      // 侷限型
+      const steps = [
+        { title:'同步化放療 — 主要治療', line:DRUGS.SCLC_LS_CCRT.line, nhi:'NHI', drugs: DRUGS.SCLC_LS_CCRT.list, note: DRUGS.SCLC_LS_CCRT.note },
+        { title:'極早期（T1-2 N0）可考慮先手術切除', line:'替代方案', note:'肺葉切除 + 淋巴結廓清；術後追加化療。' },
+      ];
+      // PCI 依 brainMet
+      if(brain==='yes'){
+        steps.push({ title:'已有腦轉移：不做預防性全腦照射 (PCI)', line:'鞏固', note:'改為治療性放療（針對病灶）。' });
+      } else if(brain==='no'){
+        steps.push({ title:'治療反應佳：預防性全腦照射 (PCI)', line:'鞏固', note:'可顯著降低腦轉移風險。' });
+      } else {
+        steps.push({ title:'治療反應佳：可考慮預防性全腦照射 (PCI)', line:'鞏固', note:'評估前需先做腦 MRI。' });
+      }
+      const warns = ['高齡或體力較差：同步化放療可改序貫'];
+      if(brain==='yes') warns.push('已有腦轉移：屬擴散期，治療策略需修正');
+      return { stageTxt:'SCLC 侷限型 (Limited)', pwTxt:'同步化放療為主', steps, warns };
+    }
+    return { stageTxt:'小細胞肺癌', pwTxt:'依分期決定方向',
+      steps:[{ title:'請先完成完整影像檢查（CT、腦 MRI、骨掃描）', note:'分期確認後才能決定治療。' }],
+      warns:['SCLC 進展較快，請盡早回診確認分期'] };
+  }
+
+  // NSCLC
+  const isNS = (t==='NSCLC_NS');
+  const typeLabel = isNS ? '非小細胞肺癌（非鱗狀）' : (t==='NSCLC_SQ' ? '非小細胞肺癌（鱗狀）' : '肺癌');
+
+  if(st==='EARLY'){
+    const steps = [
+      { title:'手術根除：肺葉切除 + 縱膈淋巴結廓清', line:'主要治療', note:'極早期 T1a/T1b 可考慮節段切除。' },
+      { title:'不適合手術：立體定位放射線治療 (SBRT)', line:'替代手術', note:'限 T1-T2a N0 周邊型病灶。' },
+      { title:'部分 II-IIIA 可切除者：術前化療 ± 免疫', line:'術前輔助', note:'術前免疫合併化療健保尚未給付，需自費或臨床試驗。' },
+      { title:'術後輔助化療（II 期或高風險 IB）', line:'術後輔助', nhi:'NHI', drugs:[
+          {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
+          {n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}],
+        note:'4 個療程。' },
+    ];
+    if(isNS){
+      steps.push({ title:'EGFR 陽性術後鞏固：Osimertinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'IB-IIIA 切除後 EGFR(+)，至多 3 年。' });
+      steps.push({ title:'ALK 陽性術後鞏固：Alectinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Alectinib',z:'安立適'}], note:'IB-IIIA 切除後 ALK(+)，至多 2 年。' });
+    }
+    return {
+      stageTxt:`${typeLabel} 早期 (I-II)`, pwTxt:'手術切除為主',
+      steps,
+      warns:[
+        'IB 期具高風險因子（腫瘤≥4cm、血管/臟層肋膜/淋巴管侵犯）建議輔助化療',
+        '建議切除後做 EGFR、ALK 檢測，影響術後鞏固藥物選擇',
+      ],
+    };
+  }
+
+  if(st==='LOCAL'){
+    return {
+      stageTxt:`${typeLabel} 局部晚期 (III)`, pwTxt:'同步化放療為主，再加免疫鞏固',
+      steps:[
+        { title:'同步化放療 — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
+            {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'},
+            {n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'鉑類 + 紫杉醇 + 放射線治療'}],
+          note:'化療與放射線治療同步 4-6 個療程。' },
+        { title:'同步化放療後無惡化：Durvalumab 免疫鞏固', line:DRUGS.CONSOLIDATION.line, nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note },
+        { title:'可切除型 IIIA：先手術 + 術後輔助化療 ± 標靶/免疫', line:'替代方案', note:'侷限 N1 或單站 N2 可手術；多站 N2 或大腫瘤通常先做同步化放療。' },
+        ...(isNS ? [{ title:'IIIA 切除術後 EGFR(+) / ALK(+)：標靶鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib (EGFR)',z:'泰格莎'},{n:'Alectinib (ALK)',z:'安立適'}], note:'依術後基因檢測結果加鞏固治療。' }] : []),
+      ],
+      warns:[
+        '高齡或體力較差：同步化放療毒性高，可改序貫（先化療後放射線治療）',
+        'Durvalumab 鞏固限 PD-L1 ≥1%，至多 12 個月',
+        '建議診斷時即做 EGFR / ALK / PD-L1 檢測',
+      ],
+    };
+  }
+
+  if(st==='META'){
+    let steps = [];
+    let warns = [];
+    if(m==='EGFR'){
+      steps = [
+        { title:'第一線：EGFR TKI 標靶', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
+        { title:'EGFR L858R + 腦轉移：合併方案', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI', drugs: DRUGS.EGFR_BRAIN.list, note: DRUGS.EGFR_BRAIN.note },
+        { title:'惡化後：抗藥機制檢測', line:'惡化評估', note:'若一線非 Osimertinib 且 T790M(+)，可換 Osimertinib。' },
+        { title:'Osimertinib 失敗後：化療 ± 免疫 / Amivantamab', line:'後線', nhi:'NHI', drugs:[
+            {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'},
+            {n:'Amivantamab + 化療',z:'瑞普替（部分自費）'}],
+          note:'非鱗狀標準後線。' },
+      ];
+    } else if(m==='ALK'){
+      steps = [
+        { title:'第一線：ALK TKI 標靶', line:DRUGS.ALK.line, nhi:'NHI', drugs: DRUGS.ALK.list, note: DRUGS.ALK.note },
+        { title:'耐藥後：依抗藥機制換次線 ALK TKI', line:'二線', note:'Lorlatinib 可用於其他 ALK TKI 失敗後。' },
+        { title:'多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'非鱗狀後線標準。' },
+      ];
+    } else if(m==='ROS1'){
+      steps = [
+        { title:'第一線：ROS1 TKI 標靶', line:DRUGS.ROS1.line, nhi:'NHI', drugs: DRUGS.ROS1.list, note: DRUGS.ROS1.note },
+        { title:'耐藥或多線失敗：含鉑化療', line:'後線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'' },
+      ];
+    } else if(m==='BRAF'){
+      steps = [
+        { title:'第一線：含鉑化療', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin（非鱗狀）',z:'愛寧達 + 鉑類'}], note:'鱗狀者改用 Paclitaxel + Carboplatin。' },
+        { title:'第二線（含鉑後）：BRAF + MEK 標靶', line:DRUGS.BRAF.line, nhi:'NHI', drugs: DRUGS.BRAF.list, note: DRUGS.BRAF.note },
+      ];
+    } else if(m==='MET'){
+      steps = [
+        { title:'標靶：MET 抑制劑', line:DRUGS.MET.line, nhi:'NHI', drugs: DRUGS.MET.list, note: DRUGS.MET.note },
+        { title:'若無法用標靶：含鉑化療 ± 免疫', line:'替代', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin ± Pembrolizumab',z:'愛寧達 + 鉑類 ± 吉舒達'}], note:'' },
+      ];
+    } else if(m==='KRAS'){
+      steps = [
+        { title:'第一線：含鉑化療 + 免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin + Pembrolizumab',z:'愛寧達 + 鉑類 + 吉舒達'}], note:'KRAS G12C 病人多 PD-L1 偏高，免疫反應佳。' },
+        { title:'第二線：KRAS G12C 標靶', line:DRUGS.KRAS.line, nhi:'SELF', drugs: DRUGS.KRAS.list, note: DRUGS.KRAS.note },
+      ];
+      warns.push('KRAS G12C 標靶 Sotorasib 健保給付請確認最新事審條件');
+    } else if(m==='PDL1_HIGH'){
+      const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
+      steps = [
+        { title:'第一線（首選）：Pembrolizumab 單藥免疫', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'PD-L1 ≥50% 可不加化療。' },
+        { title:'第一線（合併）：免疫 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note:'腫瘤負荷大或有症狀者可加化療快速控制。' },
+        { title:'惡化後：化療後線 / 加做 NGS', line:'後線', note:'NGS 找其他可治療突變（KRAS、HER2、NTRK 等）。' },
+      ];
+    } else if(m==='PDL1_LOW'){
+      const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
+      steps = [
+        { title:'第一線：化療 ± 免疫', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
+        { title:'惡化後：後線化療或加做 NGS', line:'後線', note:'NGS 找其他可治療突變。' },
+      ];
+    } else {
+      // NONE
+      steps = [
+        { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'EGFR / ALK / ROS1 / BRAF / MET / KRAS / NTRK + PD-L1。' },
+        { title:'等報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
+        { title:'依檢測結果個人化', line:'後續', note:'有突變→標靶；PD-L1 高→免疫 + 化療。' },
+      ];
+      warns.push('基因檢測會大幅影響可用藥物，請務必完成');
+    }
+    return { stageTxt:`${typeLabel} 轉移期 (IV)`, pwTxt:'依基因 / PD-L1 個人化治療', steps, warns };
+  }
+
+  return { stageTxt: typeLabel + '（分期待定）', pwTxt:'請先完成完整分期檢查',
+    steps:[{ title:'與主治醫師討論完整分期計畫（CT、PET、腦 MRI）', note:'分期確認後才能個人化治療。' }],
+    warns:['未明確分期前的建議僅供參考'] };
+}
+
+/* ═══════════════════════════════════════════════════
+   V2.10.0: POST-OP PATHWAY (手術後路徑)
+   已有病理期別 → 跳過手術建議，列術後輔助 + 鞏固 + 追蹤
+═══════════════════════════════════════════════════ */
+function buildPostOpPath(t, st, m, brain){
+  const isNS = (t==='NSCLC_NS');
+  const isSQ = (t==='NSCLC_SQ');
+  const isNSCLC = (isNS || isSQ);
+  const isSC = (t==='SCLC');
+  const typeLabel = isNS ? '非小細胞肺癌（非鱗狀）'
+                  : isSQ ? '非小細胞肺癌（鱗狀）'
+                  : isSC ? '小細胞肺癌' : '肺癌';
+
+  // ── SCLC 術後（罕見，僅 T1-2N0 偶有手術） ──
+  if(isSC){
+    const steps = [
+      { title:'術後輔助化療：Cisplatin + Etoposide', line:'術後輔助', nhi:'NHI',
+        drugs:[{n:'Cisplatin + Etoposide',z:'鉑類 + 滅必治'}],
+        note:'4 個療程。SCLC 即使早期切除，仍建議全身性化療鞏固。' },
+    ];
+    if(st==='LOCAL' || st==='EARLY'){
+      // 若術後病理發現 N(+)，加縱膈放療
+      steps.push({ title:'若病理發現 N(+)：加縱膈放療', line:'術後鞏固', note:'術前未預期到的淋巴結轉移建議加放療。' });
+    }
+    if(brain==='no'){
+      steps.push({ title:'治療反應佳：預防性全腦照射 (PCI) 或 MRI 監測', line:'鞏固', note:'近年多數中心改採每 3 個月腦 MRI 監測，PCI 仍為選項。' });
+    } else if(brain==='yes'){
+      steps.push({ title:'已有腦轉移：不做 PCI，改治療性放療', line:'鞏固', note:'針對病灶做放射線治療。' });
+    } else {
+      steps.push({ title:'術後評估鞏固方式', line:'鞏固', note:'先做腦 MRI；陰性者可選 PCI 或 MRI 監測。' });
+    }
+    steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT、之後每 6 個月', line:'術後追蹤',
+      note:'前 2 年復發風險高；含胸部 CT 與必要時腦 MRI。5 年後改每年。' });
+    return { stageTxt:'小細胞肺癌（術後）', pwTxt:'術後輔助化療 + 鞏固 + 規律追蹤',
+      steps, warns:['SCLC 即使切除，全身性復發風險高，請務必完成輔助化療'] };
+  }
+
+  // ── NSCLC 術後 ──
+  // META post-op：罕見（如寡轉移切除），不走標準術後路徑
+  if(st==='META'){
+    return {
+      stageTxt:`${typeLabel} 轉移期（術後）`,
+      pwTxt:'已切除原發/寡轉移，仍以全身性治療為主',
+      steps:[
+        { title:'寡轉移切除後仍須全身性治療', line:'主要治療',
+          note:'切除原發或單一轉移病灶不等於根治，仍需全身性藥物控制。' },
+        { title:'依基因 / PD-L1 結果決定第一線', line:'一線',
+          note:'EGFR/ALK/ROS1/BRAF/MET → 標靶；PD-L1 高 → 免疫 ± 化療；NONE → 化療 ± 免疫。' },
+        { title:'每 2-3 個月影像追蹤', line:'術後追蹤', note:'CT 每 2-3 個月，必要時加腦 MRI 與骨掃描。' },
+      ],
+      warns:[
+        '轉移期切除多為寡轉移特殊情況，治療以全身性為主',
+        '請與主治醫師確認術後系統性治療計畫',
+      ],
+    };
+  }
+
+  // EARLY post-op (Stage I-II 切除)
+  if(st==='EARLY'){
+    const steps = [];
+    steps.push({ title:'術後輔助化療（II 期或高風險 IB）', line:'術後輔助', nhi:'NHI',
+      drugs:[
+        {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
+        ...(isNS ? [{n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}] : []),
+      ],
+      note:'4 個療程。IA 期通常觀察即可；IB 高風險（≥4cm、血管/臟層肋膜/淋巴管侵犯）建議化療。' });
+
+    if(isNS){
+      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', nhi:'NHI',
+        drugs:[{n:'Osimertinib',z:'泰格莎'}],
+        note:'IB-IIIA 切除後 EGFR(+) — ADAURA 研究顯示顯著降低復發。' });
+      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', nhi:'NHI',
+        drugs:[{n:'Alectinib',z:'安立適'}],
+        note:'IB-IIIA 切除後 ALK(+) — ALINA 研究依據。' });
+    }
+    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固',
+      drugs:[{n:'Atezolizumab',z:'癌自禦'}],
+      note:'IMpower010 適用 II-IIIA 切除後 PD-L1≥1%；健保事審條件請與主治醫師確認。' });
+    steps.push({ title:'規律追蹤：前 2 年每 3-6 個月 CT', line:'術後追蹤',
+      note:'前 2 年每 3-6 個月、3-5 年每 6 個月、5 年後每年。每年 1 次胸部低劑量 CT。' });
+
+    const warns = [
+      'IA 期切除通常觀察即可，無須輔助化療',
+      '建議切除後做 EGFR、ALK、PD-L1 檢測，決定鞏固藥物',
+    ];
+    if(!isNS) warns.push('鱗狀者目前無術後標靶鞏固藥物，主要以化療 ± 免疫為主');
+    return {
+      stageTxt:`${typeLabel} 早期 (I-II) — 術後`,
+      pwTxt:'術後輔助治療 + 規律追蹤',
+      steps, warns,
+    };
+  }
+
+  // LOCAL post-op (Stage III 切除，多為 IIIA 可切除型)
+  if(st==='LOCAL'){
+    const steps = [];
+    steps.push({ title:'術後輔助化療（標準 4 療程）', line:'術後輔助', nhi:'NHI',
+      drugs:[
+        {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
+        ...(isNS ? [{n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}] : []),
+      ],
+      note:'III 期切除後標準療程 4 次。' });
+    steps.push({ title:'若病理切緣 (+) 或多站 N2：加術後放療', line:'術後鞏固',
+      note:'切緣陽性或不完全切除（R1/R2）建議加胸部放療；單站 N2 視情況。' });
+    if(isNS){
+      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', nhi:'NHI',
+        drugs:[{n:'Osimertinib',z:'泰格莎'}],
+        note:'IB-IIIA EGFR(+) 切除後 — ADAURA 研究依據。' });
+      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', nhi:'NHI',
+        drugs:[{n:'Alectinib',z:'安立適'}],
+        note:'IB-IIIA ALK(+) 切除後 — ALINA 研究依據。' });
+    }
+    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固',
+      drugs:[{n:'Atezolizumab',z:'癌自禦'}],
+      note:'IMpower010：II-IIIA 切除後 PD-L1≥1%；健保事審。' });
+    steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT', line:'術後追蹤',
+      note:'III 期復發風險較高 — 前 2 年每 3 個月、3-5 年每 6 個月、5 年後每年。' });
+
+    const warns = [
+      'III 期切除復發風險高於 I-II 期，請務必完成輔助治療與規律追蹤',
+      '建議完成 EGFR、ALK、PD-L1 檢測再決定鞏固藥物',
+    ];
+    if(!isNS) warns.push('鱗狀者目前無術後標靶鞏固藥物');
+    return {
+      stageTxt:`${typeLabel} 局部晚期 (III) — 術後`,
+      pwTxt:'術後輔助化療 + 標靶/免疫鞏固 + 密集追蹤',
+      steps, warns,
+    };
+  }
+
+  // fallback（理論上不會進來）
+  return { stageTxt:`${typeLabel}（術後）`, pwTxt:'術後追蹤',
+    steps:[{ title:'與主治醫師討論術後輔助治療計畫', note:'依最終病理分期決定。' }],
+    warns:[] };
+}
+
+/* ═══════════════════════════════════════════════════
+   Render
+═══════════════════════════════════════════════════ */
+function renderTreatmentSteps(steps){
+  if(!steps || !steps.length) return '<p style="font-size:11px;color:var(--tx3);padding:10px 0">尚無資料</p>';
+  return steps.map((s,i)=>{
+    let badge = '';
+    if(s.nhi==='NHI') badge = '<span class="b-nhi">健保</span>';
+    else if(s.nhi==='SELF') badge = '<span class="b-self">自費</span>';
+    let line = s.line ? `<span class="tx-step-line">${escapeHtml(s.line)}</span>` : '';
+    let drugsBox = '';
+    if(s.drugs && s.drugs.length){
+      const items = s.drugs.map(d=>{
+        const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
+        const zh = d.z ? `<div class="tx-drug-zh">${escapeHtml(d.z)}</div>` : '';
+        return `<div class="tx-drug-item">${en}${zh}</div>`;
+      }).join('');
+      drugsBox = `<div class="tx-drugs-box">
+        <div class="tx-drugs-head">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
+          適用藥物
+        </div>${items}</div>`;
+    }
+    let note = s.note ? `<div class="tx-step-note">${escapeHtml(s.note)}</div>` : '';
+    return `<div class="tx-step">
+      <div class="tx-step-head">
+        <div class="tx-step-n">${i+1}</div>
+        <div class="tx-step-title">${badge}${escapeHtml(s.title)}${line}</div>
+      </div>
+      ${drugsBox}${note}
+    </div>`;
+  }).join('');
+}
+
+function renderSummary(){
+  const r = buildPath();
+  document.getElementById('sum-stage').textContent = stageDisplay();
+  document.getElementById('sum-pw').textContent = r.pwTxt;
+  // meta line
+  let meta = r.stageTxt;
+  const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
+  if(tnmStr) meta += ' · ' + tnmStr;
+  if(S.mut && S.mut!=='NONE') meta += ' · ' + mutDisplay(S.mut);
+  if(isSCLC() && S.brainMet){
+    const bLabel = ({yes:'有腦/脊髓轉移', no:'無腦/脊髓轉移', unknown:'腦/脊髓轉移未明'})[S.brainMet] || '';
+    if(bLabel) meta += ' · ' + bLabel;
+  }
+  // V2.9.0: 顯示年齡 + ECOG
+  if(S.age){ meta += ' · ' + (S.age==='ge70' ? '≥70 歲' : '<70 歲'); }
+  if(S.ecog){
+    const eL = ({'01':'PS 0-1','2':'PS 2','34':'PS 3-4'})[S.ecog] || '';
+    if(eL) meta += ' · ' + eL;
+  }
+  if(S.code) meta += ' · ' + S.code;
+  if(S.name) meta += ' ' + S.name;
+  document.getElementById('sum-meta').textContent = meta;
+
+  document.getElementById('sum-tx').innerHTML = renderTreatmentSteps(r.steps);
+  document.getElementById('sum-tx-ct').textContent = `${(r.steps||[]).length} 個步驟`;
+
+  // warns
+  const warnEl = document.getElementById('sum-warn');
+  if(!r.warns || !r.warns.length){
+    warnEl.innerHTML = '<div style="font-size:10.5px;color:var(--tx3);padding:4px 0">無特別事項</div>';
+  } else {
+    warnEl.innerHTML = r.warns.map(w=>`<div class="strip-warn">${escapeHtml(w)}</div>`).join('');
+  }
+
+  // team + case manager
+  renderTeam();
+  document.getElementById('cm-name').textContent = TEAM.caseManager.name;
+
+  // V2.9.5: my-drugs-btn 動態組 query string 帶到 drugs-patient.html
+  const btn = document.getElementById('my-drugs-btn');
+  if(btn){
+    const params = new URLSearchParams();
+    if(S.type)     params.set('type', S.type);
+    if(S.stageCat) params.set('stage', S.stageCat);
+    if(isSCLC()){
+      // SCLC 用 brainMet 取代 mut 的 match key
+      if(S.brainMet) params.set('mut', S.brainMet);
+    } else if(S.mut){
+      params.set('mut', S.mut);
+    }
+    btn.href = 'drugs-patient.html' + (params.toString() ? '?'+params.toString() : '');
+  }
+}
+
+/* ─── Team picker ─── */
+function renderTeam(){
+  const el = document.getElementById('team-list');
+  if(!el) return;
+  const html = TEAM.depts.map((d,i)=>{
+    const picked = S.consult[d.id] || '';
+    // 預設第一科展開（其他科收合，避免撐爆版面）
+    const open = !picked && i===0;
+    const docBtns = d.doctors.map(name=>
+      `<button type="button" class="tm-doc-btn${name===picked?' selected':''}" onclick="pickDoctor('${d.id}','${escapeHtml(name)}')">${escapeHtml(name)}</button>`
+    ).join('');
+    const clearBtn = picked
+      ? `<button type="button" class="tm-doc-btn clear" onclick="pickDoctor('${d.id}','')">清除</button>`
+      : '';
+    return `<div class="tm-dept${open?' open':''}" data-id="${d.id}">
+      <div class="tm-dept-head" onclick="toggleDept('${d.id}')">
+        <span class="l"><b>${escapeHtml(d.name)}</b><span class="h">${escapeHtml(d.hint||'')}</span></span>
+        <span class="v ${picked?'':'empty'}">${picked ? escapeHtml(picked) : '尚未選擇'}</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div class="tm-doctors">${docBtns}${clearBtn}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function toggleDept(id){
+  const el = document.querySelector(`.tm-dept[data-id="${id}"]`);
+  if(el) el.classList.toggle('open');
+}
+function pickDoctor(deptId, name){
+  if(name) S.consult[deptId] = name;
+  else delete S.consult[deptId];
+  renderTeam();
+  // 收合該科展開區（讓使用者看到結果，不浪費版面）
+  if(name){
+    setTimeout(()=>{
+      const el = document.querySelector(`.tm-dept[data-id="${deptId}"]`);
+      if(el) el.classList.remove('open');
+    }, 200);
+  }
+}
+
+/* ─── QR (always-on, modal triggered) ─── */
+// 採 lung.html 同款模板：QR 內容是 URL，掃 QR 落在 edu-patient.html 顯示摘要
+// 民眾版 edu 頁：完整 DRUGS + buildPath，跟 patient.html 總覽頁內容一致
+const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu-patient.html';
+
+function buildEduPayload(){
+  // 只送必要欄位（base64 後 < 200 字元）
+  const typeCode = {NSCLC_NS:'NS', NSCLC_SQ:'SQ', SCLC:'SC'}[S.type] || '';
+  const today = (new Date()).toISOString().slice(0,10);
+  return {
+    n: (S.name||'').slice(0,8),    // 姓名（限 8 字以內隱私）
+    t: typeCode,
+    s: S.stage || (isSCLC() ? (S.stageCat==='META'?'Extensive':'Limited') : ''),
+    m: S.mut || '',
+    b: S.brainMet || '',          // SCLC 腦/脊髓轉移
+    a: S.age || '',                // V2.9.0: 年齡 lt70/ge70
+    e: S.ecog || '',               // V2.9.0: ECOG 01/2/34
+    po: S.postOp ? 1 : 0,          // V2.10.0: 病理期別模式（已手術）
+    tm: TEAM.depts.map(d => S.consult[d.id] || ''),
+    c: TEAM.caseManager.name,
+    d: today,
+    co: S.code || '',              // 病歷號（可空）
+  };
+}
+
+function buildEduURL(){
+  const json = JSON.stringify(buildEduPayload());
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return EDU_BASE_URL + '#' + b64;
+}
+
+// 民眾版 modal 用的「閱讀摘要」(中文，給 .qr-meta 顯示，QR 不裝這個)
+function buildHumanReadableSummary(){
+  const r = buildPath();
+  const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
+  const parts = [];
+  if(S.code) parts.push(S.code);
+  if(S.name) parts.push(S.name);
+  // V2.10.0: 病理模式時 stageDisplay 已含 p 前綴
+  parts.push((S.postOp ? '病理' : 'Stage ') + (S.postOp ? '' : '') + stageDisplay());
+  if(tnmStr) parts.push((S.postOp ? '病理 ' : '') + tnmStr);
+  if(S.mut && S.mut!=='NONE') parts.push(mutDisplay(S.mut));
+  if(isSCLC() && S.brainMet){
+    const bL = ({yes:'腦/脊髓(+)', no:'腦/脊髓(-)', unknown:''})[S.brainMet];
+    if(bL) parts.push(bL);
+  }
+  parts.push(r.pwTxt);
+  const doctors = TEAM.depts.filter(d=>S.consult[d.id]).map(d=>`${d.name}:${S.consult[d.id]}`);
+  if(doctors.length) parts.push(...doctors);
+  return parts.join(' | ');
+}
+
+function openQR(){
+  const modal = document.getElementById('qr-modal');
+  modal.style.display = 'flex';
+  const canvas = document.getElementById('qr-canvas');
+  canvas.innerHTML = '';
+  // 顯示給人看的摘要（中文）
+  document.getElementById('qr-meta').textContent = buildHumanReadableSummary();
+  // QR 內容是 URL（純 ASCII），落地 edu.html
+  const url = buildEduURL();
+  try{
+    if(typeof QRCode === 'undefined'){
+      throw new Error('QR lib 未載入，請檢查網路');
+    }
+    new QRCode(canvas, {
+      text: url,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    // qrcodejs 會塞 canvas + img，調整 sizing
+    setTimeout(()=>{
+      const img = canvas.querySelector('img'); if(img){ img.style.maxWidth='100%'; img.style.height='auto'; }
+      const cv = canvas.querySelector('canvas'); if(cv){ cv.style.maxWidth='100%'; cv.style.height='auto'; }
+    }, 30);
+  } catch(e){
+    console.error('QR generate error:', e);
+    canvas.innerHTML = '<div style="padding:20px;color:var(--red);font-size:12px">QR 產生失敗：'+escapeHtml(e.message||String(e))+'</div>';
+  }
+}
+function closeQR(){ document.getElementById('qr-modal').style.display='none'; }
+function closeQRBackdrop(ev){
+  if(ev.target.id === 'qr-modal') closeQR();
+}
+
+function stageDisplay(){
+  const pre = S.postOp ? 'p' : '';  // V2.10.0: 病理模式前綴
+  // SCLC：直接顯示 Limited/Extensive 字樣
+  if(isSCLC()){
+    if(S.stage==='Limited' || S.stageCat==='LOCAL') return pre + '侷限型';
+    if(S.stage==='Extensive' || S.stageCat==='META') return pre + '擴散型';
+    return '?';
+  }
+  if(S.stage) return pre + S.stage;
+  if(S.stageCat==='EARLY') return pre + 'I-II';
+  if(S.stageCat==='LOCAL') return pre + 'III';
+  if(S.stageCat==='META')  return pre + 'IV';
+  return '?';
+}
+function mutDisplay(m){
+  return ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:''}[m] || '');
+}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ═══════════════════════════════════════════════════
+   Navigation flow
+═══════════════════════════════════════════════════ */
+function showPage(idx){
+  let pageId = PAGES[idx];
+  // 進 Q4 時，若不需要（早期/不知 type），跳到總覽
+  if(idx===3 && !q4Needed()){
+    pageId = 'p-sum';
+    stepIdx = 4;
+  }
+  PAGES.forEach(id => document.getElementById(id).classList.toggle('active', id===pageId));
+  // progress dots: 4 步（不問 Q4）或 5 步（含 Q4）
+  const totalSteps = q4Needed() ? 5 : 4;
+  document.querySelectorAll('.pdot').forEach((d,i)=>{
+    const visible = i < totalSteps;
+    d.style.display = visible ? '' : 'none';
+    d.classList.remove('active','done');
+    if(visible){
+      if(i < stepIdx) d.classList.add('done');
+      else if(i === stepIdx) d.classList.add('active');
+    }
+  });
+  // 進 Q3（分期）前，依 type 決定 TNM 或 SCLC 模式
+  if(pageId==='p-q3'){
+    if(isSCLC() && q2Mode==='tnm' && !S.t && !S.n && !S.m){
+      q2Mode = 'sclc';
+    } else if(!isSCLC() && q2Mode==='sclc'){
+      q2Mode = 'tnm';
+    }
+    applyQ2Mode();
+  }
+  // 進 Q4（基因/腦轉移）前，依 type 切換 mut grid 或 brain grid
+  if(pageId==='p-q4'){
+    applyQ3Mode();  // 函式內部依 isSCLC 切換
+  }
+  updateActBar();
+  // V2.8.11: 進總覽頁時加 body.summary 解鎖手機捲動
+  document.body.classList.toggle('summary', pageId==='p-sum');
+  // V2.9.4: 在 Q1-Q4 加 body.questioning 解鎖手機 Q-page 捲動
+  document.body.classList.toggle('questioning', pageId!=='p-sum');
+  if(pageId==='p-sum'){
+    renderSummary();
+    window.scrollTo({top:0, behavior:'auto'});
+  } else {
+    // 進新 Q 頁時捲到頂（避免使用者切到下一題時還停在前頁尾）
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+}
+
+function applyQ2Mode(){
+  const sclcWrap = document.getElementById('sclc-wrap');
+  const tnmWrap  = document.getElementById('tnm-wrap');
+  const tnmBack  = document.getElementById('tnm-back-sclc');
+  const stepEl   = document.getElementById('q2-step');
+  const qEl      = document.getElementById('q2-q');
+  const subEl    = document.getElementById('q2-sub');
+  const isPO = !!S.postOp;
+  // SCLC 模式顯示 sclc-wrap
+  if(q2Mode==='sclc' && isSCLC()){
+    sclcWrap.style.display = '';
+    tnmWrap.style.display  = 'none';
+    if(stepEl) stepEl.textContent = isPO ? '第 2 步 / 病理分期' : '第 2 步 / 分期';
+    if(qEl)    qEl.textContent    = isPO ? '您手術後的病理分期是？' : '您的 SCLC 是？';
+    if(subEl)  subEl.innerHTML    = isPO ? '依手術切除後的病理報告填寫。' : '小細胞肺癌一般分為侷限型與擴散型。';
+  } else {
+    sclcWrap.style.display = 'none';
+    tnmWrap.style.display  = '';
+    // SCLC 但用 TNM 模式 → 顯示「改回二選」連結
+    tnmBack.style.display = (isSCLC() && q2Mode==='tnm') ? '' : 'none';
+    if(stepEl) stepEl.textContent = isPO ? '第 2 步 / 病理 TNM 分期' : '第 2 步 / TNM 分期';
+    if(qEl)    qEl.textContent    = isPO ? '您手術後的病理 TNM？' : '您的 TNM 是？';
+    if(subEl)  subEl.innerHTML    = (isPO ? '依病理報告填寫 pT / pN / pM。' : '主治醫師會告訴您 T、N、M 的數字。')
+                                  + ' <a id="tnm-toggle" onclick="toggleTNMMode()">'+(tnmAdv?'切換簡化模式':'切換進階模式')+'</a>';
+  }
+  applyPostOpVisuals();
+}
+
+/* V2.10.0: postOp 視覺呈現（cd-step 顏色、tnm-foot 標籤、tnm-stage 顯示） */
+function applyPostOpVisuals(){
+  const cd = document.getElementById('q3-cd');
+  const foot = document.getElementById('tnm-foot');
+  const lEl = foot ? foot.querySelector('.l') : null;
+  const isPO = !!S.postOp;
+  if(cd) cd.classList.toggle('post-op', isPO);
+  if(foot) foot.classList.toggle('post-op', isPO);
+  if(lEl) lEl.textContent = isPO ? '病理分期 (pStage)' : '推算分期';
+  // 同步切換按鈕的 selected
+  document.querySelectorAll('.stage-mode-btn').forEach(b=>{
+    const want = b.dataset.mode === (isPO ? 'pathological' : 'clinical');
+    b.classList.toggle('selected', want);
+  });
+  // 重算 tnm-stage 顯示文字
+  refreshStageDisplayText();
+}
+
+function refreshStageDisplayText(){
+  const v = document.getElementById('tnm-stage');
+  if(!v) return;
+  const stage = S.stage;
+  if(!stage){
+    v.classList.add('empty');
+    v.textContent = '— 請完整選擇 T、N、M —';
+    return;
+  }
+  v.classList.remove('empty');
+  const prefix = S.postOp ? 'p' : '';
+  if(isSCLC()){
+    v.textContent = (S.stageCat==='META' ? '擴散型' : '侷限型') + ' (' + prefix + stage + ')';
+  } else {
+    v.textContent = (S.postOp ? 'p' : '') + 'Stage ' + stage;
+  }
+}
+
+/* V2.10.0: 切換期別來源（臨床 vs 病理） */
+function pickStageMode(mode){
+  const newPO = (mode === 'pathological');
+  if(newPO === S.postOp) return;  // 同模式不動
+  S.postOp = newPO;
+  applyQ2Mode();
+  updateActBar();
+}
+
+function applyQ3Mode(){
+  const mutGrid   = document.getElementById('opt-mut');
+  const brainGrid = document.getElementById('opt-brain');
+  const qEl       = document.getElementById('q3-q');
+  const subEl     = document.getElementById('q3-sub');
+  if(isSCLC()){
+    mutGrid.style.display = 'none';
+    brainGrid.style.display = '';
+    if(qEl)   qEl.textContent   = '有沒有腦或脊髓轉移？';
+    if(subEl) subEl.textContent = '影響預防性全腦照射 (PCI) 與免疫治療的使用';
+  } else {
+    mutGrid.style.display = '';
+    brainGrid.style.display = 'none';
+    if(qEl)   qEl.textContent   = '基因 / PD-L1 結果？';
+    if(subEl) subEl.textContent = '這會決定可用的標靶或免疫藥物';
+  }
+}
+
+function setQ2Mode(mode){
+  q2Mode = mode;
+  // 切換時清掉另一邊的 state
+  if(mode==='sclc'){
+    S.t=''; S.n=''; S.m=''; S.stage='';
+    document.querySelectorAll('.tnm-btn').forEach(b=>b.classList.remove('selected'));
+    const foot = document.getElementById('tnm-foot');
+    const v = document.getElementById('tnm-stage');
+    if(foot) foot.classList.add('empty');
+    if(v){ v.classList.add('empty'); v.textContent = '— 請完整選擇 T、N、M —'; }
+  } else {
+    // 切回 TNM 模式：清 stageCat（讓使用者重填）
+    S.stage=''; S.stageCat='';
+    document.querySelectorAll('.sclc-btn').forEach(b=>b.classList.remove('selected'));
+  }
+  applyQ2Mode();
+  updateActBar();
+}
+
+function updateActBar(){
+  const back = document.getElementById('bt-back');
+  const next = document.getElementById('bt-next');
+  const restart = document.getElementById('bt-restart');
+  const prevSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>';
+  const nextSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
+
+  // Summary page (stepIdx === 4): 顯示「返回」+「重新查詢」
+  if(stepIdx >= 4){
+    back.style.display = '';
+    back.innerHTML = prevSvg + ' 返回';   // 跨層回問答流程
+    next.style.display = 'none';
+    restart.style.display = '';
+    return;
+  }
+
+  back.style.display = (stepIdx > 0) ? '' : 'none';
+  back.innerHTML = prevSvg + ' 上一題';
+  next.style.display = '';
+  restart.style.display = 'none';
+
+  // canNext 條件
+  let canNext = false;
+  if(stepIdx === 0) canNext = true;                                    // Q1 基本資料：永遠可進
+  else if(stepIdx === 1) canNext = !!S.type;                           // Q2 類型：必選
+  else if(stepIdx === 2) canNext = !!S.stageCat;                       // Q3 分期：必算出
+  else if(stepIdx === 3) canNext = isSCLC() ? !!S.brainMet : !!S.mut;  // Q4 基因/腦：必選
+  next.disabled = !canNext;
+
+  // 「下一題」 vs 「看治療路徑」
+  const isLast = (stepIdx === 3) || (stepIdx === 2 && !q4Needed() && S.stageCat);
+  next.innerHTML = (isLast ? '看治療路徑 ' : '下一題 ') + nextSvg;
+}
+
+/* ═══════════════════════════════════════════════════
+   Pickers
+═══════════════════════════════════════════════════ */
+function pickType(btn){
+  const newType = btn.dataset.val;
+  // 改變 type 時，重置下游所有狀態（避免 stale data 帶到後面）
+  if(S.type && S.type !== newType){
+    S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
+    S.postOp=false;  // V2.10.0: 換 type 也清病理模式
+    // 視覺：清掉 TNM/mut/brain/sclc 的 selected
+    document.querySelectorAll('.tnm-btn,.mut-btn,.brain-btn,.sclc-btn').forEach(b=>b.classList.remove('selected'));
+    const foot = document.getElementById('tnm-foot');
+    const v = document.getElementById('tnm-stage');
+    if(foot){ foot.classList.add('empty'); }
+    if(v){ v.classList.add('empty'); v.textContent = '— 請完整選擇 T、N、M —'; }
+    // 切換 Q2 模式預設
+    q2Mode = (newType==='SCLC') ? 'sclc' : 'tnm';
+  }
+  S.type = newType;
+  document.querySelectorAll('#opt-type .btn-type').forEach(b=>b.classList.toggle('selected', b===btn));
+  updateActBar();
+}
+
+function pickSCLC(btn){
+  // 兩段式：LIMITED → stageCat='LOCAL'（走 SCLC 侷限分支）；EXTENSIVE → 'META'
+  const val = btn.dataset.val;
+  S.stageCat = (val==='LIMITED') ? 'LOCAL' : 'META';
+  S.stage = (val==='LIMITED') ? 'Limited' : 'Extensive';
+  // 清 TNM（因為是非 TNM 路徑）
+  S.t=''; S.n=''; S.m='';
+  document.querySelectorAll('.sclc-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  document.querySelectorAll('.tnm-btn').forEach(b=>b.classList.remove('selected'));
+  setTimeout(()=>goNext(), 220);
+}
+
+function pickBrain(btn){
+  S.brainMet = btn.dataset.val;
+  document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  setTimeout(()=>goNext(), 200);
+}
+
+function pickMut(btn){
+  S.mut = btn.dataset.val;
+  document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  setTimeout(()=>goNext(), 200);
+}
+
+function pickTNM(axis, btn){
+  const val = btn.dataset.val;
+  S[axis] = val;
+  document.querySelectorAll(`[data-axis="${axis}"] .tnm-btn`).forEach(b=>{
+    b.classList.toggle('selected', b.dataset.val===val);
+  });
+  recomputeStage();
+}
+
+function recomputeStage(){
+  const oldCat = S.stageCat;
+  const stage = computeAJCC(S.t, S.n, S.m);
+  S.stage = stage;
+  // SCLC 用 TNM 模式：直接依 M 分 limited/extensive，不用 NSCLC stage 分類
+  if(isSCLC()){
+    if(stage){
+      S.stageCat = /^IV/.test(stage) ? 'META' : 'LOCAL';
+    } else {
+      S.stageCat = '';
+    }
+  } else {
+    S.stageCat = stageToCategory(stage);
+  }
+  // 若 stage 改變導致 mut/brainMet 不再相關，清掉避免殘留
+  if(oldCat !== S.stageCat && !q3Needed()){
+    if(S.mut){ S.mut=''; document.querySelectorAll('.mut-btn').forEach(b=>b.classList.remove('selected')); }
+    if(S.brainMet){ S.brainMet=''; document.querySelectorAll('.brain-btn').forEach(b=>b.classList.remove('selected')); }
+  }
+  const foot = document.getElementById('tnm-foot');
+  const val = document.getElementById('tnm-stage');
+  if(stage){
+    foot.classList.remove('empty');
+  } else {
+    foot.classList.add('empty');
+  }
+  refreshStageDisplayText();
+  updateActBar();
+}
+
+function toggleTNMMode(){
+  tnmAdv = !tnmAdv;
+  document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display = tnmAdv ? 'none' : '');
+  document.querySelectorAll('.tnm-adv').forEach(el=>el.style.display = tnmAdv ? '' : 'none');
+  document.getElementById('tnm-toggle').textContent = tnmAdv ? '切換簡化模式' : '切換進階模式';
+  // Re-apply highlights
+  ['t','n','m'].forEach(axis=>{
+    const v = S[axis];
+    document.querySelectorAll(`[data-axis="${axis}"] .tnm-btn`).forEach(b=>{
+      b.classList.toggle('selected', b.dataset.val===v);
+    });
+  });
+}
+
+function setStageUnknown(){
+  // Fallback: 民眾不確定 TNM。清空 T/N/M、mut、brainMet，明確標記 stageCat 走最保守一般原則
+  S.t=''; S.n=''; S.m=''; S.stage=''; S.mut=''; S.brainMet='';
+  // SCLC fallback: 侷限期；NSCLC fallback: 早期
+  S.stageCat = isSCLC() ? 'LOCAL' : 'EARLY';
+  document.querySelectorAll('.tnm-btn,.mut-btn,.brain-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('tnm-foot').classList.remove('empty');
+  const val = document.getElementById('tnm-stage');
+  val.classList.remove('empty');
+  val.textContent = '不確定 — 一般原則';
+  updateActBar();
+  setTimeout(()=>goNext(), 250);
+}
+
+/* V2.9.0: Q1 基本資料 picker */
+function pickAge(btn){
+  const v = btn.dataset.val;
+  S.age = (S.age === v) ? '' : v;  // 再點同一顆 = 取消
+  document.querySelectorAll('#p-q1 .age-btn').forEach(b=>b.classList.toggle('selected', S.age===b.dataset.val));
+}
+function pickEcog(btn){
+  const v = btn.dataset.val;
+  S.ecog = (S.ecog === v) ? '' : v;
+  document.querySelectorAll('#p-q1 .ecog-btn').forEach(b=>b.classList.toggle('selected', S.ecog===b.dataset.val));
+}
+
+function goNext(){
+  // 離開 Q1 時抓基本資料（age / ecog 已 pick 時即時存）
+  if(stepIdx===0){
+    S.code = (document.getElementById('pt-code').value||'').trim();
+    S.name = (document.getElementById('pt-name').value||'').trim();
+  }
+  // Q3 → 若 q4 不需要，跳總覽
+  if(stepIdx===2 && !q4Needed()){
+    stepIdx = 4; showPage(4); return;
+  }
+  if(stepIdx<4){ stepIdx++; showPage(stepIdx); }
+}
+
+function goPrev(){
+  if(stepIdx<=0) return;
+  // 從總覽返回：若沒問 Q4，直接回 Q3
+  if(stepIdx===4 && !q4Needed()){ stepIdx = 2; showPage(2); return; }
+  stepIdx--; showPage(stepIdx);
+}
+
+function restart(){
+  // 全清
+  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
+  S.postOp=false;  // V2.10.0
+  S.age=''; S.ecog='';
+  S.code=''; S.name=''; S.consult={};
+  stepIdx=0; tnmAdv=false; q2Mode='tnm';
+  document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn, .brain-btn, .sclc-btn, .age-btn, .ecog-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display='');
+  document.querySelectorAll('.tnm-adv').forEach(el=>el.style.display='none');
+  // V2.10.0: stage-mode 重置為 clinical
+  document.querySelectorAll('.stage-mode-btn').forEach(b=>b.classList.toggle('selected', b.dataset.mode==='clinical'));
+  const cd0 = document.getElementById('q3-cd');
+  if(cd0) cd0.classList.remove('post-op');
+  const tt = document.getElementById('tnm-toggle');
+  if(tt) tt.textContent = '切換進階模式';
+  document.getElementById('pt-code').value=''; document.getElementById('pt-name').value='';
+  recomputeStage();
+  showPage(0);
+}
+
+// init
+showPage(0);
+</script>
+</body>
+</html>

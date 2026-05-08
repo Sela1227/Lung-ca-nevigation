@@ -8,10 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.2.0</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.4.1</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -33,7 +31,7 @@
   --transition:all .25s cubic-bezier(.4,0,.2,1);
 }
 html,body{height:100%;overflow:hidden;background:var(--bg)}
-body{font-family:'Noto Sans TC',system-ui,sans-serif;color:var(--text);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;color:var(--text);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit;color:inherit}
 input,textarea,select{font-family:inherit;font-size:inherit}
 
@@ -56,8 +54,8 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .topbar-title{font-weight:700;font-size:17px;color:var(--text)}
 .topbar-title i{color:var(--primary);margin-right:6px}
 .topbar .spacer{flex:1}
-.topbar-info{font-size:13px;color:var(--text3);font-family:'JetBrains Mono',monospace}
-.topbar-btn{height:38px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:600;transition:var(--transition);display:inline-flex;align-items:center;gap:6px}
+.topbar-info{font-size:13px;color:var(--text3);font-family:monospace}
+.topbar-btn{height:38px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:600;transition:var(--transition);display:inline-flex;align-items:center;gap:6px;text-decoration:none}
 .topbar-btn.outline{border:1px solid var(--border);color:var(--text2)}
 .topbar-btn.outline:hover{background:var(--surface2);border-color:var(--border2)}
 .topbar-btn.primary{background:var(--primary);color:#fff}
@@ -117,7 +115,7 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .ck-tab.on{color:var(--primary);border-bottom-color:var(--primary);background:var(--primary-light)}
 .ck-tab .ck-tab-icon{font-size:16px}
 .ck-tab .ck-tab-name{font-size:11px;line-height:1.2}
-.ck-tab .ck-tab-cnt{font-size:10px;font-family:'JetBrains Mono',monospace;opacity:.7}
+.ck-tab .ck-tab-cnt{font-size:10px;font-family:monospace;opacity:.7}
 .ck-body{flex:1;min-height:0;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
 .ck-grp-pane{display:none}
 .ck-grp-pane.active{display:block}
@@ -133,7 +131,7 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .ck-item.done .ck-box{background:var(--primary);border-color:var(--primary);color:#fff}
 .ck-label{flex:1;min-width:0}
 .ck-label-text{font-size:15px;font-weight:500;line-height:1.4}
-.ck-label-time{font-size:11px;color:var(--primary);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.ck-label-time{font-size:11px;color:var(--primary);font-family:monospace;margin-top:2px}
 .ck-nav{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border);background:var(--surface2)}
 .ck-nav-btn{height:38px;padding:0 20px;border-radius:8px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:var(--transition)}
 .ck-nav-btn.prev{color:var(--text2);border:1px solid var(--border);background:var(--surface)}
@@ -177,7 +175,7 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .q-num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--primary);color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
 .q-options{display:grid;gap:8px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;text-align:center}
-.stat-card .stat-num{font-size:28px;font-weight:900;color:var(--primary);font-family:'JetBrains Mono',monospace}
+.stat-card .stat-num{font-size:28px;font-weight:900;color:var(--primary);font-family:monospace}
 .stat-card .stat-label{font-size:12px;color:var(--text3);margin-top:4px}
 /* Stats tabbed layout */
 #panel-stats{padding:0!important;overflow:hidden!important}
@@ -253,11 +251,11 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .ck-stat-bar-fill.high{background:var(--primary)}
 .ck-stat-bar-fill.mid{background:var(--amber)}
 .ck-stat-bar-fill.low{background:var(--rose)}
-.ck-stat-pct{width:48px;text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.ck-stat-pct{width:48px;text-align:right;font-size:13px;font-weight:700;font-family:monospace;flex-shrink:0}
 .cross-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .cross-tbl th,.cross-tbl td{padding:10px 12px;text-align:center;border:1px solid var(--border)}
 .cross-tbl th{background:var(--surface2);font-weight:700;color:var(--text2);font-size:12px}
-.cross-tbl td{font-family:'JetBrains Mono',monospace}
+.cross-tbl td{font-family:monospace}
 .cross-tbl td.hi{background:var(--primary-light);font-weight:700;color:var(--primary-dark)}
 .cross-tbl tr:last-child td{font-weight:700;background:var(--surface2)}
 .cross-tbl td:last-child{font-weight:700;background:var(--surface2)}
@@ -398,7 +396,7 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .rec-row .rec-info{flex:1;min-width:0}
 .rec-row .rec-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
 .rec-row .rec-meta{font-size:12px;color:var(--text3);margin-top:3px}
-.rec-row .rec-date{font-size:11px;color:var(--text3);white-space:nowrap;font-family:'JetBrains Mono',monospace}
+.rec-row .rec-date{font-size:11px;color:var(--text3);white-space:nowrap;font-family:monospace}
 .rec-row .rec-del{color:var(--rose);font-size:14px;padding:8px;flex-shrink:0;transition:var(--transition);border-radius:8px}
 .rec-row .rec-del:hover{background:var(--rose-light)}
 mark{background:#fef08a;border-radius:2px;padding:0 1px}
@@ -689,9 +687,10 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">V1.2.0 · System V2.4.0</span></div>
+      <div class="topbar-title" id="topbar-title"><i class="fa-solid fa-lungs"></i> <span class="mob-hide">彰濱秀傳癌症中心 </span>肺癌<span class="mob-hide">臨床</span>路徑 <span style="font-size:11px;font-weight:400;color:var(--text3)">V1.4.1 · System V2.6.1</span></div>
       <div class="spacer"></div>
       <span class="topbar-info" id="topbar-date"></span>
+      <a class="topbar-btn outline" href="drugs-pro.html" title="健保肺癌藥物總整理"><i class="fa-solid fa-prescription-bottle-medical"></i><span class="mob-hide"> 藥物</span></a>
       <button class="topbar-btn outline" onclick="APP.printSummary()"><i class="fa-solid fa-print"></i><span class="mob-hide"> 列印</span></button>
       <button class="topbar-btn outline" onclick="APP.newPatient()"><i class="fa-solid fa-plus"></i><span class="mob-hide"> 新病人</span></button>
     </div>
@@ -808,7 +807,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
               <select id="rec-stage" onchange="APP.filterRecords()" style="height:40px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface)">
                 <option value="">全分期</option><option value="I">Stage I</option><option value="II">Stage II</option><option value="III">Stage III</option><option value="IV">Stage IV</option>
               </select>
-              <span id="rec-count" style="font-size:12px;color:var(--text3);white-space:nowrap;font-family:'JetBrains Mono',monospace"></span>
+              <span id="rec-count" style="font-size:12px;color:var(--text3);white-space:nowrap;font-family:monospace"></span>
             </div>
           </div>
           <!-- Record list -->
@@ -822,7 +821,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-header">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-vial" style="color:var(--primary)"></i> 基礎檢查（分期前）</div>
-              <span id="bck-pct" style="font-size:16px;font-weight:700;color:var(--primary);font-family:'JetBrains Mono',monospace">0%</span>
+              <span id="bck-pct" style="font-size:16px;font-weight:700;color:var(--primary);font-family:monospace">0%</span>
             </div>
             <div style="height:6px;background:var(--border);border-radius:99px;margin-top:10px;overflow:hidden"><div id="bck-bar" style="height:100%;background:var(--primary);border-radius:99px;width:0%;transition:width .4s"></div></div>
             <div style="font-size:12px;color:var(--text3);margin-top:6px"><i class="fa-solid fa-info-circle" style="margin-right:3px"></i> 初診抽血、影像、取得組織 — 完成後進入「分期」頁定 TNM 分期</div>
@@ -831,7 +830,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-body" id="bck-list"></div>
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="bck-prev" onclick="APP.bckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
-            <span id="bck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
+            <span id="bck-page-info" style="font-size:12px;color:var(--text3);font-family:monospace"></span>
             <button class="ck-nav-btn next" id="bck-next" onclick="APP.bckNext()">下一組 <i class="fa-solid fa-chevron-right"></i></button>
           </div>
         </div>
@@ -966,7 +965,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
             </div>
             <div class="ck-nav" id="pw-nav">
               <button class="ck-nav-btn prev" id="pw-prev" onclick="APP.pwPrev()"><i class="fa-solid fa-chevron-left"></i> 上一項</button>
-              <span id="pw-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
+              <span id="pw-page-info" style="font-size:12px;color:var(--text3);font-family:monospace"></span>
               <button class="ck-nav-btn next" id="pw-next" onclick="APP.pwNext()">下一項 <i class="fa-solid fa-chevron-right"></i></button>
             </div>
           </div>
@@ -980,7 +979,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="sum-page">
             <!-- Header -->
             <div class="sum-hdr">
-              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">V1.2.0 · System V2.4.0</span></div>
+              <div class="sum-org">彰濱秀傳癌症中心<span class="sum-dot">·</span>肺癌臨床路徑總覽 <span style="font-size:12px;font-weight:400;color:var(--text3)">V1.4.1 · System V2.6.1</span></div>
               <div class="sum-pt" id="sum-patient"></div>
             </div>
             <!-- KPI Compliance -->
@@ -1027,7 +1026,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <div class="ck-header">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-clipboard-check" style="color:var(--primary)"></i> 進階檢查（分期後）</div>
-              <span id="ck-pct" style="font-size:16px;font-weight:700;color:var(--primary);font-family:'JetBrains Mono',monospace">0%</span>
+              <span id="ck-pct" style="font-size:16px;font-weight:700;color:var(--primary);font-family:monospace">0%</span>
             </div>
             <div style="height:6px;background:var(--border);border-radius:99px;margin-top:10px;overflow:hidden"><div id="ck-bar" style="height:100%;background:var(--primary);border-radius:99px;width:0%;transition:width .4s"></div></div>
             <div id="ck-stage-hint" style="font-size:12px;color:var(--text3);margin-top:6px"></div>
@@ -1038,7 +1037,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
           <!-- BIO panel removed in lung V1.0 (previously v39) -->
           <div class="ck-nav">
             <button class="ck-nav-btn prev" id="ck-prev" onclick="APP.ckPrev()"><i class="fa-solid fa-chevron-left"></i> 上一組</button>
-            <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace"></span>
+            <span id="ck-page-info" style="font-size:12px;color:var(--text3);font-family:monospace"></span>
             <button class="ck-nav-btn next" id="ck-next" onclick="APP.ckNext()">下一組 <i class="fa-solid fa-chevron-right"></i></button>
           </div>
         </div>
@@ -1150,7 +1149,15 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
     </div><!-- content -->
 
     <div class="bottombar">
-      <div class="step-dots" id="dots"></div>
+      <div class="step-dots" id="dots">
+        <div class="step-dot active" data-i="0" title="病人"></div>
+        <div class="step-dot" data-i="1" title="基礎檢查"></div>
+        <div class="step-dot" data-i="2" title="分期"></div>
+        <div class="step-dot" data-i="3" title="進階檢查"></div>
+        <div class="step-dot" data-i="4" title="路徑"></div>
+        <div class="step-dot" data-i="5" title="總覽"></div>
+        <div class="step-dot" data-i="6" title="手冊"></div>
+      </div>
       <div class="spacer"></div>
       <button class="btn-nav back" id="btn-back" onclick="APP.back()" disabled><i class="fa-solid fa-chevron-left"></i> 上一步</button>
       <button class="btn-nav next" id="btn-next" onclick="APP.next()">下一步 <i class="fa-solid fa-chevron-right"></i></button>
@@ -1171,8 +1178,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.2.0';
-const SYSTEM_VERSION = 'V2.4.0';
+const MODULE_VERSION = 'V1.8.0';
+const SYSTEM_VERSION = 'V2.10.0';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1342,7 +1349,19 @@ function computeAJCC(t,n,m){
     if(t==='T3') return 'IIIA';
     if(t==='T4') return 'IIIA';
   }
-  // M0 + N2 (N2a or N2b)
+  // M0 + N2a (single mediastinal station)
+  if(n==='N2a'){
+    if(isT1) return 'IIB';             // AJCC 9th: T1+N2a→IIB (was IIIA in 8th)
+    if(isT2||t==='T3') return 'IIIA';  // T2-T3+N2a→IIIA
+    if(t==='T4') return 'IIIB';
+  }
+  // M0 + N2b (multiple mediastinal stations)
+  if(n==='N2b'){
+    if(isT1) return 'IIIA';            // T1+N2b→IIIA
+    if(isT2||t==='T3') return 'IIIB';  // T2-T3+N2b→IIIB (was IIIA in 8th)
+    if(t==='T4') return 'IIIB';
+  }
+  // Fallback for plain "N2" (no sub)
   if(isN2){
     if(isT1||isT2) return 'IIIA';
     if(t==='T3'||t==='T4') return 'IIIB';
@@ -1402,20 +1421,34 @@ function getAll(s){ return new Promise(r=>{ const t=db.transaction(s); const q=t
 function del(s,k){ return new Promise(r=>{ const t=db.transaction(s,'readwrite'); t.objectStore(s).delete(k); t.oncomplete=()=>r(); }); }
 
 // ── Navigation ──
+// V2.7.0 perf: cache panel/nav-item NodeLists (do NOT re-querySelectorAll on every nav)
+let _panels = null, _navs = null;
+function _initNavCache(){
+  if(!_panels) _panels = document.querySelectorAll('.panel');
+  if(!_navs)   _navs   = document.querySelectorAll('.nav-item');
+}
 A.go = function(name){
   try{ readForm(); saveDraft(); if(editId && (cur==='basicck'||cur==='checklist'||cur==='decision'||cur==='pathway')){ autoUpdateRecord(); } } catch(e){}
   cur = name;
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.panel===name));
+  _initNavCache();
+  // Toggle panel + nav classes (cheap class flips, single reflow batch)
+  for(let i=0; i<_panels.length; i++) _panels[i].classList.toggle('active', _panels[i].id==='panel-'+name);
+  for(let i=0; i<_navs.length;   i++) _navs[i].classList.toggle('active', _navs[i].dataset.panel===name);
   updateBar();
-  if(name==='records') loadList();
-  if(name==='pathway') renderPW();
-  if(name==='summary'){ document.getElementById('sum-saved').style.display='none'; renderSummary(); }
-  if(name==='edu'){ const hasData=A.S.type&&A.S.stage; document.getElementById('edu-empty').style.display=hasData?'none':''; document.getElementById('edu-content').style.display=hasData?'':'none'; if(hasData) renderEduHandout(); }
-  if(name==='basicck') renderBasicCK();
-  if(name==='checklist') renderCK();
-  if(name==='stats') loadStats();
-  if(name==='backup') loadBackupStatus();
+  // Defer heavy renders to next frame so the panel transition paints first.
+  // Most renders only need to run for the panel actually being shown.
+  requestAnimationFrame(()=>{
+    try{
+      if(name==='records') loadList();
+      else if(name==='pathway') renderPW();
+      else if(name==='summary'){ document.getElementById('sum-saved').style.display='none'; renderSummary(); }
+      else if(name==='edu'){ const hasData=A.S.type&&A.S.stage; document.getElementById('edu-empty').style.display=hasData?'none':''; document.getElementById('edu-content').style.display=hasData?'':'none'; if(hasData) renderEduHandout(); }
+      else if(name==='basicck') renderBasicCK();
+      else if(name==='checklist') renderCK();
+      else if(name==='stats') loadStats();
+      else if(name==='backup') loadBackupStatus();
+    } catch(e){ /* swallow render errors so a bad panel doesn't crash navigation */ }
+  });
 };
 
 async function autoUpdateRecord(){
@@ -1453,8 +1486,14 @@ function updateBar(){
     const nextLabel = flowLabels[i+1]||'';
     btnN.innerHTML = `${nextLabel} <i class="fa-solid fa-chevron-right"></i>`;
   } else { btnN.style.display='none'; }
-  // Dots
-  document.getElementById('dots').innerHTML = flowPanels.map((p,j)=>`<div class="step-dot${j===i?' active':''}" title="${flowLabels[j]}"></div>`).join('');
+  // Dots — toggle classes only (V2.7.0 perf: avoid innerHTML rebuild on every nav)
+  const dotsEl = document.getElementById('dots');
+  if(dotsEl){
+    const dots = dotsEl.children;
+    for(let j=0; j<dots.length; j++){
+      dots[j].classList.toggle('active', j===i);
+    }
+  }
 }
 
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -1540,7 +1579,7 @@ function renderRecordList(){
     const ckDone = d.ck ? Object.keys(d.ck).length : 0;
     const ckReqTotal = d.stage ? getRequiredCK(d.type, d.stage).length : CK.length;
     const ckReqDone = d.stage ? getRequiredCK(d.type, d.stage).filter(it=>d.ck?.[it.id]).length : ckDone;
-    const ckInfo = ckDone > 0 ? ` · <span style="font-family:'JetBrains Mono',monospace">${ckReqDone}/${ckReqTotal}</span>` : '';
+    const ckInfo = ckDone > 0 ? ` · <span style="font-family:monospace">${ckReqDone}/${ckReqTotal}</span>` : '';
     let codeTxt = d.code||'（未命名）';
     const nameTxt = d.name ? ` <span style="font-weight:400;color:var(--text2)">${d.name}</span>` : '';
     if(q && d.code){ codeTxt = highlightMatch(codeTxt, q); }
@@ -1676,7 +1715,7 @@ function afterMstage(){
     A.S.mutation='';
 
     dtShowCard(5);
-    setTimeout(renderMolPanel, 50);
+    requestAnimationFrame(renderMolPanel);
   } else {
     // SCLC: no driver gene step
     A.S.mutation = 'N/A';
@@ -1716,7 +1755,7 @@ A.dtJump = function(step){
   if(step <= 4){ A.S.drivers={}; A.S.pdl1Val=''; A.S.mutation=''; }
   dtShowCard(step);
   // If landing on step 5, re-render the molecular panel so existing selections show up correctly
-  if(step === 5) setTimeout(renderMolPanel, 50);
+  if(step === 5) requestAnimationFrame(renderMolPanel);
 };
 
 // ═══ 分子檢測 — 驅動基因 + PD-L1 ═══
@@ -1890,8 +1929,8 @@ function restoreDT(){
   A.S.stage = computeAJCC(A.S.tstage, A.S.nstage, A.S.mstage);
   const isNSCLC_r = A.S.type==='NSCLC_NS'||A.S.type==='NSCLC_SQ';
   if(isNSCLC_r){
-    if(!A.S.mutation){ dtShowCard(5); setTimeout(renderMolPanel,50); return; }
-    setTimeout(renderMolPanel,50);
+    if(!A.S.mutation){ dtShowCard(5); requestAnimationFrame(renderMolPanel); return; }
+    requestAnimationFrame(renderMolPanel);
   }
   const parts=[TYPE_LABEL[A.S.type], A.S.tstage+A.S.nstage+A.S.mstage, 'Stage '+A.S.stage];
   if(A.S.mutation&&A.S.mutation!=='N/A'&&A.S.mutation!=='NOT_TESTED') parts.push('分子:'+A.S.mutation);
@@ -1973,11 +2012,11 @@ function renderPW(){
     document.getElementById('pw-content').innerHTML = '<div class="card"><p>此組合尚無路徑資料，請與主治醫師確認。</p></div>';
     document.getElementById('pw-cost-inner').innerHTML = '';
   }
-  // Render treatment execution checklist
-  renderTxExec();
-  // Render consultation routing
-  renderConsult();
-  updatePWNav();
+  // Render treatment execution checklist + consult routing on next frame
+  // (V2.7.0 perf: keeps main pw paint <16ms; defers heavy tx-exec list)
+  requestAnimationFrame(()=>{
+    try{ renderTxExec(); renderConsult(); updatePWNav(); } catch(e){}
+  });
 }
 
 A._pwTabs = ['plan','exec','team','cost'];
@@ -2934,7 +2973,7 @@ function renderKPI(){
 
 // ── Render Education Handout in Summary ──
 // ⚙ 設定掃碼頁面 base URL（部署後修改；路徑越短 QR 越好掃）
-const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu.html';
+const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu-pro.html';
 
 function maskName(name){
   if(!name) return '○○○';
@@ -3187,7 +3226,7 @@ function renderSummary(){
   const ckPct = ckTotal>0 ? Math.round(ckDone/ckTotal*100) : 0;
   const ckC = ckPct===100?'var(--primary)':'var(--amber)';
   const ckSuffix = hasStage ? ` <span style="font-size:12px;font-weight:400;color:var(--text3)">（${S.stage}）</span>` : '';
-  let ckH = `<div class="st"><i class="fa-solid fa-clipboard-check"></i> 檢查${ckSuffix} <span style="font-family:'JetBrains Mono',monospace;color:${ckC};font-size:16px;font-weight:900;margin-left:4px">${ckDone}/${ckTotal}</span></div>`;
+  let ckH = `<div class="st"><i class="fa-solid fa-clipboard-check"></i> 檢查${ckSuffix} <span style="font-family:monospace;color:${ckC};font-size:16px;font-weight:900;margin-left:4px">${ckDone}/${ckTotal}</span></div>`;
   ckH += `<div class="sbar"><div style="background:${ckC};width:${ckPct}%"></div></div>`;
   ckH += `<div style="display:flex;gap:12px;margin:6px 0"><span style="font-size:12px;color:var(--text3)">基礎 ${basicDone}/${basicTotal}</span><span style="font-size:12px;color:var(--text3)">進階 ${advDone}/${advTotal}</span></div>`;
   if(ckRemain===0){ ckH += '<div class="sck-ok"><i class="fa-solid fa-circle-check"></i>必要項目全部完成</div>'; }
@@ -3246,8 +3285,8 @@ function renderSummary(){
   nH += S.notes ? `<div class="snote">${S.notes.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>` : '<div class="snote-empty">無備註</div>';
   document.getElementById('sum-notes-box').innerHTML = nH;
 
-  // KPI Compliance
-  renderKPI();
+  // KPI Compliance — defer to next frame (V2.7.0 perf)
+  requestAnimationFrame(()=>{ try{ renderKPI(); } catch(e){} });
 }
 
 // ── Basic Checklist (Phase 1+2, tabbed like advanced) ──
@@ -3675,7 +3714,7 @@ async function loadStats(){
       charts['ch-kpi-time'] = new Chart(ctxTime,{type:'bar',data:{labels:timeBuckets.map(b=>b+'天'),datasets:[
         {label:'收案→確診',data:diagBuckets,backgroundColor:'#5B8FB9',borderRadius:4},
         {label:'收案→首治',data:txBuckets,backgroundColor:'#2563eb',borderRadius:4}
-      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:'Noto Sans TC'}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11,family:"Microsoft JhengHei,微軟正黑體"}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
     }
 
     // Detail table
@@ -3729,12 +3768,12 @@ async function loadStats(){
   document.getElementById('cross-table').innerHTML=ctHtml;
 
   // Record table
-  document.getElementById('stat-tbody').innerHTML=recs.sort((a,b)=>(b.caseDate||b.savedAt||b.created).localeCompare(a.caseDate||a.savedAt||a.created)).map(r=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;font-family:'JetBrains Mono',monospace;font-size:12px">${r.caseDate||new Date(r.savedAt||r.created).toLocaleDateString('zh-TW')}</td><td style="padding:8px;font-weight:600">${r.code||'—'}</td><td style="padding:8px">${r.name||'—'}</td><td style="padding:8px">${TYPE_LABEL[r.type]||'—'}</td><td style="padding:8px;font-family:'JetBrains Mono',monospace">${(r.tstage||'')+(r.nstage||'')+(r.mstage||'')}</td><td style="padding:8px">${r.stage||'—'}</td><td style="padding:8px">${r.mutation||'—'}</td><td style="padding:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;${r.ck&&Object.keys(r.ck).length===CK.length?'color:var(--primary);font-weight:700':''}">${r.ck?Object.keys(r.ck).length:0}/${CK.length}</span></td><td style="padding:8px"><button onclick="APP.del(${r.id},'saved')" style="color:var(--rose);font-size:12px;text-decoration:underline">刪除</button> <button onclick="APP.load(${r.id},'saved')" style="color:var(--accent);font-size:12px;text-decoration:underline;margin-left:4px">編輯</button></td></tr>`).join('');
+  document.getElementById('stat-tbody').innerHTML=recs.sort((a,b)=>(b.caseDate||b.savedAt||b.created).localeCompare(a.caseDate||a.savedAt||a.created)).map(r=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;font-family:monospace;font-size:12px">${r.caseDate||new Date(r.savedAt||r.created).toLocaleDateString('zh-TW')}</td><td style="padding:8px;font-weight:600">${r.code||'—'}</td><td style="padding:8px">${r.name||'—'}</td><td style="padding:8px">${TYPE_LABEL[r.type]||'—'}</td><td style="padding:8px;font-family:monospace">${(r.tstage||'')+(r.nstage||'')+(r.mstage||'')}</td><td style="padding:8px">${r.stage||'—'}</td><td style="padding:8px">${r.mutation||'—'}</td><td style="padding:8px"><span style="font-family:monospace;font-size:12px;${r.ck&&Object.keys(r.ck).length===CK.length?'color:var(--primary);font-weight:700':''}">${r.ck?Object.keys(r.ck).length:0}/${CK.length}</span></td><td style="padding:8px"><button onclick="APP.del(${r.id},'saved')" style="color:var(--rose);font-size:12px;text-decoration:underline">刪除</button> <button onclick="APP.load(${r.id},'saved')" style="color:var(--accent);font-size:12px;text-decoration:underline;margin-left:4px">編輯</button></td></tr>`).join('');
 }
 function mkChart(id,type,labels,data,colors){
   if(charts[id])charts[id].destroy();
   const ctx=document.getElementById(id); if(!ctx)return;
-  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:type==='line'?'transparent':colors,borderColor:type==='line'?colors[0]:colors,borderWidth:type==='line'?3:1,tension:.4,pointRadius:type==='line'?4:0,pointBackgroundColor:type==='line'?colors[0]:undefined}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{font:{size:11,family:'Noto Sans TC'}}}},scales:(type==='bar'||type==='line')?{y:{beginAtZero:true,ticks:{stepSize:1}}}:undefined}});
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:type==='line'?'transparent':colors,borderColor:type==='line'?colors[0]:colors,borderWidth:type==='line'?3:1,tension:.4,pointRadius:type==='line'?4:0,pointBackgroundColor:type==='line'?colors[0]:undefined}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{font:{size:11,family:"Microsoft JhengHei,微軟正黑體"}}}},scales:(type==='bar'||type==='line')?{y:{beginAtZero:true,ticks:{stepSize:1}}}:undefined}});
 }
 
 // ── Export / Import ──
