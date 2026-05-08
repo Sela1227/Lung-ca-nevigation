@@ -140,6 +140,7 @@ node --check /tmp/j.js
 | 民眾版 SCLC 兩段式選項（V2.8.5+） | `patient.html` 的 `#sclc-wrap` 區塊 + `pickSCLC()` / `setQ2Mode()` / `applyQ2Mode()` |
 | 民眾版 SCLC 腦/脊髓轉移選項（V2.8.5+） | `patient.html` 的 `#opt-brain` 區塊 + `pickBrain()` / `applyQ3Mode()` |
 | 民眾版病理期別模式（V2.10.0+） | `patient.html` 的 `#stage-mode-row` + `pickStageMode()` / `applyPostOpVisuals()` / `refreshStageDisplayText()`；`S.postOp` boolean；`buildPostOpPath()` 是術後分支引擎；edu-patient 的 `buildPostOpPathFromData()` 同步 |
+| 民眾版 Q5 治療進度 + 三區呈現（V2.11.0+） | `patient.html` 的 `#p-q5` 頁 + `pickProgress()` + `S.txProgress`；`PROGRESS_DONE_PHASES` / `PROGRESS_NEXT_PHASE` 常數；`splitStepsByProgress()` + `renderTreatmentSteps3Section()`；buildPostOpPath 每個 step 加 `phase` 標記；`buildRecurrencePath()` 處理復發；edu-patient 同套對映 |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
@@ -200,6 +201,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 | V2.9.5 | V1.7.5 | 2026-04-30 | 藥物頁拆兩版（drugs-pro 加 NCCN/事審/必試/cross-ref；drugs-patient 加副作用、用途）+ 個人化推薦（總覽頁帶 query 跳 drugs-patient）|
 | V2.9.4 | V1.7.4 | 2026-04-30 | 手機版 Q-page 鎖屏 bug 修復（TNM 進階 9 欄擠扁、iOS 自動 zoom、safe-area、grid-rows 失效）BUG-29 |
@@ -211,7 +213,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
 | V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
 | V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html（已被 V2.8.9 取代）|
-| V2.8.7 | V1.6.7 | 2026-04-29 | edu 拆兩檔（edu-pro.html / edu-patient.html）民眾版掃 QR 看到的內容跟 patient.html 總覽頁一致 BUG-24 |
 
 ---
 
@@ -466,6 +467,28 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**民眾版預設用「臨床期別」沒問題，但病理期別不是 edge case**。肺癌個案至少 1/3 是已手術後才來查（因為手術前資訊都從醫護版來、查詢工具是回家後給家屬看的）。下次新癌別模組設計時，stage axis 設計要從一開始就分 c/p 兩階段，不要等 V1.8 才補上
 - 教訓：**toggle 切換「同欄位但意義不同」是合理的 UX**。民眾不需要分開填 cTNM 跟 pTNM 兩組（會以為要填兩次）。讓他們用 toggle 切換意義 + 視覺暗示（顏色/前綴/標籤）就夠了。下次類似決策（例如術前/術後分子檢測）也走這個 pattern
 
+### #31 (lung V1.9.0 / V2.11.0)：postOp 路徑全列同等亮度，民眾看不出「現在該做什麼」+ IA 期跟 IB+/II 推同一組化療
+- 症狀：V2.10.0 個管師驗收測 18 情境後回報 2 個臨床合理性問題：
+  1. **postOp EARLY 跨期別不細分** — pIA1/pIA2/pIB/pIIB 全推「術後輔助化療 + EGFR/ALK/Atezo 鞏固」。但 IA 期復發風險低、多數情況觀察即可，warns 寫「IA 期通常觀察即可」放在 pIIB 病人總覽會造成矛盾
+  2. **看不出目前位置** — 同一張總覽頁給「剛開完刀」與「已做完化療等鞏固」病人看，5 個 step 同等亮度，無法回答「我下一步該做什麼」
+- 根因：buildPostOpPath 把所有 stage 跟所有時序壓進一張平面 list；UI 沒有 phase / progress 概念
+- 做法（V2.11.0 完整套）：
+  1. **state 加 `S.txProgress`**（''/just_op/chemo/awaiting_consol/consol/followup/recurrence）— 表示治療時序位置
+  2. **Q5 治療進度頁**（`#p-q5`）：6 顆 prog-btn，僅 postOp=true 時顯示。q4Needed 改成 postOp 一律 true（術後一定要 mut/brain 才能決定鞏固藥）
+  3. **流程改 6 頁**：`PAGES = ['p-q1','p-q2','p-q3','p-q4','p-q5','p-sum']`、6 個 progress dots、stepIdx 0-5、updateActBar 加 stepIdx===4 條件
+  4. **每個 step 加 `phase` 標記**：'surgery' | 'adjuvant_chemo' | 'consolidation' | 'followup' | 'recurrence'。buildPostOpPath 全面改寫，所有 step 都有 phase
+  5. **開頭虛擬 surgery step**：`{title:'已完成：手術切除', phase:'surgery'}` 放最前面，給三區呈現的「已完成」區一個錨點
+  6. **IA 期細分**：`isIA = /^IA/.test(stage)` → 走觀察為主分支（不推化療、標靶非主流）；IB+/II 走原本「化療 + 標靶/免疫鞏固」分支
+  7. **`splitStepsByProgress(steps, txProgress)`**：依 PROGRESS_DONE_PHASES / PROGRESS_NEXT_PHASE 把 step 分到 done/next/future 三陣列。just_op→adjuvant_chemo 是 next；awaiting_consol→consolidation 是 next；followup→followup 是 next
+  8. **`renderTreatmentSteps3Section`**：總覽頁 postOp+txProgress 時走三區呈現，否則平鋪。三區用 .tx-done（劃線+0.62 opacity）/.tx-next（青底+box-shadow 醒目）/.tx-future（虛線邊框+0.78 opacity）
+  9. **`buildRecurrencePath`**：暫存 stageCat→META 跑 `buildPathRawCore()`、加開頭「之前治療已完成」surgery done step、所有後續 step 標 phase=recurrence、結尾加 followup step（沒這個的話 recurrence 沒影像追蹤建議）
+  10. **META postOp phase 重分配**：「寡轉移切除後仍須全身性治療」step phase 從 consolidation 改 adjuvant_chemo（語意：剛開完刀後第一步主治療）— 不然 just_op 時「下一步」區會空白
+  11. **edu-patient 同步**：buildPostOpPathFromData 加 stage 參數（從 d.s 拿）、buildPathRawFromData 加 recurrence 分流、buildPathRawCoreFromData 拆出、加 PROGRESS_LABEL/splitStepsByProgress/renderTreatmentSteps3Section、hero meta 加「進度：剛開完刀/化療中/...」
+  12. **「不做 PCI」標題改「改用治療性放療（針對病灶）」**：V2.10.0 個管師發現對民眾不直觀，順便改
+- 測試：9 個情境模擬全綠（A1 pIA1 just_op→done:[surgery]/next:[IA 規律追蹤]/future:[標靶非主流,規律追蹤]、A4 pIIIA recurrence→done:[手術+輔助]/next:[META EGFR 4 step]+followup、A8 pIVA META 寡轉移 just_op→next:[全身性治療]而非空白）
+- 教訓：**clinical 工具的「下一步」概念不能用步驟列表表達**。病人關心的是「現在我在哪？接下來該做什麼？」不是「這個診斷的所有可能治療」。同一份治療路徑對「剛開完刀」vs「鞏固中」vs「追蹤中」的人意義完全不同。下次新癌別模組設計術後路徑時，phase 標記要從一開始就放 step 結構，不要等到要做進度區呈現時才補
+- 教訓：**phase 設計要對齊 progress UX，不是對齊治療類型**。「全身性治療」如果對應的 progress 是 just_op 應該在 next 區，那 phase 要設 adjuvant_chemo 而不是 consolidation（即使治療性質是「鞏固」）。phase 是 UX 維度，不是醫學分類維度
+
 ---
 
 ## 七、擴充新癌別
@@ -483,17 +506,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.10.0** — 上線前必跑：(a) Q3 切「病理報告」按鈕，TNM 標籤變「病理 T/N/M」、底部變「病理分期 (pStage)」 (b) 同一組 TNM 值切 cTNM ↔ pTNM，總覽頁 stage 顯示在 `IIB` 與 `pIIB` 之間切換、treatment steps 也跟著變 (c) postOp + EARLY 不再出現「手術根除」步驟 (d) postOp + LOCAL 出現「切緣評估」「密集追蹤」 (e) QR 掃描 → edu-patient 顯示「病理分期 pIIB」+ 同款術後路徑
-2. **Sela 比對院內指引術後輔助章節** — V2.10.0 新加的術後路徑（IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議）需對照本院指引 v12 (2026)
+1. **GitHub Pages 部署實機驗證 V2.11.0** — 上線前必跑：(a) postOp 模式進到 Q5 治療進度頁，6 顆按鈕都能點且 auto-advance (b) 6 個 progress dots 在 postOp 顯示，cTNM 維持 4-5 個 (c) just_op 總覽頁三區呈現完整：「✓ 已完成」有 surgery、「➜ 下一步」醒目（青底 + box-shadow）、「⋯ 之後」淡色虛線 (d) followup 進度→大部分 step 在已完成區、僅追蹤 step 在「下一步」 (e) recurrence 進度→META 路徑 + 結尾 followup step (f) pIA1 跟 pIIB 走不同分支（IA 期不推化療）(g) edu-patient 掃 QR 顯示同三區呈現
+2. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
 3. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
 4. **Sela 比對 V2.8.11+V2.9.0 兩版改的多分支治療路徑** — NSCLC EARLY 加術前免疫與 ALK 鞏固、META PDL1_HIGH 加 Pembrolizumab 單藥、SCLC PCI 改 MRI 監測、age/ecog 動態調整
 5. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
-6. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段
-7. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-8. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、且現在又加了 buildPostOpPath。三個地方要同步改的負擔越來越重；考慮抽 `lung/_drugs.js` + `lung/_path.js` 共用
+6. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）。延後到 V2.12 一起做
+7. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step
+8. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+9. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress。四個地方要同步改的負擔很重；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V2.10.0 民眾版加病理期別模式（已手術切換）。Q3 加 stage-mode toggle 兩顆按鈕「影像/切片 vs 病理報告」，共用同一組 TNM 欄位但意義切換。`S.postOp=true` 時 buildPathRaw 分流到 `buildPostOpPath()`：跳過手術建議，直接走「術後輔助化療 + EGFR/ALK/Atezolizumab 鞏固 + 規律追蹤（前 2 年 q3-6m CT）」。stageDisplay 加 p 前綴（pIIB/p侷限型/pIVA），edu-patient 同步加 `po` schema 與 `buildPostOpPathFromData`。7 情境模擬全綠 + 對照組維持原行為。連續解了 Sela 兩個關聯 bug：(a) 病理期別填了還推臨床期別 (b) 已手術了還推手術。下版第一優先：上線實機驗證。
+V2.11.0 民眾版加 Q5 治療進度（剛開完刀/化療中/等鞏固/鞏固中/追蹤中/復發）+ 總覽頁三區呈現（✓已完成、➜下一步、⋯之後）。修了 V2.10.0 個管師驗收測出的兩個合理性問題：IA 期跟 IB+/II 推同一組化療（現在 IA 走觀察分支、IB+/II 走化療+鞏固）+ postOp 列表所有 step 同等亮度看不出「現在該做什麼」。每個 step 加 phase 標記（surgery/adjuvant_chemo/consolidation/followup/recurrence），splitStepsByProgress 依 progress 分配三區。recurrence 走 META 邏輯 + 結尾追蹤 step。流程改 6 頁（postOp 才有 Q5）、6 個 progress dots、edu-patient 同套對映。9 情境模擬全綠。下版第一優先：上線實機驗證 + Sela 對院內指引比對 IA 細分判定。

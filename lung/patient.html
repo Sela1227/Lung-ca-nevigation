@@ -260,6 +260,49 @@ body{
 .brain-tt{font-size:14.5px;font-weight:900;color:var(--tx);letter-spacing:.3px;margin-bottom:2px}
 .brain-btn.selected .brain-tt{color:var(--teal-d)}
 .brain-ss{font-size:11.5px;color:var(--tx2);line-height:1.5}
+
+/* V2.11.0: Q5 治療進度 */
+.prog-grid{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.prog-btn{
+  background:var(--card);border:2px solid var(--bdr);border-radius:11px;
+  padding:10px 12px;cursor:pointer;font-family:inherit;text-align:left;
+  display:flex;align-items:center;gap:11px;flex-shrink:0;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.prog-btn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.prog-btn:active{transform:scale(.985)}
+.prog-btn.selected{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.prog-btn .ic{width:38px;height:38px;border-radius:11px;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prog-btn .ic svg{width:22px;height:22px}
+.prog-btn.alert .ic{background:#fef2f2;color:#dc2626}
+.prog-btn.alert.selected{border-color:#dc2626;background:#fef2f2;box-shadow:0 0 0 3px rgba(220,38,38,.12)}
+.prog-btn.alert.selected .prog-tt{color:#dc2626}
+.prog-info{flex:1;min-width:0}
+.prog-tt{font-size:13.5px;font-weight:800;color:var(--tx);letter-spacing:.3px;line-height:1.3}
+.prog-btn.selected .prog-tt{color:var(--teal-d)}
+.prog-ss{font-size:11px;color:var(--tx2);line-height:1.4;margin-top:1px}
+@media(max-width:480px){
+  .prog-btn{padding:8px 10px;gap:9px}
+  .prog-btn .ic{width:34px;height:34px}
+  .prog-btn .ic svg{width:20px;height:20px}
+  .prog-tt{font-size:13px}
+  .prog-ss{font-size:10.5px}
+}
+
+/* V2.11.0: 總覽頁治療三區（postOp + txProgress） */
+.tx-section{margin-top:14px}
+.tx-section:first-child{margin-top:6px}
+.tx-section-h{font-size:12.5px;font-weight:900;letter-spacing:.5px;padding:5px 4px 8px;display:flex;align-items:center;gap:6px;color:var(--tx2)}
+.tx-section-h.done{color:#059669}
+.tx-section-h.next{color:var(--teal-d)}
+.tx-section-h.future{color:var(--tx3)}
+.tx-section-h .ph-ic{display:inline-flex;width:14px;height:14px;align-items:center;justify-content:center}
+.tx-step.tx-done{opacity:.62;background:#f5f9f7}
+.tx-step.tx-done .tx-step-title{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:rgba(0,0,0,.25)}
+.tx-step.tx-next{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 2px rgba(13,148,136,.14)}
+.tx-step.tx-next .tx-step-n{background:var(--teal);color:#fff}
+.tx-step.tx-future{opacity:.78;border-style:dashed}
+
 .tnm-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
 .tnm-rows{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
 
@@ -546,6 +589,7 @@ body{
       <div class="pdot" data-p="2"></div>
       <div class="pdot" data-p="3"></div>
       <div class="pdot" data-p="4"></div>
+      <div class="pdot" data-p="5"></div>
     </div>
   </div>
 </div>
@@ -930,6 +974,75 @@ body{
   </div>
 </div>
 
+<!-- ─── V2.11.0: Q5 治療進度（僅 postOp 顯示）─── -->
+<div class="page" id="p-q5">
+  <div class="cd">
+    <div class="cd-head">
+      <div class="cd-head-l">
+        <div class="cd-step">第 4 步 / 治療進度</div>
+        <div class="cd-q">您現在治療到哪一步了？</div>
+        <div class="cd-sub">這會決定下一步的建議顯示為「下一步」還是「之後的選擇」</div>
+      </div>
+    </div>
+    <div class="prog-grid" id="opt-progress">
+      <button type="button" class="prog-btn" data-val="just_op" onclick="pickProgress(this)">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6"/><circle cx="11" cy="14" r="2"/><path d="M11 16v3"/></svg>
+        </span>
+        <div class="prog-info">
+          <div class="prog-tt">剛開完刀</div>
+          <div class="prog-ss">還沒開始後續治療</div>
+        </div>
+      </button>
+      <button type="button" class="prog-btn" data-val="chemo" onclick="pickProgress(this)">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6l-4 8a3 3 0 0 0 3 4h8a3 3 0 0 0 3-4l-4-8V3"/><path d="M9 3h6"/><circle cx="10" cy="16" r=".8" fill="currentColor"/><circle cx="14" cy="14" r=".8" fill="currentColor"/></svg>
+        </span>
+        <div class="prog-info">
+          <div class="prog-tt">正在做術後化療</div>
+          <div class="prog-ss">輔助化療進行中</div>
+        </div>
+      </button>
+      <button type="button" class="prog-btn" data-val="awaiting_consol" onclick="pickProgress(this)">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        <div class="prog-info">
+          <div class="prog-tt">化療做完，等決定鞏固藥</div>
+          <div class="prog-ss">準備開始標靶或免疫鞏固</div>
+        </div>
+      </button>
+      <button type="button" class="prog-btn" data-val="consol" onclick="pickProgress(this)">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <div class="prog-info">
+          <div class="prog-tt">正在用鞏固藥</div>
+          <div class="prog-ss">標靶 / 免疫鞏固進行中</div>
+        </div>
+      </button>
+      <button type="button" class="prog-btn" data-val="followup" onclick="pickProgress(this)">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 4v5h-5"/></svg>
+        </span>
+        <div class="prog-info">
+          <div class="prog-tt">治療都完成，定期追蹤</div>
+          <div class="prog-ss">已完成所有療程</div>
+        </div>
+      </button>
+      <button type="button" class="prog-btn alert" data-val="recurrence" onclick="pickProgress(this)">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r=".7" fill="currentColor"/></svg>
+        </span>
+        <div class="prog-info">
+          <div class="prog-tt">發現復發或惡化</div>
+          <div class="prog-ss">影像或症狀顯示腫瘤回來了</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Summary ─── -->
 <div class="page" id="p-sum">
   <div class="sum-wrap">
@@ -1057,14 +1170,16 @@ const S = {
   // Q4 基因/腦轉移
   mut:'',          // NSCLC
   brainMet:'',     // SCLC: '' / 'no' / 'yes' / 'unknown'
+  // V2.11.0: Q5 治療進度（僅 postOp 時顯示）
+  txProgress:'',   // '' / 'just_op' / 'chemo' / 'awaiting_consol' / 'consol' / 'followup' / 'recurrence'
   // 醫師選擇（總覽頁可選）
   consult:{},
 };
 let stepIdx = 0;
 let tnmAdv = false;
 let q2Mode = 'tnm';  // 'tnm' (NSCLC) or 'sclc' (SCLC 兩段式)
-// V2.9.0: 5 頁流程 — Q1 基本 / Q2 類型 / Q3 分期 / Q4 基因或腦 / 總覽
-const PAGES = ['p-q1','p-q2','p-q3','p-q4','p-sum'];
+// V2.11.0: 6 頁流程（postOp 才有 Q5）— Q1 基本 / Q2 類型 / Q3 分期 / Q4 基因或腦 / Q5 進度 / 總覽
+const PAGES = ['p-q1','p-q2','p-q3','p-q4','p-q5','p-sum'];
 
 function isNSCLC(){ return S.type==='NSCLC_NS' || S.type==='NSCLC_SQ'; }
 function isSCLC(){  return S.type==='SCLC'; }
@@ -1117,11 +1232,15 @@ function stageToCategory(stage){
 // Q4 是否需要顯示？
 // NSCLC：局部晚期或轉移期（需要 mut/PD-L1 決定藥物）
 // SCLC：兩種期都問腦轉移（影響 PCI 與免疫使用）
+// V2.11.0: postOp 模式一律問 Q4（術後鞏固藥依基因/PD-L1 決定）
 function q4Needed(){
+  if(S.postOp) return true;
   if(isNSCLC()) return S.stageCat==='LOCAL' || S.stageCat==='META';
   if(isSCLC())  return S.stageCat==='META' || S.stageCat==='LOCAL';
   return false;
 }
+// V2.11.0: Q5 是否需要顯示？（僅 postOp）
+function q5Needed(){ return !!S.postOp; }
 // Backward-compat alias
 function q3Needed(){ return q4Needed(); }
 function mutNeeded(){ return q4Needed(); }
@@ -1200,6 +1319,7 @@ const DRUGS = {
 ═══════════════════════════════════════════════════ */
 function buildPath(){
   // V2.9.0: 先跑原本 type×stage×mut/brain 的邏輯，再依 age/ecog 動態加註與調整
+  // V2.11.0: postOp + recurrence → 走 META 邏輯
   const r = buildPathRaw();
   applyAgeEcog(r);
   return r;
@@ -1248,11 +1368,22 @@ function buildPathRaw(){
   const t = S.type, st = S.stageCat, m = S.mut, brain = S.brainMet;
   const postOp = !!S.postOp;
 
+  // V2.11.0: 復發 → 走 META 邏輯（不論原 stageCat）
+  if(postOp && S.txProgress === 'recurrence'){
+    return buildRecurrencePath(t, m, brain);
+  }
+
   // V2.10.0: postOp 分支 — 已手術，跳過手術建議直接走術後輔助 + 鞏固 + 追蹤
   if(postOp && (st==='EARLY' || st==='LOCAL' || st==='META')){
     return buildPostOpPath(t, st, m, brain);
   }
 
+  return buildPathRawCore();
+}
+
+/* V2.11.0: 拆出 core 給 buildRecurrencePath 內呼叫 */
+function buildPathRawCore(){
+  const t = S.type, st = S.stageCat, m = S.mut, brain = S.brainMet;
   // SCLC special
   if(t==='SCLC'){
     if(st==='META'){
@@ -1434,7 +1565,9 @@ function buildPathRaw(){
 
 /* ═══════════════════════════════════════════════════
    V2.10.0: POST-OP PATHWAY (手術後路徑)
+   V2.11.0: 加 phase 標記 + IA 細分 + 開頭加「已完成手術」step
    已有病理期別 → 跳過手術建議，列術後輔助 + 鞏固 + 追蹤
+   phase: 'surgery' | 'adjuvant_chemo' | 'consolidation' | 'followup' | 'recurrence'
 ═══════════════════════════════════════════════════ */
 function buildPostOpPath(t, st, m, brain){
   const isNS = (t==='NSCLC_NS');
@@ -1444,43 +1577,54 @@ function buildPostOpPath(t, st, m, brain){
   const typeLabel = isNS ? '非小細胞肺癌（非鱗狀）'
                   : isSQ ? '非小細胞肺癌（鱗狀）'
                   : isSC ? '小細胞肺癌' : '肺癌';
+  const stage = S.stage || '';
+  const isIA = /^IA/.test(stage);  // IA / IA1 / IA2 / IA3
+
+  // 共用：開頭已完成手術 step
+  const surgeryStep = { title:'已完成：手術切除', line:'已完成', phase:'surgery',
+    note:(isNSCLC ? '肺葉切除 + 縱膈淋巴結廓清。' : '原發病灶切除。') };
 
   // ── SCLC 術後（罕見，僅 T1-2N0 偶有手術） ──
   if(isSC){
-    const steps = [
-      { title:'術後輔助化療：Cisplatin + Etoposide', line:'術後輔助', nhi:'NHI',
-        drugs:[{n:'Cisplatin + Etoposide',z:'鉑類 + 滅必治'}],
-        note:'4 個療程。SCLC 即使早期切除，仍建議全身性化療鞏固。' },
-    ];
+    const steps = [surgeryStep];
+    steps.push({ title:'術後輔助化療：Cisplatin + Etoposide', line:'術後輔助', phase:'adjuvant_chemo', nhi:'NHI',
+      drugs:[{n:'Cisplatin + Etoposide',z:'鉑類 + 滅必治'}],
+      note:'4 個療程。SCLC 即使早期切除，仍建議全身性化療鞏固。' });
     if(st==='LOCAL' || st==='EARLY'){
-      // 若術後病理發現 N(+)，加縱膈放療
-      steps.push({ title:'若病理發現 N(+)：加縱膈放療', line:'術後鞏固', note:'術前未預期到的淋巴結轉移建議加放療。' });
+      steps.push({ title:'若病理發現 N(+)：加縱膈放療', line:'術後鞏固', phase:'consolidation',
+        note:'術前未預期到的淋巴結轉移建議加放療。' });
     }
     if(brain==='no'){
-      steps.push({ title:'治療反應佳：預防性全腦照射 (PCI) 或 MRI 監測', line:'鞏固', note:'近年多數中心改採每 3 個月腦 MRI 監測，PCI 仍為選項。' });
+      steps.push({ title:'治療反應佳：預防性全腦照射 (PCI) 或 MRI 監測', line:'鞏固', phase:'consolidation',
+        note:'近年多數中心改採每 3 個月腦 MRI 監測，PCI 仍為選項。' });
     } else if(brain==='yes'){
-      steps.push({ title:'已有腦轉移：不做 PCI，改治療性放療', line:'鞏固', note:'針對病灶做放射線治療。' });
+      steps.push({ title:'已有腦轉移：改用治療性放療（針對病灶）', line:'鞏固', phase:'consolidation',
+        note:'有腦轉移時 PCI 不適用，改做治療性放療直接照射病灶。' });
     } else {
-      steps.push({ title:'術後評估鞏固方式', line:'鞏固', note:'先做腦 MRI；陰性者可選 PCI 或 MRI 監測。' });
+      steps.push({ title:'術後評估鞏固方式', line:'鞏固', phase:'consolidation',
+        note:'先做腦 MRI；陰性者可選 PCI 或 MRI 監測。' });
     }
-    steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT、之後每 6 個月', line:'術後追蹤',
+    steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT、之後每 6 個月', line:'術後追蹤', phase:'followup',
       note:'前 2 年復發風險高；含胸部 CT 與必要時腦 MRI。5 年後改每年。' });
     return { stageTxt:'小細胞肺癌（術後）', pwTxt:'術後輔助化療 + 鞏固 + 規律追蹤',
       steps, warns:['SCLC 即使切除，全身性復發風險高，請務必完成輔助化療'] };
   }
 
-  // ── NSCLC 術後 ──
-  // META post-op：罕見（如寡轉移切除），不走標準術後路徑
+  // ── NSCLC META post-op：罕見（如寡轉移切除） ──
   if(st==='META'){
     return {
       stageTxt:`${typeLabel} 轉移期（術後）`,
       pwTxt:'已切除原發/寡轉移，仍以全身性治療為主',
       steps:[
-        { title:'寡轉移切除後仍須全身性治療', line:'主要治療',
+        surgeryStep,
+        // V2.11.0: 寡轉移切除後的「下一步主治療」標 adjuvant_chemo phase
+        // (語意：剛開完刀後的第一步主治療；對應 just_op 時進「下一步」區)
+        { title:'寡轉移切除後仍須全身性治療', line:'主要治療', phase:'adjuvant_chemo',
           note:'切除原發或單一轉移病灶不等於根治，仍需全身性藥物控制。' },
-        { title:'依基因 / PD-L1 結果決定第一線', line:'一線',
+        { title:'依基因 / PD-L1 結果決定第一線', line:'一線', phase:'consolidation',
           note:'EGFR/ALK/ROS1/BRAF/MET → 標靶；PD-L1 高 → 免疫 ± 化療；NONE → 化療 ± 免疫。' },
-        { title:'每 2-3 個月影像追蹤', line:'術後追蹤', note:'CT 每 2-3 個月，必要時加腦 MRI 與骨掃描。' },
+        { title:'每 2-3 個月影像追蹤', line:'術後追蹤', phase:'followup',
+          note:'CT 每 2-3 個月，必要時加腦 MRI 與骨掃描。' },
       ],
       warns:[
         '轉移期切除多為寡轉移特殊情況，治療以全身性為主',
@@ -1489,65 +1633,80 @@ function buildPostOpPath(t, st, m, brain){
     };
   }
 
-  // EARLY post-op (Stage I-II 切除)
+  // ── NSCLC EARLY postOp (Stage I-II 切除) — V2.11.0 細分 IA vs IB+/II ──
   if(st==='EARLY'){
-    const steps = [];
-    steps.push({ title:'術後輔助化療（II 期或高風險 IB）', line:'術後輔助', nhi:'NHI',
-      drugs:[
-        {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
-        ...(isNS ? [{n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}] : []),
-      ],
-      note:'4 個療程。IA 期通常觀察即可；IB 高風險（≥4cm、血管/臟層肋膜/淋巴管侵犯）建議化療。' });
+    const steps = [surgeryStep];
+    if(isIA){
+      // IA 期：觀察為主
+      steps.push({ title:'IA 期：以規律追蹤為主', line:'術後輔助', phase:'adjuvant_chemo',
+        note:'IA 期復發風險低，多數情況觀察即可。除非病理發現高風險（淋巴血管/臟層肋膜侵犯、低分化），否則不需化療。' });
+      if(isNS){
+        steps.push({ title:'IA 期：標靶鞏固非主流適應症', line:'術後鞏固', phase:'consolidation',
+          note:'ADAURA (Osimertinib) / ALINA (Alectinib) 主要適用 IB-IIIA。IA 期由主治醫師依個別情況評估。' });
+      }
+    } else {
+      // IB / IIA / IIB：明確推化療
+      steps.push({ title:'術後輔助化療（II 期或高風險 IB）', line:'術後輔助', phase:'adjuvant_chemo', nhi:'NHI',
+        drugs:[
+          {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
+          ...(isNS ? [{n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}] : []),
+        ],
+        note:'4 個療程。IB 期具高風險（≥4cm、血管/臟層肋膜/淋巴管侵犯）建議化療；II 期一律建議。' });
 
-    if(isNS){
-      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', nhi:'NHI',
-        drugs:[{n:'Osimertinib',z:'泰格莎'}],
-        note:'IB-IIIA 切除後 EGFR(+) — ADAURA 研究顯示顯著降低復發。' });
-      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', nhi:'NHI',
-        drugs:[{n:'Alectinib',z:'安立適'}],
-        note:'IB-IIIA 切除後 ALK(+) — ALINA 研究依據。' });
+      if(isNS){
+        steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
+          drugs:[{n:'Osimertinib',z:'泰格莎'}],
+          note:'IB-IIIA 切除後 EGFR(+) — ADAURA 研究顯示顯著降低復發。' });
+        steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
+          drugs:[{n:'Alectinib',z:'安立適'}],
+          note:'IB-IIIA 切除後 ALK(+) — ALINA 研究依據。' });
+      }
+      steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固', phase:'consolidation',
+        drugs:[{n:'Atezolizumab',z:'癌自禦'}],
+        note:'IMpower010 適用 II-IIIA 切除後 PD-L1≥1%；健保事審條件請與主治醫師確認。' });
     }
-    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固',
-      drugs:[{n:'Atezolizumab',z:'癌自禦'}],
-      note:'IMpower010 適用 II-IIIA 切除後 PD-L1≥1%；健保事審條件請與主治醫師確認。' });
-    steps.push({ title:'規律追蹤：前 2 年每 3-6 個月 CT', line:'術後追蹤',
+    steps.push({ title:'規律追蹤：前 2 年每 3-6 個月 CT', line:'術後追蹤', phase:'followup',
       note:'前 2 年每 3-6 個月、3-5 年每 6 個月、5 年後每年。每年 1 次胸部低劑量 CT。' });
 
-    const warns = [
-      'IA 期切除通常觀察即可，無須輔助化療',
-      '建議切除後做 EGFR、ALK、PD-L1 檢測，決定鞏固藥物',
-    ];
+    const warns = [];
+    if(isIA){
+      warns.push('IA 期切除復發風險低，請務必依時程回診追蹤');
+      warns.push('若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加輔助化療');
+    } else {
+      warns.push('II 期或高風險 IB：請務必完成 4 個療程術後輔助化療');
+    }
+    warns.push('建議切除後做 EGFR、ALK、PD-L1 檢測，決定鞏固藥物');
     if(!isNS) warns.push('鱗狀者目前無術後標靶鞏固藥物，主要以化療 ± 免疫為主');
     return {
       stageTxt:`${typeLabel} 早期 (I-II) — 術後`,
-      pwTxt:'術後輔助治療 + 規律追蹤',
+      pwTxt: isIA ? '規律追蹤為主' : '術後輔助治療 + 規律追蹤',
       steps, warns,
     };
   }
 
-  // LOCAL post-op (Stage III 切除，多為 IIIA 可切除型)
+  // ── LOCAL post-op (Stage III 切除，多為 IIIA 可切除型) ──
   if(st==='LOCAL'){
-    const steps = [];
-    steps.push({ title:'術後輔助化療（標準 4 療程）', line:'術後輔助', nhi:'NHI',
+    const steps = [surgeryStep];
+    steps.push({ title:'術後輔助化療（標準 4 療程）', line:'術後輔助', phase:'adjuvant_chemo', nhi:'NHI',
       drugs:[
         {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
         ...(isNS ? [{n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}] : []),
       ],
       note:'III 期切除後標準療程 4 次。' });
-    steps.push({ title:'若病理切緣 (+) 或多站 N2：加術後放療', line:'術後鞏固',
+    steps.push({ title:'若病理切緣 (+) 或多站 N2：加術後放療', line:'術後鞏固', phase:'consolidation',
       note:'切緣陽性或不完全切除（R1/R2）建議加胸部放療；單站 N2 視情況。' });
     if(isNS){
-      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', nhi:'NHI',
+      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
         drugs:[{n:'Osimertinib',z:'泰格莎'}],
         note:'IB-IIIA EGFR(+) 切除後 — ADAURA 研究依據。' });
-      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', nhi:'NHI',
+      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
         drugs:[{n:'Alectinib',z:'安立適'}],
         note:'IB-IIIA ALK(+) 切除後 — ALINA 研究依據。' });
     }
-    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固',
+    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固', phase:'consolidation',
       drugs:[{n:'Atezolizumab',z:'癌自禦'}],
       note:'IMpower010：II-IIIA 切除後 PD-L1≥1%；健保事審。' });
-    steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT', line:'術後追蹤',
+    steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT', line:'術後追蹤', phase:'followup',
       note:'III 期復發風險較高 — 前 2 年每 3 個月、3-5 年每 6 個月、5 年後每年。' });
 
     const warns = [
@@ -1564,15 +1723,50 @@ function buildPostOpPath(t, st, m, brain){
 
   // fallback（理論上不會進來）
   return { stageTxt:`${typeLabel}（術後）`, pwTxt:'術後追蹤',
-    steps:[{ title:'與主治醫師討論術後輔助治療計畫', note:'依最終病理分期決定。' }],
+    steps:[surgeryStep, { title:'與主治醫師討論術後輔助治療計畫', phase:'consolidation', note:'依最終病理分期決定。' }],
     warns:[] };
+}
+
+/* V2.11.0: 復發路徑 — 走 META 邏輯 + 加「之前治療已完成」標記 */
+function buildRecurrencePath(t, m, brain){
+  // 暫存並強制以 META 跑（不污染 S）
+  const oldStageCat = S.stageCat;
+  const oldPostOp = S.postOp;
+  S.stageCat = 'META';
+  S.postOp = false;
+  let r;
+  try { r = buildPathRawCore(); }
+  finally { S.stageCat = oldStageCat; S.postOp = oldPostOp; }
+
+  // 開頭插「之前治療已完成」
+  const surgeryDone = { title:'已完成：手術 + 後續輔助治療', line:'前次治療', phase:'surgery',
+    note:'前次手術切除與術後治療已完成。' };
+
+  // 後續 step 全標 recurrence phase（讓三區呈現時都進「下一步」）
+  for(const s of r.steps){
+    if(!s.phase) s.phase = 'recurrence';
+  }
+  // 結尾加追蹤 step（標 followup phase → 進「之後」區）
+  r.steps.push({
+    title:'治療中規律影像追蹤',
+    line:'追蹤',
+    phase:'followup',
+    note:'復發後每 2-3 個月做 CT，依治療反應調整療程；必要時加腦 MRI / 骨掃描。',
+  });
+  r.steps = [surgeryDone, ...r.steps];
+  r.stageTxt = (r.stageTxt || '') + '（術後復發/惡化）';
+  r.pwTxt = '復發後重新評估全身性治療';
+  r.warns.unshift('已知復發或惡化：請盡快回診，重做基因檢測與完整影像評估');
+  return r;
 }
 
 /* ═══════════════════════════════════════════════════
    Render
 ═══════════════════════════════════════════════════ */
-function renderTreatmentSteps(steps){
+function renderTreatmentSteps(steps, opts){
   if(!steps || !steps.length) return '<p style="font-size:11px;color:var(--tx3);padding:10px 0">尚無資料</p>';
+  const startIdx = (opts && opts.startIdx) || 0;
+  const phaseClass = (opts && opts.phaseClass) || '';
   return steps.map((s,i)=>{
     let badge = '';
     if(s.nhi==='NHI') badge = '<span class="b-nhi">健保</span>';
@@ -1592,14 +1786,45 @@ function renderTreatmentSteps(steps){
         </div>${items}</div>`;
     }
     let note = s.note ? `<div class="tx-step-note">${escapeHtml(s.note)}</div>` : '';
-    return `<div class="tx-step">
+    const cls = phaseClass ? ' ' + phaseClass : '';
+    const num = (phaseClass==='tx-done') ? '✓' : (startIdx + i + 1);
+    return `<div class="tx-step${cls}">
       <div class="tx-step-head">
-        <div class="tx-step-n">${i+1}</div>
+        <div class="tx-step-n">${num}</div>
         <div class="tx-step-title">${badge}${escapeHtml(s.title)}${line}</div>
       </div>
       ${drugsBox}${note}
     </div>`;
   }).join('');
+}
+
+/* V2.11.0: 三區呈現（postOp + txProgress 才用） */
+function renderTreatmentSteps3Section(steps, txProgress){
+  const sec = splitStepsByProgress(steps, txProgress);
+  let html = '';
+  let counter = 0;
+  if(sec.done.length){
+    html += '<div class="tx-section">';
+    html += '<div class="tx-section-h done"><span class="ph-ic">✓</span>已完成</div>';
+    html += renderTreatmentSteps(sec.done, {startIdx:counter, phaseClass:'tx-done'});
+    counter += sec.done.length;
+    html += '</div>';
+  }
+  if(sec.next.length){
+    const lbl = txProgress==='recurrence' ? '➜ 復發後重新評估' : '➜ 下一步';
+    html += '<div class="tx-section">';
+    html += `<div class="tx-section-h next">${lbl}</div>`;
+    html += renderTreatmentSteps(sec.next, {startIdx:counter, phaseClass:'tx-next'});
+    counter += sec.next.length;
+    html += '</div>';
+  }
+  if(sec.future.length){
+    html += '<div class="tx-section">';
+    html += '<div class="tx-section-h future">⋯ 之後的選擇</div>';
+    html += renderTreatmentSteps(sec.future, {startIdx:counter, phaseClass:'tx-future'});
+    html += '</div>';
+  }
+  return html || renderTreatmentSteps(steps);
 }
 
 function renderSummary(){
@@ -1621,11 +1846,20 @@ function renderSummary(){
     const eL = ({'01':'PS 0-1','2':'PS 2','34':'PS 3-4'})[S.ecog] || '';
     if(eL) meta += ' · ' + eL;
   }
+  // V2.11.0: 顯示治療進度
+  if(S.postOp && S.txProgress){
+    meta += ' · 進度：' + (PROGRESS_LABEL[S.txProgress] || '');
+  }
   if(S.code) meta += ' · ' + S.code;
   if(S.name) meta += ' ' + S.name;
   document.getElementById('sum-meta').textContent = meta;
 
-  document.getElementById('sum-tx').innerHTML = renderTreatmentSteps(r.steps);
+  // V2.11.0: postOp + txProgress 走三區呈現；其他維持平鋪
+  if(S.postOp && S.txProgress){
+    document.getElementById('sum-tx').innerHTML = renderTreatmentSteps3Section(r.steps, S.txProgress);
+  } else {
+    document.getElementById('sum-tx').innerHTML = renderTreatmentSteps(r.steps);
+  }
   document.getElementById('sum-tx-ct').textContent = `${(r.steps||[]).length} 個步驟`;
 
   // warns
@@ -1717,6 +1951,7 @@ function buildEduPayload(){
     a: S.age || '',                // V2.9.0: 年齡 lt70/ge70
     e: S.ecog || '',               // V2.9.0: ECOG 01/2/34
     po: S.postOp ? 1 : 0,          // V2.10.0: 病理期別模式（已手術）
+    tp: S.txProgress || '',        // V2.11.0: 治療進度
     tm: TEAM.depts.map(d => S.consult[d.id] || ''),
     c: TEAM.caseManager.name,
     d: today,
@@ -1810,15 +2045,24 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;
    Navigation flow
 ═══════════════════════════════════════════════════ */
 function showPage(idx){
+  // V2.11.0: 6 頁流程（postOp 含 Q5）/ 5 頁（非 postOp + Q4 需要）/ 4 頁（無 Q4）
+  // PAGES = ['p-q1','p-q2','p-q3','p-q4','p-q5','p-sum']
   let pageId = PAGES[idx];
-  // 進 Q4 時，若不需要（早期/不知 type），跳到總覽
+  // Q4 不需要 → 跳到 Q5（postOp）或 sum
   if(idx===3 && !q4Needed()){
-    pageId = 'p-sum';
-    stepIdx = 4;
+    if(q5Needed()){
+      pageId = 'p-q5'; stepIdx = 4;
+    } else {
+      pageId = 'p-sum'; stepIdx = 5;
+    }
+  }
+  // Q5 不需要 → 跳到 sum
+  if(idx===4 && !q5Needed()){
+    pageId = 'p-sum'; stepIdx = 5;
   }
   PAGES.forEach(id => document.getElementById(id).classList.toggle('active', id===pageId));
-  // progress dots: 4 步（不問 Q4）或 5 步（含 Q4）
-  const totalSteps = q4Needed() ? 5 : 4;
+  // progress dots: 6 步（postOp）/ 5 步（含 Q4）/ 4 步（無 Q4）
+  const totalSteps = q5Needed() ? 6 : (q4Needed() ? 5 : 4);
   document.querySelectorAll('.pdot').forEach((d,i)=>{
     const visible = i < totalSteps;
     d.style.display = visible ? '' : 'none';
@@ -1844,7 +2088,7 @@ function showPage(idx){
   updateActBar();
   // V2.8.11: 進總覽頁時加 body.summary 解鎖手機捲動
   document.body.classList.toggle('summary', pageId==='p-sum');
-  // V2.9.4: 在 Q1-Q4 加 body.questioning 解鎖手機 Q-page 捲動
+  // V2.9.4: 在 Q1-Q5 加 body.questioning 解鎖手機 Q-page 捲動
   document.body.classList.toggle('questioning', pageId!=='p-sum');
   if(pageId==='p-sum'){
     renderSummary();
@@ -1924,6 +2168,11 @@ function pickStageMode(mode){
   const newPO = (mode === 'pathological');
   if(newPO === S.postOp) return;  // 同模式不動
   S.postOp = newPO;
+  // V2.11.0: 切回 clinical 時清 txProgress（cTNM 沒 Q5）
+  if(!newPO){
+    S.txProgress = '';
+    document.querySelectorAll('.prog-btn').forEach(b=>b.classList.remove('selected'));
+  }
   applyQ2Mode();
   updateActBar();
 }
@@ -1972,8 +2221,8 @@ function updateActBar(){
   const prevSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>';
   const nextSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
 
-  // Summary page (stepIdx === 4): 顯示「返回」+「重新查詢」
-  if(stepIdx >= 4){
+  // V2.11.0: Summary page = stepIdx 5（PAGES 6 元素）
+  if(stepIdx >= 5){
     back.style.display = '';
     back.innerHTML = prevSvg + ' 返回';   // 跨層回問答流程
     next.style.display = 'none';
@@ -1992,10 +2241,14 @@ function updateActBar(){
   else if(stepIdx === 1) canNext = !!S.type;                           // Q2 類型：必選
   else if(stepIdx === 2) canNext = !!S.stageCat;                       // Q3 分期：必算出
   else if(stepIdx === 3) canNext = isSCLC() ? !!S.brainMet : !!S.mut;  // Q4 基因/腦：必選
+  else if(stepIdx === 4) canNext = !!S.txProgress;                     // Q5 進度：必選
   next.disabled = !canNext;
 
-  // 「下一題」 vs 「看治療路徑」
-  const isLast = (stepIdx === 3) || (stepIdx === 2 && !q4Needed() && S.stageCat);
+  // 「下一題」 vs 「看治療路徑」 — 最後一題依 q4/q5Needed 動態決定
+  const isLast =
+    (stepIdx === 4 && q5Needed()) ||                                    // Q5 後就是 sum
+    (stepIdx === 3 && !q5Needed()) ||                                   // Q4 後就是 sum（無 Q5）
+    (stepIdx === 2 && !q4Needed() && S.stageCat);                       // Q3 後跳 sum
   next.innerHTML = (isLast ? '看治療路徑 ' : '下一題 ') + nextSvg;
 }
 
@@ -2008,8 +2261,9 @@ function pickType(btn){
   if(S.type && S.type !== newType){
     S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
     S.postOp=false;  // V2.10.0: 換 type 也清病理模式
-    // 視覺：清掉 TNM/mut/brain/sclc 的 selected
-    document.querySelectorAll('.tnm-btn,.mut-btn,.brain-btn,.sclc-btn').forEach(b=>b.classList.remove('selected'));
+    S.txProgress='';  // V2.11.0: 也清治療進度
+    // 視覺：清掉 TNM/mut/brain/sclc/prog 的 selected
+    document.querySelectorAll('.tnm-btn,.mut-btn,.brain-btn,.sclc-btn,.prog-btn').forEach(b=>b.classList.remove('selected'));
     const foot = document.getElementById('tnm-foot');
     const v = document.getElementById('tnm-stage');
     if(foot){ foot.classList.add('empty'); }
@@ -2044,6 +2298,51 @@ function pickMut(btn){
   S.mut = btn.dataset.val;
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
   setTimeout(()=>goNext(), 200);
+}
+
+/* V2.11.0: Q5 治療進度 picker */
+function pickProgress(btn){
+  S.txProgress = btn.dataset.val;
+  document.querySelectorAll('#opt-progress .prog-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  setTimeout(()=>goNext(), 200);
+}
+
+/* V2.11.0: progress → 已完成的 phase */
+const PROGRESS_DONE_PHASES = {
+  just_op:        ['surgery'],
+  chemo:          ['surgery'],            // 化療進行中（化療 step 算 next）
+  awaiting_consol:['surgery','adjuvant_chemo'],
+  consol:         ['surgery','adjuvant_chemo'],  // 鞏固進行中
+  followup:       ['surgery','adjuvant_chemo','consolidation'],
+  recurrence:     ['surgery','adjuvant_chemo','consolidation'],  // 之前都做完，現在復發
+};
+const PROGRESS_NEXT_PHASE = {
+  just_op:        'adjuvant_chemo',
+  chemo:          'adjuvant_chemo',
+  awaiting_consol:'consolidation',
+  consol:         'consolidation',
+  followup:       'followup',
+  recurrence:     'recurrence',
+};
+const PROGRESS_LABEL = {
+  just_op:'剛開完刀', chemo:'術後化療中', awaiting_consol:'等開鞏固藥',
+  consol:'鞏固藥治療中', followup:'追蹤中', recurrence:'復發/惡化',
+};
+
+function splitStepsByProgress(steps, txProgress){
+  const donePhases = PROGRESS_DONE_PHASES[txProgress] || [];
+  const nextPhase = PROGRESS_NEXT_PHASE[txProgress];
+  const done = [], next = [], future = [];
+  for(const s of steps){
+    if(donePhases.includes(s.phase)){
+      done.push(s);
+    } else if(s.phase === nextPhase){
+      next.push(s);
+    } else {
+      future.push(s);
+    }
+  }
+  return {done, next, future};
 }
 
 function pickTNM(axis, btn){
@@ -2131,16 +2430,27 @@ function goNext(){
     S.code = (document.getElementById('pt-code').value||'').trim();
     S.name = (document.getElementById('pt-name').value||'').trim();
   }
-  // Q3 → 若 q4 不需要，跳總覽
+  // V2.11.0: Q3 → 若 q4 不需要，跳 Q5（postOp）或 sum
   if(stepIdx===2 && !q4Needed()){
-    stepIdx = 4; showPage(4); return;
+    if(q5Needed()){ stepIdx = 4; showPage(4); return; }
+    stepIdx = 5; showPage(5); return;
   }
-  if(stepIdx<4){ stepIdx++; showPage(stepIdx); }
+  // Q4 → 若 q5 不需要，跳 sum
+  if(stepIdx===3 && !q5Needed()){
+    stepIdx = 5; showPage(5); return;
+  }
+  if(stepIdx<5){ stepIdx++; showPage(stepIdx); }
 }
 
 function goPrev(){
   if(stepIdx<=0) return;
-  // 從總覽返回：若沒問 Q4，直接回 Q3
+  // V2.11.0: 從 sum 返回：依 q4/q5Needed 決定上一頁
+  if(stepIdx===5){
+    if(q5Needed()){ stepIdx = 4; showPage(4); return; }
+    if(q4Needed()){ stepIdx = 3; showPage(3); return; }
+    stepIdx = 2; showPage(2); return;
+  }
+  // 從 Q5 返回：若 q4 不需要，跳回 Q3
   if(stepIdx===4 && !q4Needed()){ stepIdx = 2; showPage(2); return; }
   stepIdx--; showPage(stepIdx);
 }
@@ -2149,10 +2459,11 @@ function restart(){
   // 全清
   S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
   S.postOp=false;  // V2.10.0
+  S.txProgress='';  // V2.11.0
   S.age=''; S.ecog='';
   S.code=''; S.name=''; S.consult={};
   stepIdx=0; tnmAdv=false; q2Mode='tnm';
-  document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn, .brain-btn, .sclc-btn, .age-btn, .ecog-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn, .brain-btn, .sclc-btn, .age-btn, .ecog-btn, .prog-btn').forEach(b=>b.classList.remove('selected'));
   document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display='');
   document.querySelectorAll('.tnm-adv').forEach(el=>el.style.display='none');
   // V2.10.0: stage-mode 重置為 clinical

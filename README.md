@@ -1,4 +1,63 @@
-# Cancer Navigation V2.10.0 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.11.0 — 彰濱秀傳癌症中心
+
+## V2.11.0 — 2026-05-08
+**民眾版加 Q5 治療進度 + 總覽頁三區呈現（已完成 / 下一步 / 之後）**
+
+修了 V2.10.0 個管師驗收測出的兩個合理性問題：
+1. **postOp EARLY 跨期別不細分** — pIA1/pIA2/pIB/pIIB 全推同一組化療。但 IA 期復發風險低、多數情況觀察即可，warns 寫「IA 期通常觀察即可」放在 pIIB 病人總覽會造成矛盾
+2. **看不出目前位置** — 同一張總覽頁給「剛開完刀」與「已做完化療等鞏固」病人看，所有 step 同等亮度，無法回答「我下一步該做什麼」
+
+### Q5 治療進度頁（postOp 才出現）
+6 顆 prog-btn 對應 6 種治療時序位置：
+
+| 進度 | 對應 phase 進「下一步」區 |
+|------|---------------------------|
+| 剛開完刀 (just_op) | adjuvant_chemo |
+| 正在做術後化療 (chemo) | adjuvant_chemo |
+| 化療做完，等決定鞏固藥 (awaiting_consol) | consolidation |
+| 正在用鞏固藥 (consol) | consolidation |
+| 治療都完成，定期追蹤 (followup) | followup |
+| 發現復發或惡化 (recurrence) | recurrence（走 META 邏輯）|
+
+`S.txProgress` 存進度值，q4Needed 改成 postOp 一律 true（術後一定要 mut/brain 才能決定鞏固藥），流程改 6 頁、6 個 progress dots。
+
+### 三區呈現（postOp + txProgress）
+
+每個 step 加 `phase` 標記（surgery/adjuvant_chemo/consolidation/followup/recurrence）。`splitStepsByProgress(steps, txProgress)` 依 PROGRESS_DONE_PHASES + PROGRESS_NEXT_PHASE 分到三區：
+
+- **✓ 已完成**（淡色 + 劃線 + ✓ 取代序號）
+- **➜ 下一步**（青底 + box-shadow 醒目）
+- **⋯ 之後的選擇**（虛線邊框 + 淡色）
+
+### IA 期細分
+
+`isIA = /^IA/.test(stage)` → 走觀察為主分支（不推化療、標靶非主流）；IB+/II 走原本「化療 + 標靶/免疫鞏固」分支。warns 也跟著分流：IA 強調「依時程回診追蹤」，IB+/II 強調「請務必完成 4 個療程術後輔助化療」。
+
+### 復發路徑
+
+`buildRecurrencePath`：暫存 stageCat→META 跑 `buildPathRawCore()`、加開頭「之前治療已完成」surgery done step、所有後續 step 標 phase=recurrence、結尾加 followup step。三區呈現時 done=[前次治療]、next=[META 全部 step]、future=[追蹤]。
+
+### edu-patient 同步
+
+`buildPostOpPathFromData(t, st, m, brain, stage)` 加 stage 參數（從 d.s 拿）；`buildPathRawFromData` 加 recurrence 分流；`buildPathRawCoreFromData` 拆出；加 PROGRESS_LABEL/splitStepsByProgress/renderTreatmentSteps3Section；hero meta 加「進度：剛開完刀/化療中/...」。掃 QR 看到的內容跟 patient.html 總覽頁一致。
+
+### 測試
+
+9 個情境模擬全綠：
+
+| 情境 | done / next / future |
+|------|----------------------|
+| A1 pIA1 just_op | surgery / IA 規律追蹤 / 標靶非主流, 規律追蹤 |
+| A2 pIA1 EGFR(+) awaiting_consol | surgery, IA 觀察 / 標靶非主流 / 規律追蹤 |
+| A3 pIIB EGFR(+) consol | surgery, 化療 / Osi+ALK+Atezo 鞏固 / 規律追蹤 |
+| A4 pIIIA EGFR(+) recurrence | 前次治療 / META EGFR 4 step + followup |
+| A5 pIIB followup | 全部 5 step / 規律追蹤 / — |
+| A6 SCLC pLimited chemo | surgery / Cisplatin+Etoposide / 縱膈放療, PCI, 追蹤 |
+| A7 cIIIA 對照組 | 平鋪 4 step（無三區）|
+| A8 pIVA 寡轉移 just_op | surgery / 全身性治療 / 依基因, 影像追蹤 |
+| A9 NSCLC-SQ pIIB chemo | surgery / 鱗狀化療 / Atezo, 規律追蹤（鱗狀無 EGFR/ALK）|
+
+---
 
 ## V2.10.0 — 2026-05-08
 **民眾版加病理期別模式（已手術切換）**
