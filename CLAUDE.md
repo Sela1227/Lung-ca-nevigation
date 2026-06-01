@@ -143,6 +143,7 @@ node --check /tmp/j.js
 | 民眾版 Q5 治療進度 + 三區呈現（V2.11.0+） | `patient.html` 的 `#p-q5` 頁 + `pickProgress()` + `S.txProgress`；`PROGRESS_DONE_PHASES` / `PROGRESS_NEXT_PHASE` 常數；`splitStepsByProgress()` + `renderTreatmentSteps3Section()`；buildPostOpPath 每個 step 加 `phase` 標記；`buildRecurrencePath()` 處理復發；edu-patient 同套對映 |
 | 醫護版化療前 B/C 肝篩檢（V2.12.0+） | `lung/index.html` 的 CK config 加 c40 (`req:'chemo'`) + c41 (`req:'opt'`)；`isItemRequired` 加 `chemo` 條件（SCLC 全期 + NSCLC IB+ 必要）|
 | 醫護版總覽未完成清單只列必要（V2.12.0+） | `lung/index.html` 渲染 `sum-checklist` 處 `basicReq = CK_BASIC.filter(c=>c.req!=='opt')`、`allReq = [...basicReq, ...advReq]`；basic 頁面 `updateBasicCKBar()` 與 `renderBasicCK()` tab 計數也只算必要 |
+| 健保條文對齊（V2.13.0+） | 民眾版 `patient.html` / `edu-patient.html`：buildPostOpPath EARLY/LOCAL 分支 Osimertinib/Alectinib/Atezolizumab 鞏固 `nhi:'SELF'` + warns 加自費提醒；DRUGS.KRAS note「健保未給付」；DRUGS.BRAF/CONSOLIDATION/EGFR_BRAIN 補完整條件。醫護版 `drugs-pro.html` ALL_DRUGS 對齊條文編號（9.80/9.60/9.59/9.81/9.82/9.50/9.91/9.126）+ 新增 Nivolumab (115/6/1)。`drugs-patient.html` 同步 |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
@@ -203,6 +204,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.13.0 | V1.11.0 | 2026-06-01 | 健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）— Osimertinib/Alectinib 術後鞏固 (ADAURA/ALINA) NHI→SELF、Atezolizumab IMpower010 鞏固 SELF、Sotorasib 確認健保未給付、Amivantamab 對齊 9.126 限 EGFR exon 20 ins 第一線、Durvalumab 鞏固加上完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 新增 NSCLC 術前輔助) BUG-33 |
 | V2.12.0 | V1.10.0 | 2026-06-01 | 醫護版加化療前 B/C 肝病毒篩檢（c40 req:chemo）+ B 肝陽性轉腸胃科 NA 藥物（c41 opt）+ 修總覽未完成清單把 opt（依需要）誤列入未完成的 bug BUG-32 |
 | V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
@@ -213,7 +215,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V2.9.1 | V1.7.1 | 2026-04-29 | 民眾版字樣全面平民化（CCRT→同步化放療、RT→放射線治療）+ 隱藏放療劑量（由主治溝通）|
 | V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
 | V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
-| V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
 
 ---
 
@@ -506,6 +507,27 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**檔案內有兩處在做類似計算時要交叉驗證**。lung/index.html 同一份檔案，line 2921 KPI 用 `filter(c=>c.req!=='opt')`、line 3217 總覽直接用 `CK_BASIC.length`，兩處邏輯不一致是 bug 溫床。下次新增類似計算時，先 grep 看其他地方怎麼算，對齊
 - 教訓：**「opt 不影響進度」是 checklist 工具的核心 UX 原則**。如果勾 opt 會減少未完成計數、不勾 opt 會增加未完成數，那 opt 跟 required 就沒區別了。所有 progress/remaining 計算都要過濾 opt — basic 頁面 bar、tab 計數、總覽 ckRemain、KPI 都要一致
 
+### #33 (lung V1.11.0 / V2.13.0)：術後鞏固藥健保標示錯誤（一路標 NHI，但 ADAURA/ALINA/IMpower010 都是自費）
+- 症狀：Sela 上傳健保條文後對照發現，V2.10.0/V2.11.0 寫的 buildPostOpPath 把術後鞏固藥（Osimertinib EGFR / Alectinib ALK / Atezolizumab PD-L1≥1%）全標 `nhi:'NHI'`，但實際上：
+  1. Osimertinib (9.80) 健保**只給第一線 IIIB/IIIC/IV 期肺腺癌 + 第二線 T790M(+)**，**沒有術後鞏固（ADAURA）適應症** — 病人問到「我健保有給嗎」會被誤導
+  2. Alectinib (9.60) 同樣只給「ALK 陽性晚期 NSCLC 第一線」，**沒有術後鞏固（ALINA）適應症**
+  3. Atezolizumab IMpower010 (PD-L1≥1% II-IIIA 切除後) 健保完全沒給付 — 9.69 鞏固只給 durvalumab 用於 CCRT 後
+  4. Sotorasib (KRAS G12C) — 健保條文 1150522 與 115/5/1 修訂對照表完全沒列入，**健保未給付**（之前標 SELF 是對的，但 note 寫「健保事審」會讓人誤以為是事審就有）
+  5. Amivantamab (9.126) 健保只給「EGFR exon 20 insertion 第一線併用 carboplatin + pemetrexed」，**不是 Osimertinib 失敗後的後線**
+- 根因：V2.10.0 寫 buildPostOpPath 時直接從 NCCN/ADAURA/ALINA/IMpower010 試驗依據複製治療路徑，**沒對照健保第 9 章條文**。NCCN Cat 1 ≠ 健保給付，這在台灣是常識，但工具裡反覆出現了
+- 做法（V2.13.0 完整對齊條文）：
+  1. **民眾版 patient.html / edu-patient.html buildPathRaw + buildPostOpPath**：所有「術後鞏固」的 Osimertinib/Alectinib/Atezolizumab → `nhi:'SELF'` + note 加註「健保未給付，需自費」+ warns 加「ADAURA/ALINA/IMpower010：健保未給付」
+  2. **DRUGS 區塊**：KRAS note 改「健保未給付，自費；NCCN Cat 2A 後線推薦」、BRAF note 加註「健保僅給第二線」、CONSOLIDATION note 補完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）、EGFR_BRAIN note 加健保條文編號
+  3. **EGFR 後線 Amivantamab** title 改 `'Osimertinib 失敗後：化療 ± 免疫'`（不再放 Amivantamab 在 title）+ drugs list 改「Amivantamab + 化療（限 EGFR exon 20 ins）」+ note 加 9.126 條件
+  4. **drugs-pro.html ALL_DRUGS**：Osimertinib/Alectinib indi/line/nhi_ref/prereq/rule + appearsIn 全面對齊條文（9.80/9.60）、Lorlatinib/Ceritinib/Brigatinib/Crizotinib nhi_ref 改正確編號（9.81/9.59/9.82/9.50）、Dabrafenib+Trametinib nhi_ref 改 9.91-4 加註「NCCN 一線推薦但健保僅給第二線」、Sotorasib nhi_ref 改「健保未給付（自費）」、Amivantamab 全段改寫對齊 9.126
+  5. **drugs-pro.html 新增 Nivolumab** entry — 115/6/1 條文新增 NSCLC 術前輔助（CheckMate 816）健保給付：可切除（≥4cm 或 N1/N2 排除 N3、M0）、不具 EGFR/ALK、至多 3 個療程
+  6. **Durvalumab 條件補完整**：9.69-(2)-I.「III 期不可切除 + CCRT 後無 PD + PD-L1≥1% + 非鱗狀 EGFR/ALK/ROS-1 原生型 / 鱗狀 EGFR/ALK 原生型 + 至多 12 個月」全寫進 rule
+  7. **drugs-patient.html**：Sotorasib purpose 改自費明確；Amivantamab target 改「EGFR exon 20 ins 第一線（合併化療）」+ purpose 加 9.126 條件
+- 測試：5 個 postOp 情境（NSCLC_NS pIB/pIIB EGFR、pIIB ALK、pIIIA EGFR、pIIIA NONE）所有 3 個鞏固藥（Osimertinib/Alectinib/Atezolizumab）→ nhi=SELF ✓；DRUGS.KRAS.nhi=SELF ✓；CONSOLIDATION note 5 項條件全含 ✓；KRAS+postOp warns 含自費 ✓
+- 教訓：**NCCN Cat 1 / Cat 2A 推薦 ≠ 健保給付**。在台灣的臨床決策工具，「NCCN 推薦」與「健保給付」是兩個獨立維度，UI 要明確區分。Osimertinib 在 NCCN 是 IB-IIIA 術後鞏固 Cat 1，但健保只給 IIIB-IV 期第一線跟 T790M 第二線 — 病人問到「我健保有給嗎」會發現完全不一樣
+- 教訓：**健保條文要看「修訂對照表」找最新異動**。9.69 ICI 規範改了 25 次以上（108/4/1 → 115/5/1），跨 7 年。臨床路徑工具一年至少對一次條文，特別是「鞏固治療」「術前輔助」這種新增類別容易漏。本院應建立每季條文 review 機制
+- 教訓：**藥物標示要五個欄位都對齊條文：indi / line / prereq / rule / appearsIn**。nhi:'NHI' 只是一個 boolean，但「健保限什麼條件」要落在 prereq + rule。例如 Osimertinib nhi:'NHI' 是對的（第一線/第二線有給付），但「術後鞏固」要在 prereq 寫「術後 ADAURA 鞏固自費」、line 寫「術後 ADAURA 自費」、appearsIn 寫「術後鞏固，自費」— 三處交叉提示，民眾才不會誤解
+
 ---
 
 ## 七、擴充新癌別
@@ -523,7 +545,8 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.12.0** — 上線前必跑：(a) 醫護版 NSCLC_NS IIB 病人 → 進階檢查「治療準備」分區出現 c40 B/C 肝病毒篩檢（必要）、c41 B 肝陽性轉腸胃科（依需要） (b) NSCLC_NS IA1 病人 → c40 不在必要清單（IA 不化療）(c) SCLC 任何期 → c40 必要 (d) 總覽「尚有 N 項未完成」不再顯示 c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波（這三項是 opt 依需要） (e) basic 頁面 progress bar 100% 對應「必要 8/8 完成」而非「11/11」
+1. **GitHub Pages 部署實機驗證 V2.13.0** — 上線前必跑：(a) 民眾版 pIIB EGFR(+) postOp 總覽頁「術後鞏固」三個藥（Osimertinib/Alectinib/Atezolizumab）都顯示「自費」黃標籤而非「健保」青標籤 (b) postOp warns 出現「ADAURA/ALINA/IMpower010：健保未給付，需自費」(c) META KRAS 病人 warns 出現「Sotorasib：健保未給付，自費」 (d) 醫護版 drugs-pro 頁過濾「自費」可看到 Sotorasib + 術後鞏固情境的 3 個藥 (e) Nivolumab 出現在 ICI 類別、line 顯示「術前輔助、一線」(f) Durvalumab rule 完整列「III 期不可切除 + CCRT 後 + PD-L1≥1% + 原生型 + 12 個月」
+2. **GitHub Pages 部署實機驗證 V2.12.0** — 上線前必跑：(a) 醫護版 NSCLC_NS IIB 病人 → 進階檢查「治療準備」分區出現 c40 B/C 肝病毒篩檢（必要）、c41 B 肝陽性轉腸胃科（依需要） (b) NSCLC_NS IA1 病人 → c40 不在必要清單（IA 不化療）(c) SCLC 任何期 → c40 必要 (d) 總覽「尚有 N 項未完成」不再顯示 c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波（這三項是 opt 依需要） (e) basic 頁面 progress bar 100% 對應「必要 8/8 完成」而非「11/11」
 2. **GitHub Pages 部署實機驗證 V2.11.0** — 上線前必跑：(a) postOp 模式進到 Q5 治療進度頁，6 顆按鈕都能點且 auto-advance (b) 6 個 progress dots 在 postOp 顯示，cTNM 維持 4-5 個 (c) just_op 總覽頁三區呈現完整：「✓ 已完成」有 surgery、「➜ 下一步」醒目（青底 + box-shadow）、「⋯ 之後」淡色虛線 (d) followup 進度→大部分 step 在已完成區、僅追蹤 step 在「下一步」 (e) recurrence 進度→META 路徑 + 結尾 followup step (f) pIA1 跟 pIIB 走不同分支（IA 期不推化療）(g) edu-patient 掃 QR 顯示同三區呈現
 2. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
 3. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
@@ -538,4 +561,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.12.0 醫護版兩個修正：(a) 加化療前 B/C 肝病毒篩檢（c40 req:'chemo'，SCLC 全期 + NSCLC IB+ 必要） + B 肝陽性轉腸胃科 NA 藥物（c41 opt）(b) 修總覽「尚有 N 項未完成」紅 X 清單把 opt（依需要）項目誤列為未完成的 bug — 支氣管鏡、縱膈腔鏡、心臟超音波、ALK FISH、液態切片 ctDNA、c41 等 6 個 opt 項目以後不會再讓個管師看到「永遠未完成」假象。同時修 basic 頁面 progress bar 與 tab 計數一致（只算必要項目）。10 情境測試全綠。下版第一優先：上線實機驗證 + 排其他癌別擴充模板。
+V2.13.0 健保條文大對齊（依 1150522 第 9 章 + 115/5/1 附件 2 修訂對照表）。三大關鍵修正：(a) 術後鞏固藥（Osimertinib ADAURA / Alectinib ALINA / Atezolizumab IMpower010）一律改 `nhi:'SELF'` — 之前標 NHI 是錯的，9.80/9.60/9.69 都沒給術後鞏固適應症 (b) Sotorasib KRAS G12C 確認健保完全未給付，相關 warns/note 改「自費」明確 (c) Amivantamab 改對齊 9.126：限 EGFR exon 20 insertion 第一線併用 carboplatin/pemetrexed；Osimertinib 失敗後（MARIPOSA-2）健保未給付。同時補：Durvalumab 鞏固條件五項齊全（III 期不可切除 + CCRT 後 + PD-L1≥1% + 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 NSCLC 術前輔助 CheckMate 816 健保新增) + ALK/ROS1/BRAF 條文編號對齊（9.59/9.81/9.82/9.50/9.91-4）。5 情境 + 6 個 DRUGS 條件驗證全綠。下版第一優先：上線實機驗證 + Sela 排藥劑科確認最後幾個 nhi_ref（Tepotinib 編號、Entrectinib 是否獨立條目）。

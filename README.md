@@ -1,4 +1,69 @@
-# Cancer Navigation V2.12.0 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.13.0 — 彰濱秀傳癌症中心
+
+## V2.13.0 — 2026-06-01
+**健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）**
+
+Sela 上傳健保條文檔案後對照發現一連串「NCCN Cat 1 ≠ 健保給付」的誤標。修了 V2.10.0/V2.11.0 把術後鞏固藥當作健保給付的 bug。
+
+### 三大關鍵修正
+
+**1. 術後鞏固藥（Osimertinib / Alectinib / Atezolizumab）標示由 NHI → SELF**
+
+| 藥物 | 之前標示 | 修正後 | 健保條文依據 |
+|------|---------|--------|------------|
+| Osimertinib 術後鞏固（ADAURA, IB-IIIA EGFR+） | NHI | SELF | 9.80：只給第一線 IIIB/IIIC/IV + 第二線 T790M，**無術後鞏固** |
+| Alectinib 術後鞏固（ALINA, IB-IIIA ALK+） | NHI | SELF | 9.60：只給 ALK 陽性晚期 NSCLC 第一線，**無術後鞏固** |
+| Atezolizumab IMpower010 鞏固（II-IIIA PD-L1≥1%） | NHI（未標） | SELF | 9.69：鞏固限 durvalumab 用於 CCRT 後，**無 IMpower010** |
+
+**2. KRAS G12C 標靶（Sotorasib）— 確認健保完全未給付**
+
+條文 1150522 第 9 章 + 115/5/1 修訂對照表完全沒列 Sotorasib。之前 note 寫「健保事審」會讓人誤以為事審就有，改成「健保未給付，自費；NCCN Cat 2A 後線推薦」。
+
+**3. Amivantamab 對齊 9.126 — 限 EGFR exon 20 ins 第一線併用化療**
+
+條文 9.126：「與 carboplatin 及 pemetrexed 併用，適用於罹患帶有 EGFR exon 20 插入突變之局部晚期或轉移性 NSCLC 的成人病人，作為第一線治療」。之前寫「Osimertinib 失敗後可用」是錯的 — MARIPOSA-2 後線健保未給付。
+
+### Durvalumab 鞏固條件補完整
+
+依 9.69-(2)-I.（115/2/1 條文）：
+
+| 條件 | 之前 | 修正後 |
+|------|------|--------|
+| III 期不可切除 | 未列 | ✓ 加入 |
+| CCRT 後無 PD | ✓ | ✓ |
+| PD-L1 ≥1% | ✓ | ✓ |
+| EGFR/ALK/ROS-1 原生型（非鱗）/ EGFR/ALK 原生型（鱗狀）| 未列 | ✓ 加入 |
+| 至多 12 個月 | ✓ | ✓ |
+
+### 新增 Nivolumab entry — 115/6/1 NSCLC 術前輔助（CheckMate 816 健保新增）
+
+條文 9.69-1-(2)-I（115/6/1 條文新增）：
+- 限可切除（腫瘤 ≥4cm 或 N1/N2 排除 N3、M0）、不具 EGFR/ALK
+- 非鱗：與 pemetrexed + 含鉑化療併用
+- 鱗狀：與含鉑化療併用
+- 至多 3 個療程
+
+### 條文編號對齊（多項修正）
+
+| 藥物 | 之前 nhi_ref | 修正後 |
+|------|--------------|--------|
+| Osimertinib | 9.5.1 / 9.5.2 | 9.80 |
+| Alectinib | 9.5.3 | 9.60 |
+| Ceritinib | 9.5.3 | 9.59 |
+| Lorlatinib | 9.5.3 | 9.81 |
+| Brigatinib | 9.5.3 | 9.82 |
+| Crizotinib | 9.5.3 / 9.5.4 | 9.50（113/9/1 後 ALK 新案改用其他 ALK TKI）|
+| Entrectinib | 9.5.4 | 9.50（與 Crizotinib 擇一）|
+| Dabrafenib + Trametinib | 9.5.5 | 9.91-4 |
+| Afatinib | 9.5.1 | 9.45 |
+| Sotorasib | 健保給付狀態變動快 | 健保未給付（自費）|
+| Amivantamab | 部分適應症給付 | 9.126（健保事審；限 EGFR exon 20 ins 第一線併用化療）|
+
+### 測試
+
+5 個 postOp 情境（NSCLC_NS pIB/pIIB EGFR、pIIB ALK、pIIIA EGFR、pIIIA NONE）所有 3 個鞏固藥 → nhi=SELF ✓；DRUGS.KRAS.nhi=SELF ✓；CONSOLIDATION note 5 項條件齊全 ✓；KRAS warns 含自費 ✓；postOp EARLY warns 含術後鞏固自費提醒 ✓。
+
+---
 
 ## V2.12.0 — 2026-06-01
 **醫護版加化療前 B/C 肝篩檢 + 修總覽未完成清單把「依需要」誤列入未完成的 bug**

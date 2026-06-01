@@ -132,7 +132,7 @@ const DRUGS = {
     {n:'Dacomitinib',z:'肺欣妥'}],
     note:'五藥擇一。Dacomitinib 限無腦轉移。'},
   EGFR_BRAIN: {line:'一線（合併）', nhi:'NHI', list:[{n:'Erlotinib + Bevacizumab',z:'得舒緩 + 癌思停'}],
-    note:'限 EGFR L858R 突變 + 腦轉移。'},
+    note:'限 EGFR L858R 突變 + 腦轉移。Erlotinib 健保事審 9.5.1；Bevacizumab 健保事審 9.5.7。'},
   ALK: {line:'一線標靶', nhi:'NHI', list:[
     {n:'Alectinib',z:'安立適'},{n:'Lorlatinib',z:'瘤利欣'},
     {n:'Ceritinib',z:'立克癌'},{n:'Brigatinib',z:'癌倍利'},
@@ -141,11 +141,11 @@ const DRUGS = {
   ROS1: {line:'一線標靶', nhi:'NHI', list:[{n:'Crizotinib',z:'截克瘤'},{n:'Entrectinib',z:'羅思克'}],
     note:'擇一。'},
   BRAF: {line:'二線（含鉑後）', nhi:'NHI', list:[{n:'Dabrafenib + Trametinib',z:'泰伏樂 + 麥欣寧'}],
-    note:'限 BRAF V600E 突變、含鉑化療失敗後。'},
+    note:'限 BRAF V600E 突變、含鉑化療失敗後（健保條文 9.91；NCCN 一線推薦但健保僅給第二線）。'},
   MET: {line:'不分線', nhi:'NHI', list:[{n:'Tepotinib',z:'特癌適'}],
     note:'限 MET exon 14 跳躍突變。'},
   KRAS: {line:'二線', nhi:'SELF', list:[{n:'Sotorasib',z:'魯瑪克拉斯'}],
-    note:'限 KRAS G12C 突變，健保事審。'},
+    note:'限 KRAS G12C 突變。健保未給付，自費；NCCN Cat 2A 後線推薦。'},
   NS_PDL1H: {line:'一線（免疫+化療）', nhi:'NHI', list:[
     {n:'Pembrolizumab + Pemetrexed + 鉑類',z:'吉舒達 + 愛寧達 + 鉑類'},
     {n:'Atezolizumab + Bevacizumab + Carboplatin + Paclitaxel',z:'癌自禦 + 癌思停 + 鉑類 + 紫杉醇'}],
@@ -316,8 +316,8 @@ function buildPathRawCoreFromData(d){
         note:'4 個療程。' },
     ];
     if(isNS){
-      steps.push({ title:'EGFR 陽性術後鞏固：Osimertinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'IB-IIIA 切除後 EGFR(+)，至多 3 年。' });
-      steps.push({ title:'ALK 陽性術後鞏固：Alectinib', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Alectinib',z:'安立適'}], note:'IB-IIIA 切除後 ALK(+)，至多 2 年。' });
+      steps.push({ title:'EGFR 陽性術後鞏固：Osimertinib', line:'術後鞏固', nhi:'SELF', drugs:[{n:'Osimertinib',z:'泰格莎'}], note:'IB-IIIA 切除後 EGFR(+)，至多 3 年（ADAURA 適應症）。健保未給付術後鞏固，需自費。' });
+      steps.push({ title:'ALK 陽性術後鞏固：Alectinib', line:'術後鞏固', nhi:'SELF', drugs:[{n:'Alectinib',z:'安立適'}], note:'IB-IIIA 切除後 ALK(+)，至多 2 年（ALINA 適應症）。健保未給付術後鞏固，需自費。' });
     }
     return {
       stageTxt:`${typeLabel} 早期 (I-II)`, pwTxt:'手術切除為主',
@@ -339,7 +339,7 @@ function buildPathRawCoreFromData(d){
           note:'化療與放射線治療同步 4-6 個療程。' },
         { title:'同步化放療後無惡化：Durvalumab 免疫鞏固', line:DRUGS.CONSOLIDATION.line, nhi:'NHI', drugs: DRUGS.CONSOLIDATION.list, note: DRUGS.CONSOLIDATION.note },
         { title:'可切除型 IIIA：先手術 + 術後輔助化療 ± 標靶/免疫', line:'替代方案', note:'侷限 N1 或單站 N2 可手術；多站 N2 或大腫瘤通常先做同步化放療。' },
-        ...(isNS ? [{ title:'IIIA 切除術後 EGFR(+) / ALK(+)：標靶鞏固', line:'術後鞏固', nhi:'NHI', drugs:[{n:'Osimertinib (EGFR)',z:'泰格莎'},{n:'Alectinib (ALK)',z:'安立適'}], note:'依術後基因檢測結果加鞏固治療。' }] : []),
+        ...(isNS ? [{ title:'IIIA 切除術後 EGFR(+) / ALK(+)：標靶鞏固', line:'術後鞏固', nhi:'SELF', drugs:[{n:'Osimertinib (EGFR)',z:'泰格莎'},{n:'Alectinib (ALK)',z:'安立適'}], note:'依術後基因檢測結果加鞏固治療。ADAURA / ALINA 適應症健保未給付，需自費。' }] : []),
       ],
       warns:[
         '高齡或體力較差：同步化放療毒性高，可改序貫（先化療後放射線治療）',
@@ -357,10 +357,10 @@ function buildPathRawCoreFromData(d){
         { title:'第一線：EGFR TKI 標靶', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
         { title:'EGFR L858R + 腦轉移：合併方案', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI', drugs: DRUGS.EGFR_BRAIN.list, note: DRUGS.EGFR_BRAIN.note },
         { title:'惡化後：抗藥機制檢測', line:'惡化評估', note:'若一線非 Osimertinib 且 T790M(+)，可換 Osimertinib。' },
-        { title:'Osimertinib 失敗後：化療 ± 免疫 / Amivantamab', line:'後線', nhi:'NHI', drugs:[
+        { title:'Osimertinib 失敗後：化療 ± 免疫', line:'後線', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'},
-            {n:'Amivantamab + 化療',z:'瑞普替（部分自費）'}],
-          note:'非鱗狀標準後線。' },
+            {n:'Amivantamab + 化療（限 EGFR exon 20 ins）',z:'瑞普替 + 化療'}],
+          note:'非鱗狀標準後線。Amivantamab 健保限 EGFR exon 20 insertion 第一線併用 carboplatin/pemetrexed (9.126)；用於 Osimertinib 失敗後常為自費。' },
       ];
     } else if(m==='ALK'){
       steps = [
@@ -499,16 +499,16 @@ function buildPostOpPathFromData(t, st, m, brain, stage){
         note:'4 個療程。IB 期具高風險（≥4cm、血管/臟層肋膜/淋巴管侵犯）建議化療；II 期一律建議。' });
 
       if(isNS){
-        steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
+        steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', phase:'consolidation', nhi:'SELF',
           drugs:[{n:'Osimertinib',z:'泰格莎'}],
-          note:'IB-IIIA 切除後 EGFR(+) — ADAURA 研究顯示顯著降低復發。' });
-        steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
+          note:'IB-IIIA 切除後 EGFR(+) — ADAURA 研究依據。健保未給付術後鞏固，需自費。' });
+        steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', phase:'consolidation', nhi:'SELF',
           drugs:[{n:'Alectinib',z:'安立適'}],
-          note:'IB-IIIA 切除後 ALK(+) — ALINA 研究依據。' });
+          note:'IB-IIIA 切除後 ALK(+) — ALINA 研究依據。健保未給付術後鞏固，需自費。' });
       }
-      steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固', phase:'consolidation',
+      steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固', phase:'consolidation', nhi:'SELF',
         drugs:[{n:'Atezolizumab',z:'癌自禦'}],
-        note:'IMpower010 適用 II-IIIA 切除後 PD-L1≥1%；健保事審條件請與主治醫師確認。' });
+        note:'IMpower010 適用 II-IIIA 切除後 PD-L1≥1%。健保鞏固限 III 期不可切除 CCRT 後 Durvalumab；IMpower010 術後鞏固需自費。' });
     }
     steps.push({ title:'規律追蹤：前 2 年每 3-6 個月 CT', line:'術後追蹤', phase:'followup',
       note:'前 2 年每 3-6 個月、3-5 年每 6 個月、5 年後每年。每年 1 次胸部低劑量 CT。' });
@@ -521,6 +521,7 @@ function buildPostOpPathFromData(t, st, m, brain, stage){
       warns.push('II 期或高風險 IB：請務必完成 4 個療程術後輔助化療');
     }
     warns.push('建議切除後做 EGFR、ALK、PD-L1 檢測，決定鞏固藥物');
+    warns.push('術後標靶/免疫鞏固（ADAURA / ALINA / IMpower010 適應症）：健保未給付，需自費');
     if(!isNS) warns.push('鱗狀者目前無術後標靶鞏固藥物，主要以化療 ± 免疫為主');
     return {
       stageTxt:`${typeLabel} 早期 (I-II) — 術後`,
@@ -540,22 +541,23 @@ function buildPostOpPathFromData(t, st, m, brain, stage){
     steps.push({ title:'若病理切緣 (+) 或多站 N2：加術後放療', line:'術後鞏固', phase:'consolidation',
       note:'切緣陽性或不完全切除（R1/R2）建議加胸部放療；單站 N2 視情況。' });
     if(isNS){
-      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
+      steps.push({ title:'EGFR 陽性：Osimertinib 鞏固至多 3 年', line:'術後鞏固', phase:'consolidation', nhi:'SELF',
         drugs:[{n:'Osimertinib',z:'泰格莎'}],
-        note:'IB-IIIA EGFR(+) 切除後 — ADAURA 研究依據。' });
-      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', phase:'consolidation', nhi:'NHI',
+        note:'IB-IIIA EGFR(+) 切除後 — ADAURA 研究依據。健保未給付術後鞏固，需自費。' });
+      steps.push({ title:'ALK 陽性：Alectinib 鞏固至多 2 年', line:'術後鞏固', phase:'consolidation', nhi:'SELF',
         drugs:[{n:'Alectinib',z:'安立適'}],
-        note:'IB-IIIA ALK(+) 切除後 — ALINA 研究依據。' });
+        note:'IB-IIIA ALK(+) 切除後 — ALINA 研究依據。健保未給付術後鞏固，需自費。' });
     }
-    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固', phase:'consolidation',
+    steps.push({ title:'PD-L1 ≥1% 可考慮：Atezolizumab 免疫鞏固', line:'術後鞏固', phase:'consolidation', nhi:'SELF',
       drugs:[{n:'Atezolizumab',z:'癌自禦'}],
-      note:'IMpower010：II-IIIA 切除後 PD-L1≥1%；健保事審。' });
+      note:'IMpower010：II-IIIA 切除後 PD-L1≥1%。健保未給付術後鞏固，需自費。' });
     steps.push({ title:'規律追蹤：前 2 年每 3 個月 CT', line:'術後追蹤', phase:'followup',
       note:'III 期復發風險較高 — 前 2 年每 3 個月、3-5 年每 6 個月、5 年後每年。' });
 
     const warns = [
       'III 期切除復發風險高於 I-II 期，請務必完成輔助治療與規律追蹤',
       '建議完成 EGFR、ALK、PD-L1 檢測再決定鞏固藥物',
+      '術後標靶/免疫鞏固（ADAURA / ALINA / IMpower010）：健保未給付，需自費',
     ];
     if(!isNS) warns.push('鱗狀者目前無術後標靶鞏固藥物');
     return {
