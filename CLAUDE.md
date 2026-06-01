@@ -204,7 +204,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
-| V2.13.0 | V1.11.0 | 2026-06-01 | 健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）— Osimertinib/Alectinib 術後鞏固 (ADAURA/ALINA) NHI→SELF、Atezolizumab IMpower010 鞏固 SELF、Sotorasib 確認健保未給付、Amivantamab 對齊 9.126 限 EGFR exon 20 ins 第一線、Durvalumab 鞏固加上完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 新增 NSCLC 術前輔助) BUG-33 |
+| V2.13.0 | V1.11.0 | 2026-06-01 | 健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）— Osimertinib/Alectinib 術後鞏固 (ADAURA/ALINA) NHI→SELF、Atezolizumab IMpower010 鞏固 SELF、Sotorasib 確認健保未給付、Amivantamab 對齊 9.126 限 EGFR exon 20 ins 第一線、Durvalumab 鞏固加上完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 新增 NSCLC 術前輔助) + drugs-pro/drugs-patient 頁首版本日期同步至 1150522 + 115/5/1 + 115/6/1，清除殘留 emoji 改 Nordic inline SVG BUG-33 |
 | V2.12.0 | V1.10.0 | 2026-06-01 | 醫護版加化療前 B/C 肝病毒篩檢（c40 req:chemo）+ B 肝陽性轉腸胃科 NA 藥物（c41 opt）+ 修總覽未完成清單把 opt（依需要）誤列入未完成的 bug BUG-32 |
 | V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
