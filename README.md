@@ -1,4 +1,45 @@
-# Cancer Navigation V2.11.0 — 彰濱秀傳癌症中心
+# Cancer Navigation V2.12.0 — 彰濱秀傳癌症中心
+
+## V2.12.0 — 2026-06-01
+**醫護版加化療前 B/C 肝篩檢 + 修總覽未完成清單把「依需要」誤列入未完成的 bug**
+
+Sela 個管師驗收測 V2.11.0 後回報兩個問題：
+1. 化療前需必加 B/C 肝病毒篩檢（化療會誘發 B 肝再活化），B 肝陽性者需轉腸胃科開預防性 NA 藥物
+2. 「依需要」項目（支氣管鏡、縱膈腔鏡、心臟超音波）誤列入總覽「尚有 N 項未完成」紅 X 清單，個管師永遠看到「未完成」狀態
+
+### CK 加兩項
+
+| ID | 項目 | req | 觸發條件 |
+|----|------|-----|----------|
+| c40 | B/C 肝病毒篩檢（HBsAg、anti-HBc、anti-HCV） | `chemo` | SCLC 全期 + NSCLC IB+ |
+| c41 | B 肝陽性者轉腸胃科預防性藥物（Entecavir / Tenofovir） | `opt` | 依需要勾選（c40 結果陽性才用得到）|
+
+`isItemRequired` 加 `'chemo'` 條件：SCLC 一律 true、NSCLC stage≥IB true（IA 期通常觀察不化療）。NSCLC_NS IA1 病人不會出現 c40，IIB 之後會。
+
+### 修總覽未完成清單
+
+**Bug**：line 3217 `basicTotal = CK_BASIC.length` 用全部（含 opt）、line 3235 `allReq = [...CK_BASIC, ...advReq]` 把所有 basic 倒進去未完成清單。
+
+**修法**：
+- 渲染總覽：`basicReq = CK_BASIC.filter(c=>c.req!=='opt')`、`allReq = [...basicReq, ...advReq]`
+- basic 頁面 progress bar (`updateBasicCKBar`)：只算必要項目
+- basic 頁面 tab 計數 (`renderBasicCK`)：顯示「8/8」而非「8/11」
+- opt 完成 bonus：basic 與 adv 的 opt 完成都納入「✚ 另完成 N 項選擇性檢查」
+
+### 測試
+
+10 情境（NSCLC_NS/SQ + SCLC × IA1-IVB）全綠：
+
+| 情境 | c40 必要？ |
+|------|-----------|
+| NSCLC_NS IA1 / IA2 | false（IA 期不化療）|
+| NSCLC_NS IB / IIA / IIB / IIIA / IVA | true |
+| NSCLC_SQ IIA | true |
+| SCLC IA1 / IIIB / IVA | true（SCLC 全期）|
+
+「依需要」basic 項目（c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波）永遠 `isItemRequired=false`；勾 5 個 opt 後 ckRemain 不變。
+
+---
 
 ## V2.11.0 — 2026-05-08
 **民眾版加 Q5 治療進度 + 總覽頁三區呈現（已完成 / 下一步 / 之後）**

@@ -1178,8 +1178,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.9.0';
-const SYSTEM_VERSION = 'V2.11.0';
+const MODULE_VERSION = 'V1.10.0';
+const SYSTEM_VERSION = 'V2.12.0';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1262,6 +1262,9 @@ const CFG = {
     {id:'c16',g:'04 — 治療準備',l:'多專科團隊 (MDT) 討論', req:'all', phase:'adv'},
     {id:'c19',g:'04 — 治療準備',l:'重大傷病卡已申請', req:'all', phase:'adv'},
     {id:'c20',g:'04 — 治療準備',l:'人工血管置入 (Port-A)', req:'IB+', phase:'adv'},
+    // V2.12.0: 化療前 B/C 肝病毒篩檢（避免化療誘發 B 肝再活化）
+    {id:'c40',g:'04 — 治療準備',l:'B/C 肝病毒篩檢（HBsAg、anti-HBc、anti-HCV）', req:'chemo', phase:'adv'},
+    {id:'c41',g:'04 — 治療準備',l:'B 肝陽性者轉腸胃科預防性藥物（Entecavir / Tenofovir）', req:'opt', phase:'adv'},
     // ── Phase 5：啟動治療（需期別）──
     {id:'c22',g:'05 — 啟動治療',l:'治療選項及預期目標確認', req:'all', phase:'adv'},
     {id:'c23',g:'05 — 啟動治療',l:'放射治療模擬定位', req:'rt', phase:'adv'},
@@ -1305,6 +1308,14 @@ function isItemRequired(item, type, stage){
   if(r==='rt') return (isNSCLC && (stage==='IIIB'||stage==='IIIC')) || (isSCLC && !isIV);
   // IO: when immunotherapy is part of treatment plan
   if(r==='io') return (isNSCLC && stageGte(stage,'IIB')) || (isSCLC && isIV);
+  // V2.12.0: chemo — 化療可能性高的情境（化療前需 B/C 肝病毒篩檢）
+  // SCLC：任何期都化療 → 一律必要
+  // NSCLC：IB+ 才會涉及輔助化療或全身性化療；IA 期通常觀察或單純切除
+  if(r==='chemo'){
+    if(isSCLC) return true;
+    if(isNSCLC) return stageGte(stage,'IB');
+    return false;
+  }
   return false;
 }
 
@@ -3213,8 +3224,10 @@ function renderSummary(){
   // Checklist — two-phase display
   const hasStage = !!S.stage;
   // Basic phase (always applicable)
-  const basicDone = CK_BASIC.filter(it=>(S.ck||{})[it.id]).length;
-  const basicTotal = CK_BASIC.length;
+  // V2.12.0: basicTotal 只算必要項目 (req!=='opt')，避免「依需要」項目被列入未完成
+  const basicReq = CK_BASIC.filter(c=>c.req!=='opt');
+  const basicDone = basicReq.filter(it=>(S.ck||{})[it.id]).length;
+  const basicTotal = basicReq.length;
   // Advanced phase (stage-aware)
   const advReq = hasStage ? CK_ADV.filter(c=>isItemRequired(c, S.type, S.stage)) : CK_ADV;
   const advDone = advReq.filter(it=>(S.ck||{})[it.id]).length;
@@ -3232,16 +3245,20 @@ function renderSummary(){
   if(ckRemain===0){ ckH += '<div class="sck-ok"><i class="fa-solid fa-circle-check"></i>必要項目全部完成</div>'; }
   else {
     ckH += `<div style="font-size:13px;color:var(--rose);font-weight:600;margin-bottom:8px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);margin-right:4px"></i> 尚有 ${ckRemain} 項未完成</div><div class="sck">`;
-    const allReq = [...CK_BASIC, ...advReq];
+    // V2.12.0: 未完成清單只列必要項目 (basicReq + advReq)，不列「依需要 / 選擇性」
+    const allReq = [...basicReq, ...advReq];
     allReq.forEach(c=>{ if(!(S.ck||{})[c.id]) ckH += `<div class="sci"><i class="fa-solid fa-circle-xmark"></i>${c.l}</div>`; });
     ckH += '</div>';
   }
-  // Optional items done (bonus)
+  // V2.12.0: Optional items done (bonus) — basic 與 adv 的 opt 都納入計算
+  const basicOpt = CK_BASIC.filter(c=>c.req==='opt');
+  const basicOptDone = basicOpt.filter(it=>(S.ck||{})[it.id]).length;
+  let optDone = basicOptDone;
   if(hasStage){
-    const optItems = CK_ADV.filter(c=>!isItemRequired(c, S.type, S.stage));
-    const optDone = optItems.filter(it=>(S.ck||{})[it.id]).length;
-    if(optDone>0) ckH += `<div style="font-size:12px;color:var(--text3);margin-top:6px">✚ 另完成 ${optDone} 項選擇性檢查</div>`;
+    const advOpt = CK_ADV.filter(c=>!isItemRequired(c, S.type, S.stage));
+    optDone += advOpt.filter(it=>(S.ck||{})[it.id]).length;
   }
+  if(optDone>0) ckH += `<div style="font-size:12px;color:var(--text3);margin-top:6px">✚ 另完成 ${optDone} 項選擇性檢查</div>`;
   document.getElementById('sum-checklist').innerHTML = ckH;
 
   // Treatment
@@ -3308,14 +3325,16 @@ function renderBasicCK(){
   // Tabs
   const tabsEl = document.getElementById('bck-tabs');
   tabsEl.innerHTML = bckGroups.map((g,i)=>{
-    const done = g.items.filter(it=>A.S.ck[it.id]).length;
+    // V2.12.0: tab 計數只算必要項目（opt 不算進去）
+    const req = g.items.filter(c=>c.req!=='opt');
+    const done = req.filter(it=>A.S.ck[it.id]).length;
     const prefix = g.key.substring(0,2);
     const icon = BCK_TAB_ICONS[prefix]||'fa-solid fa-check';
     const shortName = g.key.replace(/^\d+\s*—\s*/,'');
     return `<button class="ck-tab${i===bckCurTab?' on':''}" onclick="APP.bckTab(${i})">
       <i class="${icon} ck-tab-icon"></i>
       <span class="ck-tab-name">${shortName}</span>
-      <span class="ck-tab-cnt">${done}/${g.items.length}</span>
+      <span class="ck-tab-cnt">${done}/${req.length}</span>
     </button>`;
   }).join('');
   // Panes
@@ -3393,8 +3412,10 @@ A.toggleBasicCK = function(id){
 };
 
 function updateBasicCKBar(){
-  const done = CK_BASIC.filter(it=>A.S.ck[it.id]).length;
-  const total = CK_BASIC.length;
+  // V2.12.0: progress 只算必要項目，opt（依需要）不拖累進度
+  const req = CK_BASIC.filter(c=>c.req!=='opt');
+  const done = req.filter(it=>A.S.ck[it.id]).length;
+  const total = req.length;
   const pct = total>0 ? Math.round(done/total*100) : 0;
   const barEl = document.getElementById('bck-bar');
   const pctEl = document.getElementById('bck-pct');

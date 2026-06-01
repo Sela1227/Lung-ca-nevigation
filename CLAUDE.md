@@ -141,6 +141,8 @@ node --check /tmp/j.js
 | 民眾版 SCLC 腦/脊髓轉移選項（V2.8.5+） | `patient.html` 的 `#opt-brain` 區塊 + `pickBrain()` / `applyQ3Mode()` |
 | 民眾版病理期別模式（V2.10.0+） | `patient.html` 的 `#stage-mode-row` + `pickStageMode()` / `applyPostOpVisuals()` / `refreshStageDisplayText()`；`S.postOp` boolean；`buildPostOpPath()` 是術後分支引擎；edu-patient 的 `buildPostOpPathFromData()` 同步 |
 | 民眾版 Q5 治療進度 + 三區呈現（V2.11.0+） | `patient.html` 的 `#p-q5` 頁 + `pickProgress()` + `S.txProgress`；`PROGRESS_DONE_PHASES` / `PROGRESS_NEXT_PHASE` 常數；`splitStepsByProgress()` + `renderTreatmentSteps3Section()`；buildPostOpPath 每個 step 加 `phase` 標記；`buildRecurrencePath()` 處理復發；edu-patient 同套對映 |
+| 醫護版化療前 B/C 肝篩檢（V2.12.0+） | `lung/index.html` 的 CK config 加 c40 (`req:'chemo'`) + c41 (`req:'opt'`)；`isItemRequired` 加 `chemo` 條件（SCLC 全期 + NSCLC IB+ 必要）|
+| 醫護版總覽未完成清單只列必要（V2.12.0+） | `lung/index.html` 渲染 `sum-checklist` 處 `basicReq = CK_BASIC.filter(c=>c.req!=='opt')`、`allReq = [...basicReq, ...advReq]`；basic 頁面 `updateBasicCKBar()` 與 `renderBasicCK()` tab 計數也只算必要 |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
@@ -201,6 +203,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V2.12.0 | V1.10.0 | 2026-06-01 | 醫護版加化療前 B/C 肝病毒篩檢（c40 req:chemo）+ B 肝陽性轉腸胃科 NA 藥物（c41 opt）+ 修總覽未完成清單把 opt（依需要）誤列入未完成的 bug BUG-32 |
 | V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 | V2.9.5 | V1.7.5 | 2026-04-30 | 藥物頁拆兩版（drugs-pro 加 NCCN/事審/必試/cross-ref；drugs-patient 加副作用、用途）+ 個人化推薦（總覽頁帶 query 跳 drugs-patient）|
@@ -211,8 +214,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
 | V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
 | V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
-| V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
-| V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html（已被 V2.8.9 取代）|
 
 ---
 
@@ -489,6 +490,22 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**clinical 工具的「下一步」概念不能用步驟列表表達**。病人關心的是「現在我在哪？接下來該做什麼？」不是「這個診斷的所有可能治療」。同一份治療路徑對「剛開完刀」vs「鞏固中」vs「追蹤中」的人意義完全不同。下次新癌別模組設計術後路徑時，phase 標記要從一開始就放 step 結構，不要等到要做進度區呈現時才補
 - 教訓：**phase 設計要對齊 progress UX，不是對齊治療類型**。「全身性治療」如果對應的 progress 是 just_op 應該在 next 區，那 phase 要設 adjuvant_chemo 而不是 consolidation（即使治療性質是「鞏固」）。phase 是 UX 維度，不是醫學分類維度
 
+### #32 (lung V1.10.0 / V2.12.0)：化療前漏 B/C 肝篩檢 + 總覽未完成清單把 opt 也列進去
+- 症狀：Sela 個管師驗收測 V2.11.0 後回報兩個問題：
+  1. **化療前需必加 B/C 肝病毒篩檢** — 化療會誘發 B 肝再活化，台灣 B 肝盛行率高，化療前 HBsAg/anti-HBc/anti-HCV 篩檢是基本款。B 肝陽性者需轉腸胃科開預防性 NA 藥物（Entecavir / Tenofovir），這項在 CK config 完全沒有
+  2. **「依需要」項目誤列入未完成** — 基礎檢查的 c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波三項本來就是 opt（依需要勾選），但總覽頁「尚有 N 項未完成」紅 X 清單把它們也列進去，導致個管師永遠看到「未完成」狀態
+- 根因（問題 2）：line 3217 `basicTotal = CK_BASIC.length` 用了全部 (含 opt)；line 3235 `allReq = [...CK_BASIC, ...advReq]` 直接把所有 basic 倒進去未完成清單。實際上同檔案 line 2921 KPI 計算用的 `basicReq = CK_BASIC.filter(c=>c.req!=='opt')` 是對的 — 顯然當初寫 KPI 時想到了，渲染總覽時忘了
+- 做法（V2.12.0）：
+  1. **CK config 加兩項**：`c40 B/C 肝病毒篩檢 req:'chemo'` + `c41 B 肝陽性轉腸胃科 NA req:'opt'`。c40 必要、c41 依需要（因為要先驗 c40 結果為陽性才用得到）
+  2. **`isItemRequired` 加 `'chemo'` 條件**：SCLC 一律 true、NSCLC stage≥IB true（IA 期通常觀察不化療所以不需要 B 肝篩檢）
+  3. **修總覽 ckRemain 計算**：`basicTotal = basicReq.length`（過濾 opt）、`basicDone = basicReq.filter(it=>ck[it.id]).length`、`allReq = [...basicReq, ...advReq]` 都用 basicReq
+  4. **修 basic 頁面 progress bar**：`updateBasicCKBar()` 也只算必要項目，opt 勾不勾不影響進度
+  5. **修 basic 頁面 tab 計數**：`renderBasicCK()` tab 顯示「8/8」而非「8/11」(11 = 含 3 opt)
+  6. **opt bonus 顯示**：basic 與 adv 的 opt 完成數都納入「✚ 另完成 N 項選擇性檢查」
+- 測試：10 個情境（NSCLC_NS/SQ + SCLC × IA1-IVB）全綠 — c40 在 NSCLC IA1/IA2 不必要、IB+ 必要、SCLC 全期必要；c41 永遠 opt；basic opt 3 項永遠不算必要；勾 5 個 opt 後 ckRemain 不變
+- 教訓：**檔案內有兩處在做類似計算時要交叉驗證**。lung/index.html 同一份檔案，line 2921 KPI 用 `filter(c=>c.req!=='opt')`、line 3217 總覽直接用 `CK_BASIC.length`，兩處邏輯不一致是 bug 溫床。下次新增類似計算時，先 grep 看其他地方怎麼算，對齊
+- 教訓：**「opt 不影響進度」是 checklist 工具的核心 UX 原則**。如果勾 opt 會減少未完成計數、不勾 opt 會增加未完成數，那 opt 跟 required 就沒區別了。所有 progress/remaining 計算都要過濾 opt — basic 頁面 bar、tab 計數、總覽 ckRemain、KPI 都要一致
+
 ---
 
 ## 七、擴充新癌別
@@ -506,7 +523,8 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.11.0** — 上線前必跑：(a) postOp 模式進到 Q5 治療進度頁，6 顆按鈕都能點且 auto-advance (b) 6 個 progress dots 在 postOp 顯示，cTNM 維持 4-5 個 (c) just_op 總覽頁三區呈現完整：「✓ 已完成」有 surgery、「➜ 下一步」醒目（青底 + box-shadow）、「⋯ 之後」淡色虛線 (d) followup 進度→大部分 step 在已完成區、僅追蹤 step 在「下一步」 (e) recurrence 進度→META 路徑 + 結尾 followup step (f) pIA1 跟 pIIB 走不同分支（IA 期不推化療）(g) edu-patient 掃 QR 顯示同三區呈現
+1. **GitHub Pages 部署實機驗證 V2.12.0** — 上線前必跑：(a) 醫護版 NSCLC_NS IIB 病人 → 進階檢查「治療準備」分區出現 c40 B/C 肝病毒篩檢（必要）、c41 B 肝陽性轉腸胃科（依需要） (b) NSCLC_NS IA1 病人 → c40 不在必要清單（IA 不化療）(c) SCLC 任何期 → c40 必要 (d) 總覽「尚有 N 項未完成」不再顯示 c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波（這三項是 opt 依需要） (e) basic 頁面 progress bar 100% 對應「必要 8/8 完成」而非「11/11」
+2. **GitHub Pages 部署實機驗證 V2.11.0** — 上線前必跑：(a) postOp 模式進到 Q5 治療進度頁，6 顆按鈕都能點且 auto-advance (b) 6 個 progress dots 在 postOp 顯示，cTNM 維持 4-5 個 (c) just_op 總覽頁三區呈現完整：「✓ 已完成」有 surgery、「➜ 下一步」醒目（青底 + box-shadow）、「⋯ 之後」淡色虛線 (d) followup 進度→大部分 step 在已完成區、僅追蹤 step 在「下一步」 (e) recurrence 進度→META 路徑 + 結尾 followup step (f) pIA1 跟 pIIB 走不同分支（IA 期不推化療）(g) edu-patient 掃 QR 顯示同三區呈現
 2. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
 3. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
 4. **Sela 比對 V2.8.11+V2.9.0 兩版改的多分支治療路徑** — NSCLC EARLY 加術前免疫與 ALK 鞏固、META PDL1_HIGH 加 Pembrolizumab 單藥、SCLC PCI 改 MRI 監測、age/ecog 動態調整
@@ -520,4 +538,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.11.0 民眾版加 Q5 治療進度（剛開完刀/化療中/等鞏固/鞏固中/追蹤中/復發）+ 總覽頁三區呈現（✓已完成、➜下一步、⋯之後）。修了 V2.10.0 個管師驗收測出的兩個合理性問題：IA 期跟 IB+/II 推同一組化療（現在 IA 走觀察分支、IB+/II 走化療+鞏固）+ postOp 列表所有 step 同等亮度看不出「現在該做什麼」。每個 step 加 phase 標記（surgery/adjuvant_chemo/consolidation/followup/recurrence），splitStepsByProgress 依 progress 分配三區。recurrence 走 META 邏輯 + 結尾追蹤 step。流程改 6 頁（postOp 才有 Q5）、6 個 progress dots、edu-patient 同套對映。9 情境模擬全綠。下版第一優先：上線實機驗證 + Sela 對院內指引比對 IA 細分判定。
+V2.12.0 醫護版兩個修正：(a) 加化療前 B/C 肝病毒篩檢（c40 req:'chemo'，SCLC 全期 + NSCLC IB+ 必要） + B 肝陽性轉腸胃科 NA 藥物（c41 opt）(b) 修總覽「尚有 N 項未完成」紅 X 清單把 opt（依需要）項目誤列為未完成的 bug — 支氣管鏡、縱膈腔鏡、心臟超音波、ALK FISH、液態切片 ctDNA、c41 等 6 個 opt 項目以後不會再讓個管師看到「永遠未完成」假象。同時修 basic 頁面 progress bar 與 tab 計數一致（只算必要項目）。10 情境測試全綠。下版第一優先：上線實機驗證 + 排其他癌別擴充模板。
