@@ -1,4 +1,56 @@
-# Cancer Navigation V2.13.0 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.0.0 — 彰濱秀傳癌症中心
+
+## V3.0.0 — 2026-06-01
+**首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）**
+
+走 Kit「對齊既有專案 SOP」（坑 #40）四級分類法做選擇性對齊。本專案累積 V0.1.0 → V2.13.0 / 33 條 BUG 編號 / 雙視覺雙語版本後首次接 Kit 規範。
+
+### 🔴 必做（已執行）
+
+| 項目 | 動作 |
+|------|------|
+| `.gitignore` | 新增（從 Kit `gitignore-template` 起手 + 專案特定規則：`_pack/`、`*.zip`、`*.bak` 等）|
+| CLAUDE.md 衝突仲裁區塊 | 在最頂端加段，明寫 4 項刻意不對齊與理由 |
+| `SELA-handoff.md` | 首次對齊 = 重大里程碑必產（給 Kit Claude 升 Kit 用）|
+| 版號重置 b | V2.13.0 → V3.0.0（Kit 嚴格三位數逢十進位）|
+
+### 🟡 跟 Sela 對焦的兩個關鍵問題
+
+1. **「SELA logo + favicon 要加上去嗎？」** → Sela 答「不加，已準備正式以彰濱秀傳名義發布」→ 走 Kit V1.8.2「正式機構發布豁免」路徑
+2. **「對齊算哪種升版？」** → Sela 答「V3.0.0（重置 b 修正版號 + 對齊里程碑，最乾淨）」
+
+### ✗ 明寫不對齊的 4 項
+
+| 項目 | 理由 |
+|------|------|
+| **SELA logo + favicon 不加** | 品牌歸彰濱秀傳醫院，已準備正式以醫院名義發布。Kit V1.8.2 規則：正式機構發布豁免「必含 SELA logo」鐵律 |
+| **配色 `#5B8FB9` 保留**（不換 Kit 預設 `#5A7A8B`）| 已被個管師驗收使用數月，已驗證的色票就是事實標準（Kit `colors.md` §3 補強規則：既有專案首次對齊預設維持原設定色）|
+| **CLAUDE.md 章節結構保留** | V2.10.0 → V2.13.0 累積章法，重排會洗掉 BUG-1 ~ BUG-33 連續編號的演進脈絡。Kit 對齊既有專案 SOP 鐵律：「不要為對齊 Kit 改既有設計」|
+| **「No emoji anywhere」更嚴** | 本專案 Nordic SVG 風格已成立，不放寬到 Kit `coding-style` 的允許範圍 |
+
+### 模組版號
+
+lung 模組保留 **V1.11.0** — 模組本身在 V2.13.0 → V3.0.0 沒變動，只是系統層的 Kit 對齊。topbar 顯示「V1.11.0 · System V3.0.0」。
+
+### 對齊輸出檔案
+
+```
+Cancer Navigation V3.0.0/
+├── .gitignore              ← 新增（Kit 鐵律必含）
+├── CLAUDE.md               ← 頂端加 Kit 衝突仲裁區塊
+├── README.md               ← 加本 V3.0.0 章節
+├── SELA-handoff.md         ← 新增（給 Kit Claude 升 Kit 用）
+├── index.html              ← 版號 V3.0.0
+└── lung/
+    ├── index.html          ← SYSTEM_VERSION V3.0.0、MODULE_VERSION V1.11.0
+    ├── patient.html
+    ├── edu-pro.html
+    ├── edu-patient.html
+    ├── drugs-pro.html
+    └── drugs-patient.html
+```
+
+---
 
 ## V2.13.0 — 2026-06-01
 **健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）**

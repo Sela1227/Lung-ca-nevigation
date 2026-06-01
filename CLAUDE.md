@@ -1,6 +1,20 @@
 # CLAUDE.md — Cancer Navigation
 > Sela 的專案。讀完直接動手，不要問問題。
 
+> **⚠ 給同時拿到 SELA-Starter-Kit 的 Claude：**
+> 這是**已對齊 Kit V1.9.0 的成熟專案**（首次對齊：V3.0.0, 2026-06-01），不是新專案。
+>
+> **衝突仲裁規則：**
+> 1. **以本專案 CLAUDE.md 為主、Kit 為輔**
+> 2. 本專案刻意不對齊 Kit 的部分（V3.0.0 對齊時明寫）：
+>    - **品牌歸彰濱秀傳，不換 SELA logo** — 已準備正式以醫院名義發布，Kit V1.8.2 規則：正式機構發布豁免「必含 SELA logo」鐵律
+>    - **配色保留 `#5B8FB9`（Nordic 霧藍變體）**，不換 Kit 預設 `#5A7A8B` — 已被個管師驗收使用數月，已驗證的色票就是事實標準（Kit `colors.md` §3 補強規則）
+>    - **CLAUDE.md 章節結構保留 V2.10.0 → V2.13.0 累積章法**，不依 Kit `CLAUDE-MD-章法.md` 重排 — 重排會洗掉 BUG-1 ~ BUG-33 連續編號的演進脈絡（Kit 對齊既有專案 SOP 鐵律：不要為對齊 Kit 改既有設計）
+>    - **「No emoji anywhere」更嚴**，不放寬到 Kit `coding-style` 的允許範圍 — 本專案 Nordic SVG 風格已成立
+> 3. **不要為對齊 Kit 而動既有設計** — 已驗證的就是事實標準
+> 4. **版號規則照 Kit**（V3.0.0 重置 b、嚴格三位數逢十進位；V2.13.0 之前為對齊前歷史）
+> 5. **下次完成版本時記得評估 SELA-handoff.md**（鐵律 #0 — 完整見 Kit master CLAUDE.md）
+
 Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。純前端單一 HTML，GitHub Pages 部署。本院指引 v12 (2026) + AJCC 9th。目前只有肺癌模組上線。
 
 **部署：** `https://sela1227.github.io/Lung-ca-nevigation/`
@@ -144,6 +158,7 @@ node --check /tmp/j.js
 | 醫護版化療前 B/C 肝篩檢（V2.12.0+） | `lung/index.html` 的 CK config 加 c40 (`req:'chemo'`) + c41 (`req:'opt'`)；`isItemRequired` 加 `chemo` 條件（SCLC 全期 + NSCLC IB+ 必要）|
 | 醫護版總覽未完成清單只列必要（V2.12.0+） | `lung/index.html` 渲染 `sum-checklist` 處 `basicReq = CK_BASIC.filter(c=>c.req!=='opt')`、`allReq = [...basicReq, ...advReq]`；basic 頁面 `updateBasicCKBar()` 與 `renderBasicCK()` tab 計數也只算必要 |
 | 健保條文對齊（V2.13.0+） | 民眾版 `patient.html` / `edu-patient.html`：buildPostOpPath EARLY/LOCAL 分支 Osimertinib/Alectinib/Atezolizumab 鞏固 `nhi:'SELF'` + warns 加自費提醒；DRUGS.KRAS note「健保未給付」；DRUGS.BRAF/CONSOLIDATION/EGFR_BRAIN 補完整條件。醫護版 `drugs-pro.html` ALL_DRUGS 對齊條文編號（9.80/9.60/9.59/9.81/9.82/9.50/9.91/9.126）+ 新增 Nivolumab (115/6/1)。`drugs-patient.html` 同步 |
+| Kit 對齊（V3.0.0+） | `.gitignore`（Kit gitignore-template 起手）+ CLAUDE.md 頂端「Kit 衝突仲裁開頭區塊」+ `SELA-handoff.md`（給 Kit Claude 升 Kit 用）。版號重置 b 為 0（V2.13.0 → V3.0.0 符合 Kit 嚴格三位數逢十進位）。模組版號 lung 保留 V1.11.0（模組本身未變動）|
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
@@ -204,6 +219,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.0.0 | V1.11.0 | 2026-06-01 | 首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）— 版號重置 b（V2.13.0 → V3.0.0 嚴格三位數逢十進位）+ 加 .gitignore（基於 Kit gitignore-template）+ CLAUDE.md 加 Kit 衝突仲裁區塊 + 產出 SELA-handoff.md（首次對齊必含）+ 明寫 4 項刻意不對齊（品牌走醫院 / 配色 #5B8FB9 已驗證 / CLAUDE.md 章節結構保留 / No emoji 更嚴）BUG-34 |
 | V2.13.0 | V1.11.0 | 2026-06-01 | 健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）— Osimertinib/Alectinib 術後鞏固 (ADAURA/ALINA) NHI→SELF、Atezolizumab IMpower010 鞏固 SELF、Sotorasib 確認健保未給付、Amivantamab 對齊 9.126 限 EGFR exon 20 ins 第一線、Durvalumab 鞏固加上完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 新增 NSCLC 術前輔助) + drugs-pro/drugs-patient 頁首版本日期同步至 1150522 + 115/5/1 + 115/6/1，清除殘留 emoji 改 Nordic inline SVG BUG-33 |
 | V2.12.0 | V1.10.0 | 2026-06-01 | 醫護版加化療前 B/C 肝病毒篩檢（c40 req:chemo）+ B 肝陽性轉腸胃科 NA 藥物（c41 opt）+ 修總覽未完成清單把 opt（依需要）誤列入未完成的 bug BUG-32 |
 | V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
@@ -214,7 +230,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V2.9.2 | V1.7.2 | 2026-04-30 | portal.html UI 重構（清爽收斂、header 收縮、role 卡瘦身、quick-tools 改同節奏 section）|
 | V2.9.1 | V1.7.1 | 2026-04-29 | 民眾版字樣全面平民化（CCRT→同步化放療、RT→放射線治療）+ 隱藏放療劑量（由主治溝通）|
 | V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
-| V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
 
 ---
 
@@ -528,6 +543,19 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**健保條文要看「修訂對照表」找最新異動**。9.69 ICI 規範改了 25 次以上（108/4/1 → 115/5/1），跨 7 年。臨床路徑工具一年至少對一次條文，特別是「鞏固治療」「術前輔助」這種新增類別容易漏。本院應建立每季條文 review 機制
 - 教訓：**藥物標示要五個欄位都對齊條文：indi / line / prereq / rule / appearsIn**。nhi:'NHI' 只是一個 boolean，但「健保限什麼條件」要落在 prereq + rule。例如 Osimertinib nhi:'NHI' 是對的（第一線/第二線有給付），但「術後鞏固」要在 prereq 寫「術後 ADAURA 鞏固自費」、line 寫「術後 ADAURA 自費」、appearsIn 寫「術後鞏固，自費」— 三處交叉提示，民眾才不會誤解
 
+### #34 (lung V1.11.0 / V3.0.0)：首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）
+- 症狀：Sela 上傳 SELA-Starter-Kit V1.9.0，本專案累積 V2.13.0 / 33 條 BUG 的成熟專案首次接 Kit 規範。Kit 的鐵律最小對齊清單發現本專案：(a) 沒有 `.gitignore` (b) 沒有 SELA logo + favicon (c) 沒有 SELA-handoff.md (d) 版號 `b=13` 已破 Kit 嚴格三位數逢十進位規則 (e) 配色 `#5B8FB9` 與 Kit 預設 `#5A7A8B` 不同 (f) CLAUDE.md 章節結構跟 Kit `CLAUDE-MD-章法.md` 不完全一致
+- 根因：本專案 V0.1.0 起手在 SELA-Starter-Kit 出現前，所有規範由 Sela + Claude 從實戰沉澱而來，跟 Kit 的沉澱路徑平行
+- 做法（V3.0.0 完整對齊）：
+  1. **走坑 #40 SOP**：用「🔴 必做 / 🟡 建議 / 🟢 順便 / ✗ 不做」四級分類法做選擇性對齊，不是全做
+  2. **🔴 必做**：(a) 加 `.gitignore` 從 Kit `gitignore-template` 起手 + 專案特定規則（`_pack/`、`*.zip`、`*.bak` 等）(b) CLAUDE.md 最前面加「Kit 衝突仲裁開頭區塊」明寫 4 項刻意不對齊與理由 (c) 產出 `SELA-handoff.md` 給 Kit Claude 升 Kit 用 (d) 版號 V2.13.0 → V3.0.0 重置 b（Kit 嚴格逢十進位）
+  3. **🟡 跟 Sela 對焦的兩個關鍵問題**：(a) 「SELA logo 要加上去嗎？」Sela 答「不加，已準備正式以彰濱秀傳名義發布」→ Kit V1.8.2 規則「正式機構發布豁免必含 SELA logo 鐵律」(b) 「版號用 V3.0.0 還是 V2.14.0？」Sela 答「V3.0.0（重置 b + 對齊里程碑，最乾淨）」
+  4. **✗ 不做（明寫理由保留）**：(a) 不掛 SELA logo（品牌歸彰濱秀傳）(b) 不換配色 `#5B8FB9` → `#5A7A8B`（已被個管師驗收使用數月，已驗證的色票就是事實標準，Kit `colors.md` §3 補強規則）(c) 不依 Kit `CLAUDE-MD-章法.md` 重排 CLAUDE.md 章節（會洗掉 BUG-1 ~ BUG-33 連續編號的演進脈絡）(d) 保留「No emoji anywhere」更嚴政策（本專案 Nordic SVG 風格已成立，不放寬到 Kit `coding-style` 允許範圍）
+  5. **lung 模組版號保留 V1.11.0**：模組本身在 V2.13.0 → V3.0.0 沒變動，只是系統層的 Kit 對齊。topbar 顯示「V1.11.0 · System V3.0.0」
+- 教訓：**既有專案首次對齊 Kit 不是「重做」，是「補齊鐵律 + 明寫差異」**。Kit 規範清楚「不要為對齊 Kit 而動既有設計」— 已被驗證的就是事實標準。對齊的核心輸出是 (a) 補齊缺漏的鐵律檔案（.gitignore、handoff）(b) 明寫衝突仲裁區塊讓未來 Claude 看到 (c) 不破壞既有設計
+- 教訓：**「正式以機構名義發布」是 Kit V1.8.2 品牌歸屬規則的關鍵判準**。Cancer Navigation 是「個人專案演化為機構系統」的典型情境，Sela 拍板「不掛 SELA logo」啟動了 Kit 豁免路徑。未來其他正式機構發布專案可比照
+- 教訓：**Kit 對齊本身就是一條坑**。本專案累積 33 條 BUG 才接 Kit，跟 MDT V4.7 / Patient Follow V6.9.4 一樣，是「Kit 出來前的成熟專案」。對齊算 a+1 重大里程碑而非 b+1（雖然 Kit 規則動 5+ 檔 = b+1），因為 (a) 版號 b 已破 10 必須重置 (b) Kit 對齊是「**整個專案規範管理模式的切換**」屬於主流程改動 — Sela 拍板支持這個判斷
+
 ---
 
 ## 七、擴充新癌別
@@ -545,7 +573,8 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.13.0** — 上線前必跑：(a) 民眾版 pIIB EGFR(+) postOp 總覽頁「術後鞏固」三個藥（Osimertinib/Alectinib/Atezolizumab）都顯示「自費」黃標籤而非「健保」青標籤 (b) postOp warns 出現「ADAURA/ALINA/IMpower010：健保未給付，需自費」(c) META KRAS 病人 warns 出現「Sotorasib：健保未給付，自費」 (d) 醫護版 drugs-pro 頁過濾「自費」可看到 Sotorasib + 術後鞏固情境的 3 個藥 (e) Nivolumab 出現在 ICI 類別、line 顯示「術前輔助、一線」(f) Durvalumab rule 完整列「III 期不可切除 + CCRT 後 + PD-L1≥1% + 原生型 + 12 個月」
+1. **GitHub Pages 部署實機驗證 V3.0.0** — 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore`（用 Git Pusher 部署時不會被清空關鍵檔）(b) 版號顯示「V1.11.0 · System V3.0.0」(c) 首頁 zip 命名「Cancer Navigation V3.0.0.zip」三位版本號 + 空格 (d) 確認沒有被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒有被誤改成 Kit 預設 `#5A7A8B`
+2. **GitHub Pages 部署實機驗證 V2.13.0** — 上線前必跑：(a) 民眾版 pIIB EGFR(+) postOp 總覽頁「術後鞏固」三個藥（Osimertinib/Alectinib/Atezolizumab）都顯示「自費」黃標籤而非「健保」青標籤 (b) postOp warns 出現「ADAURA/ALINA/IMpower010：健保未給付，需自費」(c) META KRAS 病人 warns 出現「Sotorasib：健保未給付，自費」 (d) 醫護版 drugs-pro 頁過濾「自費」可看到 Sotorasib + 術後鞏固情境的 3 個藥 (e) Nivolumab 出現在 ICI 類別、line 顯示「術前輔助、一線」(f) Durvalumab rule 完整列「III 期不可切除 + CCRT 後 + PD-L1≥1% + 原生型 + 12 個月」
 2. **GitHub Pages 部署實機驗證 V2.12.0** — 上線前必跑：(a) 醫護版 NSCLC_NS IIB 病人 → 進階檢查「治療準備」分區出現 c40 B/C 肝病毒篩檢（必要）、c41 B 肝陽性轉腸胃科（依需要） (b) NSCLC_NS IA1 病人 → c40 不在必要清單（IA 不化療）(c) SCLC 任何期 → c40 必要 (d) 總覽「尚有 N 項未完成」不再顯示 c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波（這三項是 opt 依需要） (e) basic 頁面 progress bar 100% 對應「必要 8/8 完成」而非「11/11」
 2. **GitHub Pages 部署實機驗證 V2.11.0** — 上線前必跑：(a) postOp 模式進到 Q5 治療進度頁，6 顆按鈕都能點且 auto-advance (b) 6 個 progress dots 在 postOp 顯示，cTNM 維持 4-5 個 (c) just_op 總覽頁三區呈現完整：「✓ 已完成」有 surgery、「➜ 下一步」醒目（青底 + box-shadow）、「⋯ 之後」淡色虛線 (d) followup 進度→大部分 step 在已完成區、僅追蹤 step 在「下一步」 (e) recurrence 進度→META 路徑 + 結尾 followup step (f) pIA1 跟 pIIB 走不同分支（IA 期不推化療）(g) edu-patient 掃 QR 顯示同三區呈現
 2. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
@@ -561,4 +590,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V2.13.0 健保條文大對齊（依 1150522 第 9 章 + 115/5/1 附件 2 修訂對照表）。三大關鍵修正：(a) 術後鞏固藥（Osimertinib ADAURA / Alectinib ALINA / Atezolizumab IMpower010）一律改 `nhi:'SELF'` — 之前標 NHI 是錯的，9.80/9.60/9.69 都沒給術後鞏固適應症 (b) Sotorasib KRAS G12C 確認健保完全未給付，相關 warns/note 改「自費」明確 (c) Amivantamab 改對齊 9.126：限 EGFR exon 20 insertion 第一線併用 carboplatin/pemetrexed；Osimertinib 失敗後（MARIPOSA-2）健保未給付。同時補：Durvalumab 鞏固條件五項齊全（III 期不可切除 + CCRT 後 + PD-L1≥1% + 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 NSCLC 術前輔助 CheckMate 816 健保新增) + ALK/ROS1/BRAF 條文編號對齊（9.59/9.81/9.82/9.50/9.91-4）。5 情境 + 6 個 DRUGS 條件驗證全綠。下版第一優先：上線實機驗證 + Sela 排藥劑科確認最後幾個 nhi_ref（Tepotinib 編號、Entrectinib 是否獨立條目）。
+V3.0.0 首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）。走坑 #40「對齊既有專案 SOP」四級分類法做選擇性對齊：🔴 必做 — 加 `.gitignore`、CLAUDE.md 加 Kit 衝突仲裁區塊、產出 `SELA-handoff.md`、版號重置 b（V2.13.0 → V3.0.0 嚴格三位數逢十進位）；✗ 明寫不對齊 4 項：(a) 不掛 SELA logo（品牌歸彰濱秀傳，V1.8.2 規則「正式機構發布豁免」）(b) 不換配色 #5B8FB9 → #5A7A8B（已被個管師驗收使用數月）(c) 不重排 CLAUDE.md 章節（保留 BUG-1 ~ BUG-33 累積編號的演進脈絡）(d) 保留 No emoji 更嚴政策。lung 模組保留 V1.11.0（模組本身未變動）。下版第一優先：上線實機驗證 V3.0.0 對齊後檔案結構 + 確認沒有被誤加 SELA logo / 誤改配色。

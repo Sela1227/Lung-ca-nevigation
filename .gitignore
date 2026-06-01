@@ -1,0 +1,44 @@
+# ─── 從 SELA-Starter-Kit V1.9.0 deployment/gitignore-template 起手 ───
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if applicable for tooling)
+node_modules/
+
+# ─── Cancer Navigation 專案特定（純前端 HTML / GitHub Pages） ───
+
+# 開發暫存
+_pack/
+*.bak
+*.tmp
+*~
+
+# 打包輸出（不入 repo，避免每版肥大）
+*.zip
+!SELA-Starter-Kit*.zip
+
+# 個人實驗
+scratch/
+sandbox/
+test-data/
+
+# 編輯器暫存
+*.orig
+.history/
