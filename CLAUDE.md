@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.0.3 | V1.11.2 | 2026-06-29 | 個管師視角審查找到的隱性 bug 修正 — `buildEduPayload` 補 `a` (age) + `e` (ecog) 兩個欄位，**修「個人化提示永遠不觸發」的隱性 bug**（V2.9.0 加的「依您狀況」邏輯實質沒生效 9 個月）。含醫護版 5 級 ECOG `'0'-'4'` → 民眾版 3 組 `'01'/'2'/'34'` 映射 + birthday 計算實際年齡 → `'lt70'/'ge70'` 二分。3 情境驗證全綠（78 歲 PS 2 / 55 歲 PS 0 / 63 歲 PS 3）BUG-37 |
 | V3.0.2 | V1.11.1 | 2026-06-29 | 升 Kit V1.9.0 → V1.21.0（升版對齊，非首次對齊）— 衝突仲裁區塊全面更新：(1) 移除「No emoji 更嚴」誤標（V1.21.0 sela-philosophy 確認 Kit 規範本身就是不用 emoji，我們是符合不是更嚴）(2) 加註本專案 V3.0.0 SELA-handoff 提的 3 條反饋已被 Kit 採納為坑 #50/#51/#52（雙向回流通道有效）(3) 加註 V3.0.1 改法符合 Kit V1.19.0 坑 #61（UI 改名不動程式變數）+ V1.21.0 坑 #63（用 str.replace 不用 re.sub）。執行 V1.17.0 新增「優化體檢」鐵律：對照 optimizations.md 4 條 OPT，純前端 HTML 結論 0 條需動手改（OPT-1/2/3 後端排程/DB/外部請求都不適用，OPT-4 已自然在做）BUG-36 |
 | V3.0.1 | V1.11.1 | 2026-06-01 | 民眾版（patient.html / edu-patient.html）UX 大修 — 從病人視角 10 情境模擬找出 7 類問題並全修：(A) 試驗代號 / 條文編號 / 英文藥名全拔（ADAURA / ALINA / IMpower010 / 9.50~9.126 / carboplatin/pemetrexed / T790M 等）(B) 三個自費術後鞏固藥合併成一個「擇一」step + 明示一個病人只用一種 (C) IA1 初診不再列「術後鞏固」與「II-IIIA 術前輔助」過濾邏輯 (D) 復發路徑措辭「第一線」→「復發後接續治療（第一順位）」+ stageTxt 不再 p 跟 IV 混在一起 (E) 鞏固/序貫/PS 2/PCI/CCRT 等醫護術語全翻譯（追加治療/分開做/體力中等/預防性腦部照射/同步化放療）(F) 同件事說 4 遍精簡為 1 次 BUG-35 |
 | V3.0.0 | V1.11.0 | 2026-06-01 | 首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）— 版號重置 b（V2.13.0 → V3.0.0 嚴格三位數逢十進位）+ 加 .gitignore（基於 Kit gitignore-template）+ CLAUDE.md 加 Kit 衝突仲裁區塊 + 產出 SELA-handoff.md（首次對齊必含）+ 明寫 4 項刻意不對齊（品牌走醫院 / 配色 #5B8FB9 已驗證 / CLAUDE.md 章節結構保留 / No emoji 更嚴）BUG-34 |
@@ -237,7 +238,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V2.9.5 | V1.7.5 | 2026-04-30 | 藥物頁拆兩版（drugs-pro 加 NCCN/事審/必試/cross-ref；drugs-patient 加副作用、用途）+ 個人化推薦（總覽頁帶 query 跳 drugs-patient）|
 | V2.9.4 | V1.7.4 | 2026-04-30 | 手機版 Q-page 鎖屏 bug 修復（TNM 進階 9 欄擠扁、iOS 自動 zoom、safe-area、grid-rows 失效）BUG-29 |
 | V2.9.3 | V1.7.3 | 2026-04-30 | 民眾版說明精簡（刪「醫師討論」客套話、刪試驗代號、note 瘦身）|
-| V2.9.2 | V1.7.2 | 2026-04-30 | portal.html UI 重構（清爽收斂、header 收縮、role 卡瘦身、quick-tools 改同節奏 section）|
 
 ---
 
@@ -623,6 +623,49 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**雙向回流通道有效是 Kit 規範的核心驗證**。本專案 V3.0.0 SELA-handoff 提的 3 條跨專案通用坑（#46-上、#47-上、#48-上）在 V1.10.0 全被採納為 Kit 坑 #50/#51/#52。這證實 SELA-handoff 機制不只是「給下次 Kit Claude 看」，是真實的雙向通道。下次寫 handoff 時記得這點 — 你的反饋會被認真採納
 - 教訓：**工作環境重置時走坑 #48 流程**（V1.10.0 新增）：從 /mnt/user-data/outputs 解壓最新 zip 重建工作目錄。本次升版開始時環境重置（/home/claude 為空），直接 unzip V3.0.1 zip 1 秒回到工作狀態。Kit 規範化過的流程比每次重新摸索快
 
+### #37 (lung V1.11.2 / V3.0.3)：個管師視角審查找到的「個人化提示永遠不觸發」隱性 bug
+- 症狀：Sela 提議「對稱於 V3.0.1 病人視角審查，用個管師視角試用」。Claude 跑了 4 個個管師情境模擬（晨間新病人 / KPI 即將超標 / 跨院轉診 pTNM / 完整流程 MDT 不合規），發現 9 類問題，其中 2 條是**隱性 bug**（功能存在但實質沒在跑）：
+  - **隱性 bug #1：QR payload 漏帶 age + ecog**
+    - 醫護版 `buildEduPayload` 只傳 `{n, t, s, m, tm, c, d}`，**沒帶 age 跟 ecog**
+    - 但 edu-patient.html 的 `applyAgeEcogFromData(r, d)` 期待 `d.a` 跟 `d.e`
+    - 結果：個管師印 QR 給病人掃，**V2.9.0 加的「依您狀況」個人化提示永遠不觸發**（高齡用碳鉑 / 體力中等改分開做 / 體力差支持性療法 — 三條全失效）
+    - **這個 bug 從 V2.9.0 (2026-04-29) 存在至今 ~9 個月**，期間還跑過 V2.10/V2.11/V2.12/V2.13/V3.0.0/V3.0.1/V3.0.2 7 次升版都沒抓到
+  - **隱性 bug #2：ECOG 值醫護版 vs 民眾版不對齊**
+    - 醫護版按鈕存 `'0' / '1' / '2' / '3' / '4'`（5 級）
+    - 民眾版判斷用 `'01' / '2' / '34'`（3 組）
+    - 即使修了 #1 把 ecog 傳過去，沒做值映射還是不會 match
+- 根因：**雙人口設計的「資料傳遞層」沒有端到端驗證**。V2.9.0 民眾版加 ECOG 個人化邏輯時是「民眾自己填 ECOG」設計，後來支援「醫護版掃 QR 帶入」沒同步檢查 payload 完整性。**單元測試只測各模組內部，沒測「醫護→QR→民眾版」整條 pipeline**
+- 做法（V3.0.3 完整修正）：
+  1. **`buildEduPayload` 加 a/e 兩個欄位**（lung/index.html line 2997-3010）
+  2. **加值映射函式**：
+     ```js
+     // 醫護版 5 級 ECOG → 民眾版 3 組
+     const ecogMap = {'0':'01','1':'01','2':'2','3':'34','4':'34'};
+     const eMapped = ecogMap[S.ecog] || '';
+     // 從 birthday + caseDate 算實際年齡 → 民眾版 2 組
+     const actualAge = calcAgeFromDates(S.birthday, S.caseDate || todayStr());
+     const aMapped = (actualAge !== null) ? (actualAge >= 70 ? 'ge70' : 'lt70') : '';
+     ```
+  3. **跑 3 情境端到端驗證**：78 歲 PS 2 → 兩條提示觸發 ✓；55 歲 PS 0 → 無提示 ✓；63 歲 PS 3 → ps34 提示觸發 ✓
+- 教訓：**雙人口資料源分離設計**（V3.0.1 BUG-35 教訓延伸）**還要加端到端 pipeline 測試**。本案發現的 bug 本質上是「資料傳遞層」的問題 — 即使民眾版邏輯對、醫護版資料對，中間 QR payload 漏欄位整個鏈就斷。下版考慮加 `lung/_qr_payload.test.js` 跑 5-10 個典型情境，確認「醫護版輸入 → payload → 民眾版渲染」每個欄位都能正確映射
+- 教訓：**「對稱視角審查」是找隱性 bug 的有效手段**。V3.0.1 病人視角審查找到 7 類問題（全是顯性 UX），V3.0.3 個管師視角審查找到 9 類問題（其中 2 條是隱性 bug、隱藏 9 個月沒人發現）。**寫工具時可以對每個使用者群跑一次「角色扮演」式審查 — 找的不只是 UX，是「該角色看得到、但開發時沒想到」的盲區**
+- 教訓：**「功能加上去 ≠ 功能在跑」**。V2.9.0 加的「依您狀況」個人化提示，patient.html 自己填 ECOG 走 buildPath 路徑可以觸發（沒問題），但 edu-patient.html 掃 QR 進來的路徑斷掉。**單一功能會有多個進入點，每個進入點都要驗證**。下版考慮在 patient.html / edu-patient.html 加 debug mode（URL 加 `?debug=1` 顯示 d.a / d.e 等 payload 欄位），方便個管師上線驗證
+
+### 個管師視角審查發現但未在本版修的問題（V3.1.0+ 候選，按優先序）
+
+**🟡 設計缺口（影響日常工作流）**：
+
+1. **跨院轉診病人 pTNM 無法獨立輸入** — 現況 pTNM 區塊內嵌在 `actualTx.surgery=true` 條件下，個管師被迫勾「手術」才能輸入外院做的 pTNM，產生假執行紀錄。建議：pTNM 區塊獨立 + 加 checkbox「外院手術已完成」獨立觸發
+2. **紀錄列表頁 KPI 視角缺失** — 列表只顯示 ck 完成數，看不到 3 個 KPI（收案→確診 / 收案→首治 / MDT 治療前）狀態。建議：每筆紀錄加 3 個小色點
+3. **沒有「我的待辦」/「即將超期」清單** — 個管師工作核心是跨病人時序管理，目前必須一個一個打開才看到 KPI。建議：新增「待辦」分頁，自動列「明天超 14 天」「7 天內超 42 天」「MDT 未排+首治已排」case
+4. **「實際治療 actualTx」語意混亂** — 同時兼三個職責：已執行 / 規劃中 / 觸發策略 KPI。建議拆 `plannedTx`（規劃）+ `actualTx`（執行）
+5. **「實際治療」勾選沒治療日期欄位** — 勾「手術」沒手術日期、勾「化療」沒開始日期，timeline 只有 4 個粗框
+
+**🟢 期待但缺**：
+
+6. **副作用 / 不良反應追蹤系統** — 現況只在「衛教」項目（c24/c25 checklist），勾完算「衛教過了」；缺每次回診的副作用記錄（CTCAE 分級 / 處置 / 是否影響治療）
+7. **個管師名字寫死** — `lung/index.html` line 1232 `caseManager: {name:'郭美伶', ...}`，換人要改程式。出現在衛教手冊、QR payload、總覽、CSV 匯出 4 處。建議加「設定」分頁讓個管師自己填或「病人」頁加下拉
+
 ---
 
 ## 七、擴充新癌別
@@ -640,19 +683,27 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V3.0.1** — 民眾版 UX 大修是本專案的核心成果（V3.0.2 升 Kit 沒動程式碼）必跑：(a) IA1 初診走完流程 → 總覽頁不再看到「術後鞏固」「II-IIIA 術前輔助」這些跟 IA 無關的資訊 (b) pIB EGFR+ 已手術走完 → step 3 是單一「術後追加治療：依基因檢測結果擇一」list 包含 3 個藥（之前是 3 個獨立 step） (c) 復發情境 → stageTxt 顯示「術後復發 — 接續全身性治療」（不再 pIIIA 跟 IV 混在一起），step.title 是「復發後接續治療（第一順位）：⋯」(d) ECOG 按鈕看不到「PS 2 / PS 3-4」標籤，看到「體力中等 / 體力較差」(e) 各情境 note / warns 全部沒有條文編號（9.XX）/ 試驗代號（ADAURA / ALINA / IMpower010 等）/ NCCN Cat / T790M / carboplatin/pemetrexed 英文藥名 (f) Sela 排個管師找 3-5 個真實病人試讀，看是否還有遺漏的醫護用語
-2. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore`（用 Git Pusher 部署時不會被清空關鍵檔）(b) 版號顯示「lung V1.11.1 · System V3.0.2」 (c) 首頁 zip 命名「Cancer Navigation V3.0.2.zip」三位版本號 + 空格 (d) 確認沒有被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒有被誤改成 Kit 預設 `#5A7A8B`
-3. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
-4. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
-5. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
-6. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
-7. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源
-8. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note
-9. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-10. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
+1. **GitHub Pages 部署實機驗證 V3.0.1 + V3.0.3** — V3.0.1 民眾版 UX 大修 + V3.0.3 QR 個人化修復後上線必跑：(a) V3.0.1 病人視角：IA1 初診走完不出現「術後鞏固」、pIB EGFR+ 看到「擇一」step、復發路徑「復發後接續治療（第一順位）」、ECOG 按鈕看不到 PS 2/PS 3-4 標籤、各情境 note/warns 沒條文編號/試驗代號 (b) **V3.0.3 端到端驗證：醫護版建 78 歲 PS 2 病人，QR 印出來掃進 edu-patient，確認「依您狀況」個人化提示出現**（修復前完全不會出現！這 bug 隱藏 9 個月） (c) Sela 排個管師找 3-5 個真實病人試讀
+2. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
+   - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
+   - 🟡 #2 紀錄列表頁加 3 個 KPI 色點（30 分）
+   - 🟡 #3「我的待辦 / 即將超期」清單分頁（2 小時，大功能）
+   - 🟡 #4 actualTx 拆 plannedTx + actualTx（1 小時）
+   - 🟡 #5「實際治療」勾選加治療日期欄位（1 小時）
+   - 🟢 #6 副作用追蹤系統 CTCAE 分級（半天起跳）
+   - 🟢 #7 個管師名字改設定（15 分）
+3. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
+4. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
+5. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
+6. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
+7. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
+8. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
+9. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
+10. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+11. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V3.0.2 升 Kit V1.9.0 → V1.21.0（升版對齊，非首次）。走 V1.21.0 第二章升版對齊 SOP 做選擇性對齊，**不重新打 V3.0.0 已決定的事**（SELA logo / 配色 / 章節結構維持原狀）。三大調整：(1) 衝突仲裁區塊版本號升至 V1.21.0、移除「No emoji 更嚴」誤標（V1.21.0 sela-philosophy 確認本就是 Kit 核心美學原則）、加註雙向回流關係（V3.0.0 SELA-handoff 提的 3 條反饋已採納為 Kit 坑 #50/#51/#52） (2) 加註 V3.0.1 改法已符合 V1.19.0 坑 #61（UI 改名不動 phase 變數）+ V1.21.0 坑 #63（用 str.replace 不用 re.sub） (3) 執行 V1.17.0 新鐵律「優化體檢」對照 optimizations.md 4 條 OPT — 純前端 HTML 結論 0 條需動手改（OPT-1/2/3 後端/DB/排程不適用，OPT-4 已自然在做）。lung 模組保留 V1.11.1（程式碼完全沒動）。下版第一優先：實機驗證 V3.0.1 民眾版 UX 大修（這是「治療路徑工具」的核心成果，比 Kit 對齊更重要）+ 個管師找 3-5 個真實病人試讀。
+V3.0.3 個管師視角審查找到的「個人化提示永遠不觸發」隱性 bug 修正。Sela 提議「對稱於 V3.0.1 病人視角，用個管師視角試用」，跑了 4 個情境發現 9 類問題，其中 2 條是隱性 bug（從 V2.9.0 存在 ~9 個月沒人發現）：(1) `buildEduPayload` 漏帶 age + ecog 欄位，導致 edu-patient 的「依您狀況」個人化提示永遠不會觸發 (2) 醫護版 5 級 ECOG `'0'-'4'` 跟民眾版 3 組 `'01'/'2'/'34'` 值不對齊。本版補 `buildEduPayload` 加 `a/e` 兩個欄位 + 加值映射（ECOG 5→3、年齡 70 歲二分），3 情境端到端驗證全綠（78 歲 PS 2 觸發兩條 / 55 歲 PS 0 無提示 / 63 歲 PS 3 觸發 ps34）。lung 模組 V1.11.2（修了 `lung/index.html`）。**其他 7 條設計缺口（pTNM 獨立輸入 / 列表頁 KPI 色點 / 待辦清單 / actualTx 拆 planned/actual / 治療日期 / 副作用追蹤 / 個管師名字硬編碼）排進 V3.1.0+ 候選工作**。下版第一優先：實機驗證 V3.0.1 + V3.0.3 + Sela 找個管師試用整套流程。
