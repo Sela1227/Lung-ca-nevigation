@@ -1,6 +1,27 @@
 # CLAUDE.md — Cancer Navigation
 > Sela 的專案。讀完直接動手，不要問問題。
 
+> **⚠ 給同時拿到 SELA-Starter-Kit 的 Claude：**
+> 這是**已對齊 Kit V1.21.0 的成熟專案**（首次對齊 Kit V1.9.0：V3.0.0, 2026-06-01；升 Kit V1.21.0：V3.0.2, 2026-06-29），不是新專案。
+>
+> **衝突仲裁規則：**
+> 1. **以本專案 CLAUDE.md 為主、Kit 為輔**
+> 2. 本專案刻意不對齊 Kit 的部分（V3.0.0 對齊時明寫，V3.0.2 升 Kit 時重新確認）：
+>    - **品牌歸彰濱秀傳，不換 SELA logo** — 已準備正式以醫院名義發布，Kit V1.8.2 規則：正式機構發布豁免「必含 SELA logo」鐵律。同此原則 V1.13.0 App Logo 主動詢問規則不適用（醫院系統不另做 app logo）
+>    - **配色保留 `#5B8FB9`（Nordic 霧藍變體）**，不換 Kit 預設 `#5A7A8B` — 已被個管師驗收使用數月。Kit `colors.md` §3 V1.8.1 補強規則明寫「既有專案首次對齊預設維持原設定色，除非 SELA 主動說『我想改』」，我們完全符合此規則（這條從 Patient Follow `#5B8FB9` 反饋來，剛好跟我們專案同色票）
+>    - **CLAUDE.md 章節結構保留 V2.10.0 → V2.13.0 累積章法**，不依 Kit `CLAUDE-MD-章法.md` 重排 — 重排會洗掉 BUG-1 ~ BUG-35 連續編號的演進脈絡（Kit 對齊既有專案 SOP 鐵律：不要為對齊 Kit 改既有設計）
+> 3. **本專案符合 Kit 規範、不算「刻意不對齊」的項目**（V3.0.2 升 Kit 時對焦發現）：
+>    - **「No emoji anywhere」與 Kit `sela-philosophy.md`「不大量使用 emoji 是核心美學原則」一致** — V3.0.0 時誤標為「更嚴」，V3.0.2 修正：是符合不是更嚴
+>    - **V3.0.1 民眾版 UX「鞏固→追加治療」改法符合 Kit 坑 #61** — 只改 UI 顯示文字（step.title / line / pwTxt），程式 phase 變數 `consolidation` 不動
+>    - **V3.0.1 用 Python `c.replace(old, new)` + assert 編輯 HTML 符合 Kit 坑 #63（V1.21.0 從 OncoPA 反饋）** — 不用 `re.sub` 避免 repl 解讀跳脫字元
+> 4. **本專案反饋已被 Kit 採納**（驗證雙向回流通道有效）：
+>    - **Kit 坑 #50「opt 不算未完成進度」** ← 本專案 BUG-32（V2.12.0）+ V3.0.0 SELA-handoff
+>    - **Kit 坑 #51「NCCN Cat 1 ≠ 健保給付要雙軌標示」** ← 本專案 BUG-33（V2.13.0）+ V3.0.0 SELA-handoff
+>    - **Kit 坑 #52「健保條文每季可能修訂，工具須條文版本日期 + 定期 review」** ← 本專案 V2.13.0 教訓 + V3.0.0 SELA-handoff
+> 5. **不要為對齊 Kit 而動既有設計** — 已驗證的就是事實標準
+> 6. **版號規則照 Kit**（V3.0.0 重置 b、嚴格三位數逢十進位；V2.13.0 之前為對齊前歷史）
+> 7. **下次完成版本時記得評估 SELA-handoff.md**（鐵律 #0 — 完整見 Kit master CLAUDE.md）
+
 Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。純前端單一 HTML，GitHub Pages 部署。本院指引 v12 (2026) + AJCC 9th。目前只有肺癌模組上線。
 
 **部署：** `https://sela1227.github.io/Lung-ca-nevigation/`
@@ -17,7 +38,7 @@ Cancer Navigation 是彰濱秀傳癌症中心的**臨床路徑導航工具**。�
 
 ### 打包指令
 ```bash
-VERSION="2.9.4"
+VERSION="2.9.5"
 NAME="Cancer Navigation V${VERSION}"
 WORK="/home/claude/work"
 
@@ -27,7 +48,8 @@ cp lung.html "${WORK}/${NAME}/lung/index.html"
 cp edu-pro.html "${WORK}/${NAME}/lung/edu-pro.html"
 cp edu-patient.html "${WORK}/${NAME}/lung/edu-patient.html"
 cp patient.html "${WORK}/${NAME}/lung/patient.html"
-cp drugs.html "${WORK}/${NAME}/lung/drugs.html"
+cp drugs-pro.html "${WORK}/${NAME}/lung/drugs-pro.html"
+cp drugs-patient.html "${WORK}/${NAME}/lung/drugs-patient.html"
 cp README.md CLAUDE.md "${WORK}/${NAME}/"
 
 cd "${WORK}"
@@ -130,7 +152,7 @@ node --check /tmp/j.js
 | Portal 角色選擇+癌別列表 | `portal.html` 的 `CANCERS` 陣列 + `selectRole()` |
 | Portal 8 癌別 SVG 圖示（V2.8.4+） | `portal.html` 的 `CANCERS` 內每個 `svg` 欄位（inline path） |
 | 民眾版健保藥物清單 | `patient.html` 的 `DRUGS` 物件 |
-| 健保藥物總整理頁（V2.8.3+） | `lung/drugs.html` 的 `ALL_DRUGS` 陣列 |
+| 健保藥物總整理頁（V2.9.5+） | `lung/drugs-pro.html`（醫護版）的 `ALL_DRUGS` — 加 NCCN/nhi_ref/prereq/appearsIn 欄位；`lung/drugs-patient.html`（民眾版）的 `ALL_DRUGS` — 加 target/purpose/sideEff/matchKey 欄位 |
 | 民眾版治療路徑邏輯 | `patient.html` 的 `buildPath()` 函式 |
 | 民眾版 TNM 計算（V2.8.0+） | `patient.html` 的 `computeAJCC()` 與 `stageToCategory()` |
 | 民眾版基本資料頁（V2.9.0+） | `patient.html` 的 `#p-q1` 區塊（姓名/病歷號/年齡/ECOG）+ `pickAge()` / `pickEcog()` |
@@ -138,13 +160,20 @@ node --check /tmp/j.js
 | 民眾版 TNM 簡化/進階按鈕組 | `patient.html` 第 250 行 `#p-q2` 區塊 + `pickTNM()` / `toggleTNMMode()` |
 | 民眾版 SCLC 兩段式選項（V2.8.5+） | `patient.html` 的 `#sclc-wrap` 區塊 + `pickSCLC()` / `setQ2Mode()` / `applyQ2Mode()` |
 | 民眾版 SCLC 腦/脊髓轉移選項（V2.8.5+） | `patient.html` 的 `#opt-brain` 區塊 + `pickBrain()` / `applyQ3Mode()` |
+| 民眾版病理期別模式（V2.10.0+） | `patient.html` 的 `#stage-mode-row` + `pickStageMode()` / `applyPostOpVisuals()` / `refreshStageDisplayText()`；`S.postOp` boolean；`buildPostOpPath()` 是術後分支引擎；edu-patient 的 `buildPostOpPathFromData()` 同步 |
+| 民眾版 Q5 治療進度 + 三區呈現（V2.11.0+） | `patient.html` 的 `#p-q5` 頁 + `pickProgress()` + `S.txProgress`；`PROGRESS_DONE_PHASES` / `PROGRESS_NEXT_PHASE` 常數；`splitStepsByProgress()` + `renderTreatmentSteps3Section()`；buildPostOpPath 每個 step 加 `phase` 標記；`buildRecurrencePath()` 處理復發；edu-patient 同套對映 |
+| 醫護版化療前 B/C 肝篩檢（V2.12.0+） | `lung/index.html` 的 CK config 加 c40 (`req:'chemo'`) + c41 (`req:'opt'`)；`isItemRequired` 加 `chemo` 條件（SCLC 全期 + NSCLC IB+ 必要）|
+| 醫護版總覽未完成清單只列必要（V2.12.0+） | `lung/index.html` 渲染 `sum-checklist` 處 `basicReq = CK_BASIC.filter(c=>c.req!=='opt')`、`allReq = [...basicReq, ...advReq]`；basic 頁面 `updateBasicCKBar()` 與 `renderBasicCK()` tab 計數也只算必要 |
+| 健保條文對齊（V2.13.0+） | 民眾版 `patient.html` / `edu-patient.html`：buildPostOpPath EARLY/LOCAL 分支 Osimertinib/Alectinib/Atezolizumab 鞏固 `nhi:'SELF'` + warns 加自費提醒；DRUGS.KRAS note「健保未給付」；DRUGS.BRAF/CONSOLIDATION/EGFR_BRAIN 補完整條件。醫護版 `drugs-pro.html` ALL_DRUGS 對齊條文編號（9.80/9.60/9.59/9.81/9.82/9.50/9.91/9.126）+ 新增 Nivolumab (115/6/1)。`drugs-patient.html` 同步 |
+| Kit 對齊（V3.0.0+） | `.gitignore`（Kit gitignore-template 起手）+ CLAUDE.md 頂端「Kit 衝突仲裁開頭區塊」+ `SELA-handoff.md`（給 Kit Claude 升 Kit 用）。版號重置 b 為 0（V2.13.0 → V3.0.0 符合 Kit 嚴格三位數逢十進位）。模組版號 lung 保留 V1.11.0（模組本身未變動）|
+| 民眾版 UX 大修（V3.0.1+） | `lung/patient.html` + `lung/edu-patient.html` 兩份同步全改。DRUGS 區塊 5 個 entry 改寫 note 為病人語言（拔 9.XX 條文編號 / NCCN Cat）。buildPathRaw EARLY 加 `isIA = stage.startsWith('IA')` IA 過濾邏輯。buildPostOpPath EARLY/LOCAL 把 3 個鞏固藥合併成「擇一」step。buildRecurrencePath 用 regex 替換 step.title「第一線：」→「復發後接續治療（第一順位）：」、stageTxt 改「術後復發 — 接續全身性治療」。applyAgeEcog 翻譯 PS 2/PCI/序貫/Carboplatin → 體力中等/預防性腦部照射/分開做/碳鉑。ECOG 按鈕 UI + footer 體力標籤同步翻譯。SCLC 分支 PCI → 預防性腦部照射、鞏固 → 追加治療 |
 | 民眾版藥物視覺樣式（V2.8.0+） | `patient.html` CSS 的 `.tx-drugs-box` / `.tx-drug-en` / `.tx-drug-zh` |
 | 民眾版照護團隊名單（V2.8.2+） | `patient.html` 的 `TEAM` 物件（從 `lung.html` `CFG.team.depts` 手動同步）|
 | 民眾版 QR 內容（V2.8.6+） | `patient.html` 的 `buildEduPayload()` / `buildEduURL()` — 抄 lung.html 同款 schema，QR 是 URL 不是中文 |
 | 醫護版 QR 落地頁（V2.8.7+） | `lung/edu-pro.html`（原 edu.html）— 詳細 getDrugDetail，含 SCLC + brainMet |
 | 民眾版 QR 落地頁（V2.8.7+） | `lung/edu-patient.html` — 完整 DRUGS + buildPathFromData，跟 patient.html 總覽頁內容一致 |
 | 民眾版 modal 中文摘要 | `patient.html` 的 `buildHumanReadableSummary()`（QR 圖片下方文字，不是 QR 內容）|
-| 藥物入口連結（V2.8.10+） | lung.html topbar 的 `<a class="topbar-btn">藥物</a>` / patient.html hdr-r 內的 `.drug-btn`（白底青字「藥物查詢」，連 drugs.html）|
+| 藥物入口連結（V2.9.5+） | lung.html topbar 連 `drugs-pro.html`、patient.html header 連 `drugs-patient.html`；patient 總覽頁底部「看適合您狀況的藥物」按鈕帶 query 連 `drugs-patient.html?type=X&stage=Y&mut=Z` |
 | 民眾版警示文字 | `buildPath()` 各分支的 `warns` 陣列 |
 | 列印手冊版型 | CSS 的 `body.print-edu` 區塊 |
 | Nordic SVG 圖示 | `NORDIC_ICONS` 物件 |
@@ -198,24 +227,21 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.0.2 | V1.11.1 | 2026-06-29 | 升 Kit V1.9.0 → V1.21.0（升版對齊，非首次對齊）— 衝突仲裁區塊全面更新：(1) 移除「No emoji 更嚴」誤標（V1.21.0 sela-philosophy 確認 Kit 規範本身就是不用 emoji，我們是符合不是更嚴）(2) 加註本專案 V3.0.0 SELA-handoff 提的 3 條反饋已被 Kit 採納為坑 #50/#51/#52（雙向回流通道有效）(3) 加註 V3.0.1 改法符合 Kit V1.19.0 坑 #61（UI 改名不動程式變數）+ V1.21.0 坑 #63（用 str.replace 不用 re.sub）。執行 V1.17.0 新增「優化體檢」鐵律：對照 optimizations.md 4 條 OPT，純前端 HTML 結論 0 條需動手改（OPT-1/2/3 後端排程/DB/外部請求都不適用，OPT-4 已自然在做）BUG-36 |
+| V3.0.1 | V1.11.1 | 2026-06-01 | 民眾版（patient.html / edu-patient.html）UX 大修 — 從病人視角 10 情境模擬找出 7 類問題並全修：(A) 試驗代號 / 條文編號 / 英文藥名全拔（ADAURA / ALINA / IMpower010 / 9.50~9.126 / carboplatin/pemetrexed / T790M 等）(B) 三個自費術後鞏固藥合併成一個「擇一」step + 明示一個病人只用一種 (C) IA1 初診不再列「術後鞏固」與「II-IIIA 術前輔助」過濾邏輯 (D) 復發路徑措辭「第一線」→「復發後接續治療（第一順位）」+ stageTxt 不再 p 跟 IV 混在一起 (E) 鞏固/序貫/PS 2/PCI/CCRT 等醫護術語全翻譯（追加治療/分開做/體力中等/預防性腦部照射/同步化放療）(F) 同件事說 4 遍精簡為 1 次 BUG-35 |
+| V3.0.0 | V1.11.0 | 2026-06-01 | 首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）— 版號重置 b（V2.13.0 → V3.0.0 嚴格三位數逢十進位）+ 加 .gitignore（基於 Kit gitignore-template）+ CLAUDE.md 加 Kit 衝突仲裁區塊 + 產出 SELA-handoff.md（首次對齊必含）+ 明寫 4 項刻意不對齊（品牌走醫院 / 配色 #5B8FB9 已驗證 / CLAUDE.md 章節結構保留 / No emoji 更嚴）BUG-34 |
+| V2.13.0 | V1.11.0 | 2026-06-01 | 健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）— Osimertinib/Alectinib 術後鞏固 (ADAURA/ALINA) NHI→SELF、Atezolizumab IMpower010 鞏固 SELF、Sotorasib 確認健保未給付、Amivantamab 對齊 9.126 限 EGFR exon 20 ins 第一線、Durvalumab 鞏固加上完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 新增 NSCLC 術前輔助) + drugs-pro/drugs-patient 頁首版本日期同步至 1150522 + 115/5/1 + 115/6/1，清除殘留 emoji 改 Nordic inline SVG BUG-33 |
+| V2.12.0 | V1.10.0 | 2026-06-01 | 醫護版加化療前 B/C 肝病毒篩檢（c40 req:chemo）+ B 肝陽性轉腸胃科 NA 藥物（c41 opt）+ 修總覽未完成清單把 opt（依需要）誤列入未完成的 bug BUG-32 |
+| V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
+| V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
+| V2.9.5 | V1.7.5 | 2026-04-30 | 藥物頁拆兩版（drugs-pro 加 NCCN/事審/必試/cross-ref；drugs-patient 加副作用、用途）+ 個人化推薦（總覽頁帶 query 跳 drugs-patient）|
 | V2.9.4 | V1.7.4 | 2026-04-30 | 手機版 Q-page 鎖屏 bug 修復（TNM 進階 9 欄擠扁、iOS 自動 zoom、safe-area、grid-rows 失效）BUG-29 |
 | V2.9.3 | V1.7.3 | 2026-04-30 | 民眾版說明精簡（刪「醫師討論」客套話、刪試驗代號、note 瘦身）|
 | V2.9.2 | V1.7.2 | 2026-04-30 | portal.html UI 重構（清爽收斂、header 收縮、role 卡瘦身、quick-tools 改同節奏 section）|
-| V2.9.1 | V1.7.1 | 2026-04-29 | 民眾版字樣全面平民化（CCRT→同步化放療、RT→放射線治療）+ 隱藏放療劑量（由主治溝通）|
-| V2.9.0 | V1.7.0 | 2026-04-29 | 民眾版加 Q1 基本資料頁(年齡+ECOG)、流程改 5 頁、buildPath 依 age/ecog 動態調整建議 BUG-28 |
-| V2.8.11 | V1.6.11 | 2026-04-29 | 手機版總覽頁解鎖捲動 + 返回按鈕語意精準（上一題 vs 返回）+ 治療路徑全面 review（NSCLC EARLY/LOCAL/META 多分支 + SCLC PCI 證據更新）BUG-26、27 |
-| V2.8.10 | V1.6.10 | 2026-04-29 | 民眾版藥物按鈕改白底青字「藥物查詢」（跳出 header 背景明顯）BUG-25 |
-| V2.8.9 | V1.6.9 | 2026-04-29 | 藥物入口從底部 banner 改到 header 按鈕（不再多佔一排）|
-| V2.8.8 | V1.6.8 | 2026-04-29 | lung.html / patient.html 底部加快速工具 banner 連到 drugs.html（已被 V2.8.9 取代）|
-| V2.8.7 | V1.6.7 | 2026-04-29 | edu 拆兩檔（edu-pro.html / edu-patient.html）民眾版掃 QR 看到的內容跟 patient.html 總覽頁一致 BUG-24 |
-| V2.8.6 | V1.6.6 | 2026-04-29 | 民眾版 QR 改用 lung 同款模板（URL+base64，純 ASCII 避中文 fail）+ edu.html 加 SCLC/brainMet 處理 BUG-23 |
-| V2.8.5 | V1.6.5 | 2026-04-29 | 民眾版 SCLC 改局限/擴散二段式 + 腦/脊髓轉移影響 PCI 與免疫使用 BUG-22 |
-| V2.8.4 | V1.6.4 | 2026-04-29 | Portal 8 癌別圖示全改 inline SVG（脫離 FA）+ 跑遍 200 組合找出並修 4 個 state 殘留 bug BUG-20、BUG-21 |
-| V2.8.3 | V1.6.3 | 2026-04-29 | QR 中文 fail 修復（換 qrcode-generator + UTF-8 byte mode）+ drugs.html 健保藥物總整理頁 BUG-19 |
 
 ---
 
-## 六、踩過的坑（BUG-01 ~ BUG-29）
+## 六、踩過的坑（BUG-01 ~ BUG-30）
 
 ### #1 (v41)：N2 兩欄同時顯示
 - 症狀：T2aN2 看到 IIIA+IIIB
@@ -446,6 +472,157 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**「鎖屏為桌機設計，但手機需要解鎖」是個重複的 anti-pattern**。BUG-17（V2.8.1）只解總覽頁、BUG-26（V2.8.11）也只解總覽頁、BUG-29（V2.9.4）才解所有 Q 頁。下次新癌別的 patient.html 一開始就應該預設「桌機鎖屏 + 手機解鎖」雙模式，而不是先做鎖屏再一個個 bug 解
 - 教訓：**iOS Safari 的 input zoom-on-focus 是個普遍坑**。任何 input、textarea、select 在手機 ≤16px font-size 都會 trigger，從現在起所有新 input 預設 `font-size: 16px`，桌機才透過 media query 壓小
 
+### #30 (lung V1.8.0 / V2.10.0)：民眾版沒有「已手術」概念，病理期別填了還推薦開刀
+- 症狀：Sela 回報兩個關聯 bug：
+  1. 有病理期別後系統卻仍要求填臨床期別（其實是「沒地方填病理期別」，民眾只能勉強用 cTNM 欄位填）
+  2. 有病理期別代表已開過刀，可是路徑還是停在「建議手術切除」步驟
+- 根因：patient.html 從 V2.8.0 開始只有 cTNM (`S.t/n/m/stage/stageCat`)，從來沒有 pTNM 概念。`buildPath()` 只看 `stageCat`，不知道使用者已手術，所以早期 (EARLY) 一定推「手術根除 + SBRT 替代 + 術前免疫 + 術後輔助」全部 6 步，把「手術根除」放第 1 步
+- 做法（V2.10.0 完整套）：
+  1. **state 加 `S.postOp`**（boolean）— 預設 false（cTNM）；切到 pTNM 模式 → true
+  2. **Q3 加 `#stage-mode-row`**：兩顆切換按鈕「影像/切片」（尚未手術）vs「病理報告」（已手術），共用同一組 TNM 欄位但意義不同
+  3. **`pickStageMode()`**：切換 S.postOp，呼叫 `applyQ2Mode()` 重繪標籤；不清 TNM 值（讓使用者可以從 cTNM 切到 pTNM 直接看路徑差異）
+  4. **`applyPostOpVisuals()`**：cd-step 加 post-op class（teal-d 顏色暗示）、tnm-foot 換「病理分期 (pStage)」標籤、tnm-stage 顯示 `pIIB` 而非 `Stage IIB`
+  5. **`buildPostOpPath(t, st, m, brain)`**：是術後路徑引擎，跟 buildPathRaw 同層。NSCLC EARLY → 術後輔助化療 + EGFR/ALK 鞏固 + Atezolizumab + 規律追蹤；NSCLC LOCAL → 加切緣評估與密集追蹤；NSCLC META → 寡轉移切除特殊處理；SCLC → Cisplatin/Etoposide + N(+) 縱膈放療 + PCI/MRI + 規律追蹤
+  6. **buildPathRaw 開頭分流**：`if(postOp && st 在 EARLY/LOCAL/META) return buildPostOpPath(...)`，不污染原 cTNM 邏輯
+  7. **規律追蹤 step 明確列頻率**：「前 2 年每 3-6 個月 CT、3-5 年每 6 個月、5 年後每年」(EARLY)、「前 2 年每 3 個月」(LOCAL/SCLC)。給民眾具體時間軸概念
+  8. **`stageDisplay()` 加 p 前綴**：postOp=true 時返回 `pIIB`/`p侷限型`/`pIVA`，hero 與 QR 摘要都會看到
+  9. **edu-patient 同步**：schema 加 `po` 欄位（0/1）、`buildPathRawFromData` 開頭同樣分流到 `buildPostOpPathFromData`、hero 「分期」標籤改「病理分期」
+  10. **reset 邏輯**：`pickType` / `restart` 都清 S.postOp。注意：`recomputeStage` 不清（同一組 TNM 切換意義時值要保留）
+- 測試：跑 7 個情境（NSCLC_NS/SQ × EARLY/LOCAL/META × postOp + SCLC postOp），對照組 cTNM EARLY 維持原「手術切除為主」全綠
+- 教訓：**民眾版預設用「臨床期別」沒問題，但病理期別不是 edge case**。肺癌個案至少 1/3 是已手術後才來查（因為手術前資訊都從醫護版來、查詢工具是回家後給家屬看的）。下次新癌別模組設計時，stage axis 設計要從一開始就分 c/p 兩階段，不要等 V1.8 才補上
+- 教訓：**toggle 切換「同欄位但意義不同」是合理的 UX**。民眾不需要分開填 cTNM 跟 pTNM 兩組（會以為要填兩次）。讓他們用 toggle 切換意義 + 視覺暗示（顏色/前綴/標籤）就夠了。下次類似決策（例如術前/術後分子檢測）也走這個 pattern
+
+### #31 (lung V1.9.0 / V2.11.0)：postOp 路徑全列同等亮度，民眾看不出「現在該做什麼」+ IA 期跟 IB+/II 推同一組化療
+- 症狀：V2.10.0 個管師驗收測 18 情境後回報 2 個臨床合理性問題：
+  1. **postOp EARLY 跨期別不細分** — pIA1/pIA2/pIB/pIIB 全推「術後輔助化療 + EGFR/ALK/Atezo 鞏固」。但 IA 期復發風險低、多數情況觀察即可，warns 寫「IA 期通常觀察即可」放在 pIIB 病人總覽會造成矛盾
+  2. **看不出目前位置** — 同一張總覽頁給「剛開完刀」與「已做完化療等鞏固」病人看，5 個 step 同等亮度，無法回答「我下一步該做什麼」
+- 根因：buildPostOpPath 把所有 stage 跟所有時序壓進一張平面 list；UI 沒有 phase / progress 概念
+- 做法（V2.11.0 完整套）：
+  1. **state 加 `S.txProgress`**（''/just_op/chemo/awaiting_consol/consol/followup/recurrence）— 表示治療時序位置
+  2. **Q5 治療進度頁**（`#p-q5`）：6 顆 prog-btn，僅 postOp=true 時顯示。q4Needed 改成 postOp 一律 true（術後一定要 mut/brain 才能決定鞏固藥）
+  3. **流程改 6 頁**：`PAGES = ['p-q1','p-q2','p-q3','p-q4','p-q5','p-sum']`、6 個 progress dots、stepIdx 0-5、updateActBar 加 stepIdx===4 條件
+  4. **每個 step 加 `phase` 標記**：'surgery' | 'adjuvant_chemo' | 'consolidation' | 'followup' | 'recurrence'。buildPostOpPath 全面改寫，所有 step 都有 phase
+  5. **開頭虛擬 surgery step**：`{title:'已完成：手術切除', phase:'surgery'}` 放最前面，給三區呈現的「已完成」區一個錨點
+  6. **IA 期細分**：`isIA = /^IA/.test(stage)` → 走觀察為主分支（不推化療、標靶非主流）；IB+/II 走原本「化療 + 標靶/免疫鞏固」分支
+  7. **`splitStepsByProgress(steps, txProgress)`**：依 PROGRESS_DONE_PHASES / PROGRESS_NEXT_PHASE 把 step 分到 done/next/future 三陣列。just_op→adjuvant_chemo 是 next；awaiting_consol→consolidation 是 next；followup→followup 是 next
+  8. **`renderTreatmentSteps3Section`**：總覽頁 postOp+txProgress 時走三區呈現，否則平鋪。三區用 .tx-done（劃線+0.62 opacity）/.tx-next（青底+box-shadow 醒目）/.tx-future（虛線邊框+0.78 opacity）
+  9. **`buildRecurrencePath`**：暫存 stageCat→META 跑 `buildPathRawCore()`、加開頭「之前治療已完成」surgery done step、所有後續 step 標 phase=recurrence、結尾加 followup step（沒這個的話 recurrence 沒影像追蹤建議）
+  10. **META postOp phase 重分配**：「寡轉移切除後仍須全身性治療」step phase 從 consolidation 改 adjuvant_chemo（語意：剛開完刀後第一步主治療）— 不然 just_op 時「下一步」區會空白
+  11. **edu-patient 同步**：buildPostOpPathFromData 加 stage 參數（從 d.s 拿）、buildPathRawFromData 加 recurrence 分流、buildPathRawCoreFromData 拆出、加 PROGRESS_LABEL/splitStepsByProgress/renderTreatmentSteps3Section、hero meta 加「進度：剛開完刀/化療中/...」
+  12. **「不做 PCI」標題改「改用治療性放療（針對病灶）」**：V2.10.0 個管師發現對民眾不直觀，順便改
+- 測試：9 個情境模擬全綠（A1 pIA1 just_op→done:[surgery]/next:[IA 規律追蹤]/future:[標靶非主流,規律追蹤]、A4 pIIIA recurrence→done:[手術+輔助]/next:[META EGFR 4 step]+followup、A8 pIVA META 寡轉移 just_op→next:[全身性治療]而非空白）
+- 教訓：**clinical 工具的「下一步」概念不能用步驟列表表達**。病人關心的是「現在我在哪？接下來該做什麼？」不是「這個診斷的所有可能治療」。同一份治療路徑對「剛開完刀」vs「鞏固中」vs「追蹤中」的人意義完全不同。下次新癌別模組設計術後路徑時，phase 標記要從一開始就放 step 結構，不要等到要做進度區呈現時才補
+- 教訓：**phase 設計要對齊 progress UX，不是對齊治療類型**。「全身性治療」如果對應的 progress 是 just_op 應該在 next 區，那 phase 要設 adjuvant_chemo 而不是 consolidation（即使治療性質是「鞏固」）。phase 是 UX 維度，不是醫學分類維度
+
+### #32 (lung V1.10.0 / V2.12.0)：化療前漏 B/C 肝篩檢 + 總覽未完成清單把 opt 也列進去
+- 症狀：Sela 個管師驗收測 V2.11.0 後回報兩個問題：
+  1. **化療前需必加 B/C 肝病毒篩檢** — 化療會誘發 B 肝再活化，台灣 B 肝盛行率高，化療前 HBsAg/anti-HBc/anti-HCV 篩檢是基本款。B 肝陽性者需轉腸胃科開預防性 NA 藥物（Entecavir / Tenofovir），這項在 CK config 完全沒有
+  2. **「依需要」項目誤列入未完成** — 基礎檢查的 c7 支氣管鏡、c9 縱膈腔鏡、c36 心臟超音波三項本來就是 opt（依需要勾選），但總覽頁「尚有 N 項未完成」紅 X 清單把它們也列進去，導致個管師永遠看到「未完成」狀態
+- 根因（問題 2）：line 3217 `basicTotal = CK_BASIC.length` 用了全部 (含 opt)；line 3235 `allReq = [...CK_BASIC, ...advReq]` 直接把所有 basic 倒進去未完成清單。實際上同檔案 line 2921 KPI 計算用的 `basicReq = CK_BASIC.filter(c=>c.req!=='opt')` 是對的 — 顯然當初寫 KPI 時想到了，渲染總覽時忘了
+- 做法（V2.12.0）：
+  1. **CK config 加兩項**：`c40 B/C 肝病毒篩檢 req:'chemo'` + `c41 B 肝陽性轉腸胃科 NA req:'opt'`。c40 必要、c41 依需要（因為要先驗 c40 結果為陽性才用得到）
+  2. **`isItemRequired` 加 `'chemo'` 條件**：SCLC 一律 true、NSCLC stage≥IB true（IA 期通常觀察不化療所以不需要 B 肝篩檢）
+  3. **修總覽 ckRemain 計算**：`basicTotal = basicReq.length`（過濾 opt）、`basicDone = basicReq.filter(it=>ck[it.id]).length`、`allReq = [...basicReq, ...advReq]` 都用 basicReq
+  4. **修 basic 頁面 progress bar**：`updateBasicCKBar()` 也只算必要項目，opt 勾不勾不影響進度
+  5. **修 basic 頁面 tab 計數**：`renderBasicCK()` tab 顯示「8/8」而非「8/11」(11 = 含 3 opt)
+  6. **opt bonus 顯示**：basic 與 adv 的 opt 完成數都納入「✚ 另完成 N 項選擇性檢查」
+- 測試：10 個情境（NSCLC_NS/SQ + SCLC × IA1-IVB）全綠 — c40 在 NSCLC IA1/IA2 不必要、IB+ 必要、SCLC 全期必要；c41 永遠 opt；basic opt 3 項永遠不算必要；勾 5 個 opt 後 ckRemain 不變
+- 教訓：**檔案內有兩處在做類似計算時要交叉驗證**。lung/index.html 同一份檔案，line 2921 KPI 用 `filter(c=>c.req!=='opt')`、line 3217 總覽直接用 `CK_BASIC.length`，兩處邏輯不一致是 bug 溫床。下次新增類似計算時，先 grep 看其他地方怎麼算，對齊
+- 教訓：**「opt 不影響進度」是 checklist 工具的核心 UX 原則**。如果勾 opt 會減少未完成計數、不勾 opt 會增加未完成數，那 opt 跟 required 就沒區別了。所有 progress/remaining 計算都要過濾 opt — basic 頁面 bar、tab 計數、總覽 ckRemain、KPI 都要一致
+
+### #33 (lung V1.11.0 / V2.13.0)：術後鞏固藥健保標示錯誤（一路標 NHI，但 ADAURA/ALINA/IMpower010 都是自費）
+- 症狀：Sela 上傳健保條文後對照發現，V2.10.0/V2.11.0 寫的 buildPostOpPath 把術後鞏固藥（Osimertinib EGFR / Alectinib ALK / Atezolizumab PD-L1≥1%）全標 `nhi:'NHI'`，但實際上：
+  1. Osimertinib (9.80) 健保**只給第一線 IIIB/IIIC/IV 期肺腺癌 + 第二線 T790M(+)**，**沒有術後鞏固（ADAURA）適應症** — 病人問到「我健保有給嗎」會被誤導
+  2. Alectinib (9.60) 同樣只給「ALK 陽性晚期 NSCLC 第一線」，**沒有術後鞏固（ALINA）適應症**
+  3. Atezolizumab IMpower010 (PD-L1≥1% II-IIIA 切除後) 健保完全沒給付 — 9.69 鞏固只給 durvalumab 用於 CCRT 後
+  4. Sotorasib (KRAS G12C) — 健保條文 1150522 與 115/5/1 修訂對照表完全沒列入，**健保未給付**（之前標 SELF 是對的，但 note 寫「健保事審」會讓人誤以為是事審就有）
+  5. Amivantamab (9.126) 健保只給「EGFR exon 20 insertion 第一線併用 carboplatin + pemetrexed」，**不是 Osimertinib 失敗後的後線**
+- 根因：V2.10.0 寫 buildPostOpPath 時直接從 NCCN/ADAURA/ALINA/IMpower010 試驗依據複製治療路徑，**沒對照健保第 9 章條文**。NCCN Cat 1 ≠ 健保給付，這在台灣是常識，但工具裡反覆出現了
+- 做法（V2.13.0 完整對齊條文）：
+  1. **民眾版 patient.html / edu-patient.html buildPathRaw + buildPostOpPath**：所有「術後鞏固」的 Osimertinib/Alectinib/Atezolizumab → `nhi:'SELF'` + note 加註「健保未給付，需自費」+ warns 加「ADAURA/ALINA/IMpower010：健保未給付」
+  2. **DRUGS 區塊**：KRAS note 改「健保未給付，自費；NCCN Cat 2A 後線推薦」、BRAF note 加註「健保僅給第二線」、CONSOLIDATION note 補完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）、EGFR_BRAIN note 加健保條文編號
+  3. **EGFR 後線 Amivantamab** title 改 `'Osimertinib 失敗後：化療 ± 免疫'`（不再放 Amivantamab 在 title）+ drugs list 改「Amivantamab + 化療（限 EGFR exon 20 ins）」+ note 加 9.126 條件
+  4. **drugs-pro.html ALL_DRUGS**：Osimertinib/Alectinib indi/line/nhi_ref/prereq/rule + appearsIn 全面對齊條文（9.80/9.60）、Lorlatinib/Ceritinib/Brigatinib/Crizotinib nhi_ref 改正確編號（9.81/9.59/9.82/9.50）、Dabrafenib+Trametinib nhi_ref 改 9.91-4 加註「NCCN 一線推薦但健保僅給第二線」、Sotorasib nhi_ref 改「健保未給付（自費）」、Amivantamab 全段改寫對齊 9.126
+  5. **drugs-pro.html 新增 Nivolumab** entry — 115/6/1 條文新增 NSCLC 術前輔助（CheckMate 816）健保給付：可切除（≥4cm 或 N1/N2 排除 N3、M0）、不具 EGFR/ALK、至多 3 個療程
+  6. **Durvalumab 條件補完整**：9.69-(2)-I.「III 期不可切除 + CCRT 後無 PD + PD-L1≥1% + 非鱗狀 EGFR/ALK/ROS-1 原生型 / 鱗狀 EGFR/ALK 原生型 + 至多 12 個月」全寫進 rule
+  7. **drugs-patient.html**：Sotorasib purpose 改自費明確；Amivantamab target 改「EGFR exon 20 ins 第一線（合併化療）」+ purpose 加 9.126 條件
+- 測試：5 個 postOp 情境（NSCLC_NS pIB/pIIB EGFR、pIIB ALK、pIIIA EGFR、pIIIA NONE）所有 3 個鞏固藥（Osimertinib/Alectinib/Atezolizumab）→ nhi=SELF ✓；DRUGS.KRAS.nhi=SELF ✓；CONSOLIDATION note 5 項條件全含 ✓；KRAS+postOp warns 含自費 ✓
+- 教訓：**NCCN Cat 1 / Cat 2A 推薦 ≠ 健保給付**。在台灣的臨床決策工具，「NCCN 推薦」與「健保給付」是兩個獨立維度，UI 要明確區分。Osimertinib 在 NCCN 是 IB-IIIA 術後鞏固 Cat 1，但健保只給 IIIB-IV 期第一線跟 T790M 第二線 — 病人問到「我健保有給嗎」會發現完全不一樣
+- 教訓：**健保條文要看「修訂對照表」找最新異動**。9.69 ICI 規範改了 25 次以上（108/4/1 → 115/5/1），跨 7 年。臨床路徑工具一年至少對一次條文，特別是「鞏固治療」「術前輔助」這種新增類別容易漏。本院應建立每季條文 review 機制
+- 教訓：**藥物標示要五個欄位都對齊條文：indi / line / prereq / rule / appearsIn**。nhi:'NHI' 只是一個 boolean，但「健保限什麼條件」要落在 prereq + rule。例如 Osimertinib nhi:'NHI' 是對的（第一線/第二線有給付），但「術後鞏固」要在 prereq 寫「術後 ADAURA 鞏固自費」、line 寫「術後 ADAURA 自費」、appearsIn 寫「術後鞏固，自費」— 三處交叉提示，民眾才不會誤解
+
+### #34 (lung V1.11.0 / V3.0.0)：首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）
+- 症狀：Sela 上傳 SELA-Starter-Kit V1.9.0，本專案累積 V2.13.0 / 33 條 BUG 的成熟專案首次接 Kit 規範。Kit 的鐵律最小對齊清單發現本專案：(a) 沒有 `.gitignore` (b) 沒有 SELA logo + favicon (c) 沒有 SELA-handoff.md (d) 版號 `b=13` 已破 Kit 嚴格三位數逢十進位規則 (e) 配色 `#5B8FB9` 與 Kit 預設 `#5A7A8B` 不同 (f) CLAUDE.md 章節結構跟 Kit `CLAUDE-MD-章法.md` 不完全一致
+- 根因：本專案 V0.1.0 起手在 SELA-Starter-Kit 出現前，所有規範由 Sela + Claude 從實戰沉澱而來，跟 Kit 的沉澱路徑平行
+- 做法（V3.0.0 完整對齊）：
+  1. **走坑 #40 SOP**：用「🔴 必做 / 🟡 建議 / 🟢 順便 / ✗ 不做」四級分類法做選擇性對齊，不是全做
+  2. **🔴 必做**：(a) 加 `.gitignore` 從 Kit `gitignore-template` 起手 + 專案特定規則（`_pack/`、`*.zip`、`*.bak` 等）(b) CLAUDE.md 最前面加「Kit 衝突仲裁開頭區塊」明寫 4 項刻意不對齊與理由 (c) 產出 `SELA-handoff.md` 給 Kit Claude 升 Kit 用 (d) 版號 V2.13.0 → V3.0.0 重置 b（Kit 嚴格逢十進位）
+  3. **🟡 跟 Sela 對焦的兩個關鍵問題**：(a) 「SELA logo 要加上去嗎？」Sela 答「不加，已準備正式以彰濱秀傳名義發布」→ Kit V1.8.2 規則「正式機構發布豁免必含 SELA logo 鐵律」(b) 「版號用 V3.0.0 還是 V2.14.0？」Sela 答「V3.0.0（重置 b + 對齊里程碑，最乾淨）」
+  4. **✗ 不做（明寫理由保留）**：(a) 不掛 SELA logo（品牌歸彰濱秀傳）(b) 不換配色 `#5B8FB9` → `#5A7A8B`（已被個管師驗收使用數月，已驗證的色票就是事實標準，Kit `colors.md` §3 補強規則）(c) 不依 Kit `CLAUDE-MD-章法.md` 重排 CLAUDE.md 章節（會洗掉 BUG-1 ~ BUG-33 連續編號的演進脈絡）(d) 保留「No emoji anywhere」更嚴政策（本專案 Nordic SVG 風格已成立，不放寬到 Kit `coding-style` 允許範圍）
+  5. **lung 模組版號保留 V1.11.0**：模組本身在 V2.13.0 → V3.0.0 沒變動，只是系統層的 Kit 對齊。topbar 顯示「V1.11.0 · System V3.0.0」
+- 教訓：**既有專案首次對齊 Kit 不是「重做」，是「補齊鐵律 + 明寫差異」**。Kit 規範清楚「不要為對齊 Kit 而動既有設計」— 已被驗證的就是事實標準。對齊的核心輸出是 (a) 補齊缺漏的鐵律檔案（.gitignore、handoff）(b) 明寫衝突仲裁區塊讓未來 Claude 看到 (c) 不破壞既有設計
+- 教訓：**「正式以機構名義發布」是 Kit V1.8.2 品牌歸屬規則的關鍵判準**。Cancer Navigation 是「個人專案演化為機構系統」的典型情境，Sela 拍板「不掛 SELA logo」啟動了 Kit 豁免路徑。未來其他正式機構發布專案可比照
+- 教訓：**Kit 對齊本身就是一條坑**。本專案累積 33 條 BUG 才接 Kit，跟 MDT V4.7 / Patient Follow V6.9.4 一樣，是「Kit 出來前的成熟專案」。對齊算 a+1 重大里程碑而非 b+1（雖然 Kit 規則動 5+ 檔 = b+1），因為 (a) 版號 b 已破 10 必須重置 (b) Kit 對齊是「**整個專案規範管理模式的切換**」屬於主流程改動 — Sela 拍板支持這個判斷
+
+### #35 (lung V1.11.1 / V3.0.1)：民眾版從病人視角審查發現 7 類 UX 缺失大修
+- 症狀：Sela 提議「從病人角度試點，找奇怪的地方」。Claude 跑了 10 個情境（IA1 初診 / pIB EGFR+ 已手術 / IIIA EGFR+ 初診 / IIIB 鱗 PS2 / IVA EGFR+ 腦轉 / IVA KRAS / SCLC 侷限 / SCLC 擴散 / pIIIA EGFR+ 復發 / pIIB ALK+ 鞏固中），從病人實際讀到的文字角度審查，找出 7 類問題：
+  - **A. 試驗代號 / 條文編號 / 英文藥名沒翻譯**（最大破口）— V2.13.0 健保條文對齊時把 ADAURA / ALINA / IMpower010 / 9.50 / 9.59 / 9.60 / 9.69 / 9.80 / 9.81 / 9.82 / 9.91 / 9.126 / 9.5.1 / 9.5.7 / T790M / carboplatin/pemetrexed / NCCN Cat 2A 等專業字塞回民眾版 note
+  - **B. 自費標示讓病人焦慮 + 缺「擇一」說明** — pIB EGFR+ 病人連續看到 3 個自費術後鞏固藥（Osimertinib / Alectinib / Atezolizumab），但實際上一個病人只用一個基因型對應的藥
+  - **C. 邏輯不一致 — IA1 初診出現「術後鞏固」** — buildPathRaw EARLY 分支不論 postOp 都列 EGFR/ALK 鞏固，病人沒手術就看到「術後鞏固」會困惑；IA1 病人也看到 「II-IIIA 術前輔助」資訊跟他無關
+  - **D. 復發用「第一線」措辭錯** — buildRecurrencePath 整個複製 IVA EGFR 流程，stageTxt「pIIIA 轉移期 (IV)（術後復發/惡化）」p 跟 IV 混在一起，病人困惑「我是 IIIA 還是 IV？」；step「第一線：EGFR TKI 標靶」對復發病人措辭錯（第一線是給沒治療過的人）
+  - **E. 詞句不順 + 醫護用語殘留** — 「同步化放療為主，再加免疫鞏固」「依基因 / PD-L1 個人化治療」「鞏固」/「序貫」/「PS 2」/「PCI」/「CCRT」
+  - **F. 重複資訊 — 同件事說 4 遍** — 3 個 step note + 1 個 warns 都說「健保未給付，需自費」
+  - **G. 條文編號不該給民眾看** — DRUGS 區塊 BRAF / KRAS / CONSOLIDATION / EGFR_BRAIN note 殘留條文編號
+- 根因：歷次升版時關注醫護版的精準度，民眾版資料源 DRUGS / buildPath / buildPostOpPath / buildRecurrencePath 用同一套底層資料，但民眾版需要「翻譯層」沒做透
+- 做法（V3.0.1 完整重寫）：
+  1. **DRUGS 區塊清條文編號**：EGFR_BRAIN / BRAF / MET / KRAS / CONSOLIDATION 五個 entry 的 note 全寫成病人語言（「健保有給付，需事前審查」/「健保未給付，需自費」/「健保第二線給付」），完整條件用平民話講「限第三期無法手術切除、同步化放療後病情穩定」而非「III 期不可切除、CCRT 後無 PD」
+  2. **EARLY 分支大改加 IA 過濾**：`isIA = stage.startsWith('IA')`，IA 不顯示「II-IIIA 術前輔助」step、IA 不顯示「術後輔助化療」step、IA 不顯示「術後追加治療」step；IB+ 把 EGFR/ALK 兩個鞏固藥合併進一個「術後追加治療：依基因檢測結果擇一」step
+  3. **LOCAL 分支同改**：pwTxt「同步化放療為主，再加免疫鞏固」→「以同步化放療為主，治療結束後再用免疫維持治療」；warns 4 條全重寫拿掉專業字
+  4. **META 分支翻譯**：EGFR 的「惡化後：抗藥機制檢測」→「病情惡化時：做抗藥基因檢測」+ note 解釋「若第一線用的不是 Osimertinib，且檢測發現抗藥基因」（不是 T790M(+)）；KRAS「PD-L1 偏高，免疫反應佳」→「免疫指標多偏高，對免疫治療反應通常較佳」；BRAF / MET / ROS1 都把「TKI 標靶」改「口服標靶藥」；「含鉑化療 + 免疫」→「含鉑化療搭配免疫治療」
+  5. **buildPostOpPath EARLY / LOCAL 同樣處理**：3 個鞏固藥合併成「擇一」step、明示「一個病人通常只會用一種，依檢測結果決定」、warns 3 條精簡（同件事不重複說）
+  6. **buildRecurrencePath 大改**：stageTxt「pIIIA 轉移期 (IV)（術後復發/惡化）」→「非小細胞肺癌（非鱗狀） 術後復發 — 接續全身性治療」；step.title 走 regex 替換「第一線：」→「復發後接續治療（第一順位）：」、「第二線：」→「復發後接續治療（第二順位）：」
+  7. **SCLC 翻譯**：PCI → 「預防性腦部照射」；侷限型 / 擴散型 stage 顯示拿掉英文 (Limited)/(Extensive)；「鞏固」全改「追加治療」
+  8. **applyAgeEcog 翻譯**：「PS 2」→「您體力狀況中等」、「PS 3-4」→「您體力狀況較差」、「序貫」→「分開做（先化療再放療）」、「Carboplatin」→「副作用較輕的碳鉑」
+  9. **ECOG 按鈕標籤 + footer 體力標籤**：「PS 2」「PS 3-4」病人實際在 UI 看到的也改成「體力中等」「體力較差」
+  10. **edu-patient.html 同步全部 1~9**：patient.html 與 edu-patient.html 兩份完整對齊
+- 教訓：**民眾版需要獨立的「翻譯層」設計，不能跟醫護版共用 note**。健保條文對齊（V2.13.0 BUG-33）關注精準度，但精準的醫護用語（9.126 / ADAURA / CCRT 後無 PD / PS 2）對病人就是雜訊。下版考慮把 DRUGS 拆成 `DRUGS_PRO`（醫護版用，含條文編號 / 試驗代號 / NCCN 分級）+ `DRUGS_PATIENT`（民眾版用，純病人語言），維持兩個檔案的同步成本，但避免雙視角誤用同一筆 note
+- 教訓：**寫民眾版內容時的禁字清單**：條文編號（9.XX）/ 試驗代號（ADAURA / ALINA / IMpower010 等）/ NCCN 分級（Cat 1 / Cat 2A）/ 醫護縮寫（PS / ECOG / CCRT / PCI / TKI / NGS / IMRT / SBRT 等英文縮寫，後三個視情況保留 + 中文括號）/ 抗藥機制專名（T790M / EGFR exon 20 ins 等，改用「抗藥基因」「特殊 EGFR 突變」泛稱）/ 健保事審術語（事審 / 給付規定 / 通則十二）/ 「鞏固」「序貫」這類醫護常用詞。本院日後寫民眾版內容應有此禁字清單參考
+- 教訓：**「擇一」概念對病人決策非常關鍵**。pIB EGFR+ 病人看到 3 個自費術後鞏固藥連續列出來會誤以為「我要花 3 倍錢」，加「依基因檢測結果擇一」明示後焦慮感大幅降低。其他多藥情境（轉移期 EGFR 五藥擇一、ALK 標靶 4 藥擇一）也應該套同樣的「擇一」框架
+- 教訓：**「復發」病人讀到「第一線」會困惑**。「第一線」是「最先用的藥」對沒治療過的人是對的，但對復發病人來說已經做過治療，措辭應該是「復發後接續治療（第一順位）」明示「這是復發後重新開始的順位」。未來 buildRecurrencePath 加新分支時記得套用 regex 替換
+
+### #36 (lung V1.11.1 / V3.0.2)：升 Kit V1.9.0 → V1.21.0（升版對齊，非首次對齊）
+- 症狀：Sela 上傳 Kit V1.21.0（從 V1.9.0 跨 12 個 b 版本：V1.10.0 → V1.11.0 → ... → V1.21.0）。本專案 V3.0.1 已對齊 V1.9.0，需評估升 Kit 版本帶來的新規範該怎麼接
+- 根因：Kit 是滾動更新的（每個 SELA 專案的反饋都會回流），跨 12 個 b 版本累積：
+  - V1.10.0 新增坑 #46~#52（含本專案反饋進的 #50/#51/#52）
+  - V1.12.0 新增鐵律 §10.5 英文名稱化
+  - V1.13.0 新增 App Logo 主動詢問規則
+  - V1.15.0 ~ V1.16.0 新增坑 #53~#58
+  - **V1.17.0 新增「優化體檢」鐵律**（必做）
+  - V1.19.0 新增坑 #59~#62 + optimizations.md
+  - **V1.20.0 新增鐵律 §10.6 UI 版本號顯示**
+  - **V1.21.0 新增坑 #63 Python re.sub → str.replace**
+- 做法（V3.0.2 完整對齊）：
+  1. **走 V1.21.0 templates/claude-init.md 第二章升版對齊 SOP**：四級分類選擇性對齊，不重新打 V3.0.0 已決定的事
+  2. **🔴 必做**：
+     - 衝突仲裁區塊版本號 V1.9.0 → V1.21.0
+     - 執行優化體檢（V1.17.0 鐵律）：對照 optimizations.md 4 條 OPT 找適用項
+     - 加 BUG-36 + SELA-handoff.md 更新
+  3. **🟡 建議（Sela 拍板「全部都對」）**：
+     - 衝突仲裁區塊「No emoji anywhere 更嚴」移除 — V3.0.0 時誤標。V1.21.0 sela-philosophy.md 明寫「不大量使用 emoji 是核心美學原則」，我們是符合不是更嚴
+     - 加註雙向關係：本專案 V3.0.0 SELA-handoff 提的 3 條反饋（NCCN ≠ 健保 / 健保條文季度 review / opt 不算未完成）已被 Kit V1.10.0 採納為坑 #51/#52/#50
+  4. **🟢 順便**：加註 V3.0.1 改法符合 Kit 坑 #61（UI 改名只動顯示文字，phase 變數 `consolidation` 不動）+ V3.0.1 Python 編輯用 `c.replace` + assert 符合 V1.21.0 新坑 #63
+  5. **✗ 不做（V3.0.0 已決定的事不重新打開）**：SELA logo 仍不加（醫院品牌）/ 配色 `#5B8FB9` 保留（Kit colors.md §3 V1.8.1 規則就是「不主動換」） / CLAUDE.md 章節結構保留 BUG 編號累積
+  6. **優化體檢結果**：對照 optimizations.md 4 條 OPT：
+     - OPT-1（cron → threading.Timer）：純前端 HTML 無排程需求，不適用
+     - OPT-2（散落初始化 → master JSON）：無 DB，不適用
+     - OPT-3（外部請求 → outbox queue）：無後端，不適用
+     - OPT-4（一次生成大量產出 → 配驗證迴圈）：V3.0.1 民眾版 UX 大修最後一步「跑 10 個情境模擬驗證」就是 OPT-4 應用，已自然在做
+     - **結論：0 條需動手改**（純前端 HTML 專案目前的優化庫適用度低）
+- 教訓：**升 Kit 對齊版本 ≠ 首次對齊**。Kit 規則的「四級分類法」對首次對齊是「全面選擇」，對升版對齊是「只挑 Kit 新增的部分」— V3.0.0 已決定的事（SELA logo / 配色 / 章節結構）不重新打開。動手前先 grep CLAUDE.md 衝突仲裁區塊看「上次決定了什麼」，只動 Kit 新規範跟我們的差異
+- 教訓：**「優化體檢」結果可以是「0 條需改」並不算失敗**。優化庫的目的是「讓對齊變好」而不是「強迫升級」— 體檢精神是「對照看有沒有用得上的」。Kit V1.17.0 的 optimizations.md 4 條 OPT 目前都是後端/DB/排程相關，純前端 HTML 中 0 條合理。下次優化庫加入「前端」類 OPT 時再重新體檢
+- 教訓：**雙向回流通道有效是 Kit 規範的核心驗證**。本專案 V3.0.0 SELA-handoff 提的 3 條跨專案通用坑（#46-上、#47-上、#48-上）在 V1.10.0 全被採納為 Kit 坑 #50/#51/#52。這證實 SELA-handoff 機制不只是「給下次 Kit Claude 看」，是真實的雙向通道。下次寫 handoff 時記得這點 — 你的反饋會被認真採納
+- 教訓：**工作環境重置時走坑 #48 流程**（V1.10.0 新增）：從 /mnt/user-data/outputs 解壓最新 zip 重建工作目錄。本次升版開始時環境重置（/home/claude 為空），直接 unzip V3.0.1 zip 1 秒回到工作狀態。Kit 規範化過的流程比每次重新摸索快
+
 ---
 
 ## 七、擴充新癌別
@@ -463,16 +640,19 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V2.9.0** — Sela 應實測：(a) Q1 基本資料頁能填能跳 (b) 各種 age/ecog 組合下 step 內出現的「【依您狀況】」提示符合臨床預期 (c) PS 3-4 + 局晚情境下 pwTxt 真的改成「支持性療法為主」 (d) 跳過 Q1 全部欄位的人能正常走完流程
-2. **Sela 比對院內指引** — V2.8.11+V2.9.0 兩版改了很多治療路徑內容（NSCLC EARLY 加術前免疫與 ALK 鞏固、META PDL1_HIGH 加 Pembrolizumab 單藥、SCLC PCI 改 MRI 監測、age/ecog 動態調整）。Sela 應拿院內肺癌指引 v12 (2026) 一條一條比對，告訴我哪條要再修
-3. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症
-4. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
-5. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容
-6. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-7. **DRUGS 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS 與 buildPath 邏輯。V2.9.0 加 applyAgeEcog 後，兩邊改的負擔更大；考慮是否該抽 `_drugs.js` 共用
+1. **GitHub Pages 部署實機驗證 V3.0.1** — 民眾版 UX 大修是本專案的核心成果（V3.0.2 升 Kit 沒動程式碼）必跑：(a) IA1 初診走完流程 → 總覽頁不再看到「術後鞏固」「II-IIIA 術前輔助」這些跟 IA 無關的資訊 (b) pIB EGFR+ 已手術走完 → step 3 是單一「術後追加治療：依基因檢測結果擇一」list 包含 3 個藥（之前是 3 個獨立 step） (c) 復發情境 → stageTxt 顯示「術後復發 — 接續全身性治療」（不再 pIIIA 跟 IV 混在一起），step.title 是「復發後接續治療（第一順位）：⋯」(d) ECOG 按鈕看不到「PS 2 / PS 3-4」標籤，看到「體力中等 / 體力較差」(e) 各情境 note / warns 全部沒有條文編號（9.XX）/ 試驗代號（ADAURA / ALINA / IMpower010 等）/ NCCN Cat / T790M / carboplatin/pemetrexed 英文藥名 (f) Sela 排個管師找 3-5 個真實病人試讀，看是否還有遺漏的醫護用語
+2. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore`（用 Git Pusher 部署時不會被清空關鍵檔）(b) 版號顯示「lung V1.11.1 · System V3.0.2」 (c) 首頁 zip 命名「Cancer Navigation V3.0.2.zip」三位版本號 + 空格 (d) 確認沒有被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒有被誤改成 Kit 預設 `#5A7A8B`
+3. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
+4. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
+5. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
+6. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
+7. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源
+8. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note
+9. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+10. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V2.9.4 修手機版 Q-page 一系列鎖屏 bug — Sela 回報 TNM 進階模式手機顯示不全、無法拉動。盤點 7 個同源問題：TNM 9 欄擠扁、Q 頁內容無法捲、iOS input font<16px 自動 zoom、maximum-scale=1 阻止放大、safe-area 沒處理、sclc-grid rows fr 解鎖時失效、input 沒 scroll-margin。全部用 `body.questioning` + `@media(max-width:640px)` 解鎖手機端，桌機行為不變。1152/1152 全綠。下版第一優先：Sela 實機在小手機（如 iPhone SE 360px）跑一遍流程確認。
+V3.0.2 升 Kit V1.9.0 → V1.21.0（升版對齊，非首次）。走 V1.21.0 第二章升版對齊 SOP 做選擇性對齊，**不重新打 V3.0.0 已決定的事**（SELA logo / 配色 / 章節結構維持原狀）。三大調整：(1) 衝突仲裁區塊版本號升至 V1.21.0、移除「No emoji 更嚴」誤標（V1.21.0 sela-philosophy 確認本就是 Kit 核心美學原則）、加註雙向回流關係（V3.0.0 SELA-handoff 提的 3 條反饋已採納為 Kit 坑 #50/#51/#52） (2) 加註 V3.0.1 改法已符合 V1.19.0 坑 #61（UI 改名不動 phase 變數）+ V1.21.0 坑 #63（用 str.replace 不用 re.sub） (3) 執行 V1.17.0 新鐵律「優化體檢」對照 optimizations.md 4 條 OPT — 純前端 HTML 結論 0 條需動手改（OPT-1/2/3 後端/DB/排程不適用，OPT-4 已自然在做）。lung 模組保留 V1.11.1（程式碼完全沒動）。下版第一優先：實機驗證 V3.0.1 民眾版 UX 大修（這是「治療路徑工具」的核心成果，比 Kit 對齊更重要）+ 個管師找 3-5 個真實病人試讀。
