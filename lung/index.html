@@ -1178,8 +1178,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.11.0';
-const SYSTEM_VERSION = 'V3.0.0';
+const MODULE_VERSION = 'V1.11.3';
+const SYSTEM_VERSION = 'V3.0.4';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -2998,11 +2998,20 @@ function buildEduPayload(){
   const S = A.S;
   const typeCode = {NSCLC_NS:'NS',NSCLC_SQ:'SQ',SCLC:'SC'}[S.type]||'';
   const tm = CFG.team;
+  // V3.0.3 BUG-37: 補 a/e 給民眾版 applyAgeEcog 用（之前 payload 漏帶，個人化提示永遠不觸發）
+  // 醫護版 ECOG 值 '0'-'4' → 民眾版 3 組 '01'/'2'/'34'
+  const ecogMap = {'0':'01','1':'01','2':'2','3':'34','4':'34'};
+  const eMapped = ecogMap[S.ecog] || '';
+  // 從 birthday 算實際年齡 → 民眾版 2 組 'lt70'/'ge70'
+  const actualAge = calcAgeFromDates(S.birthday, S.caseDate || todayStr());
+  const aMapped = (actualAge !== null) ? (actualAge >= 70 ? 'ge70' : 'lt70') : '';
   return {
     n: maskName(S.name),
     t: typeCode,
     s: S.stage||'',
     m: S.mutation||'',
+    a: aMapped,
+    e: eMapped,
     tm: tm.depts.map(d=>{ const r=S.consult?.[d.id]; return r?r.doctor:''; }),
     c: tm.caseManager.name,
     d: todayStr()
