@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.0.9 | V1.11.8 | 2026-07-01 | Sela 交辦 2 事：(1) 電腦版 Q 問答頁違和 — `.page`→`.cd`→`.type-grid` 一路 flex:1 把類型卡片撐到滿視窗高度（卡片超大、內容置中一堆留白）。root cause 同 V3.0.7 總覽頁：桌面版 `body.questioning` 解鎖規則只在 `@media(max-width:640px)`。修法：提升為全尺寸解鎖（卡片自然高度堆疊）+ 桌面版 type-btn min-height:130px (2) 建 294 情境大規模模擬 harness（全型態×早中晚期×開刀/不開刀×基因×復發），7 大類結構檢查（steps 非空/stageTxt/IIIA 回歸/IA 鞏固/SCLC 基因/禁字殘留/期別帶入）全綠。人工細看 9 情境臨床合理性，抓到 LOCAL 分支對驅動基因陽性者仍顯示免疫維持治療但沒提示不適用（PACIFIC 排除 EGFR/ALK），補一條 warn 提示標靶維持方向（patient + edu-patient 同步）BUG-43 |
 | V3.0.8 | V1.11.7 | 2026-07-01 | Sela 交辦 3 修：(1) 高劍虹從名單末尾移到張竣期後（第 2 位）— 醫護版 CFG.team + 民眾版 TEAM 兩處都改 (2) 基因檢測卡片結合病人實際期別 + 明確講健保給付狀況 — subtitle/foot 帶入「pXXX 期」+「以您的分期，EGFR/ALK/PD-L1 健保有給付」（非鱗晚期）/「PD-L1 健保、EGFR/ALK 自費」（鱗狀晚期）/「健保多不給付」（早期）(3) **問診頁（Q1 基本資料）不再提前解釋「為什麼」與給建議** — 年齡拿掉「建議改 Carboplatin」、B/C 肝拿掉「需看腸胃科/建議先驗」、重大傷病拿掉「建議盡快申請」+ 各欄 hint 說明；建議一律留到決策頁 warns。原則：問診頁只問「有沒有/是什麼狀態」，決策頁才給建議 BUG-42 |
 | V3.0.7 | V1.11.6 | 2026-07-01 | Sela 上傳 IIB 總覽頁截圖交辦 4 個民眾版問題：(1) 精簡注意事項冗長措辭 — B/C 肝從 3 句砍成 1 句、重大傷病從 2 句砍成 1 句、砍掉 EARLY/postOp 兩處跟新基因卡片重複的「建議做基因檢測」warn (2) 高劍虹沒出現 → root cause：民眾版 patient.html 有獨立 TEAM 常數，V3.0.5 只改醫護版 CFG.team 沒同步民眾版（雙人口資料源要兩邊改的坑又踩一次）(3) 決策框「治療方向與藥物」被壓縮 → 桌面版總覽頁比照手機版解鎖捲動（原本 `body.summary` 解鎖只在 `@media(max-width:640px)`，提升為全尺寸），決策框完整展開不再被 team/warns/基因卡片擠壓 (4) 基因檢測語氣中性化 — 「建議做的基因檢測/一次開齊省時間/省去等待重複抽血」→「基因檢測參考/可與醫師討論/由您與醫師討論後決定」BUG-41 |
 | V3.0.6 | V1.11.5 | 2026-07-01 | Sela 交辦 5 題的第 5 題「基因檢測融入民眾版」— 拍板「可共同決策但不出現醫令碼」。做法：`buildGeneTestAdvice()` 依 type+stage 三分類（非鱗晚期→EGFR/ALK/PD-L1/ROS1 五項一起開、鱗狀晚期→PD-L1 先其他視需要、早期→PD-L1 先）給建議，源自本院「基因檢測開單速查表」但拿掉所有醫令碼（30101B/L09017A 等只留醫護版），改寫成病人語言 + 費用概念（健保/材料費/自費/視需要 tag）。總覽頁「注意事項」下方加基因檢測卡片。6 情境驗證全綠（含已驗過改「供參考是否補齊」、SCLC 不顯示）。edu-patient 不加（掃 QR 多為已驗完，時機不對）BUG-40 |
@@ -236,7 +237,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V3.0.2 | V1.11.1 | 2026-06-29 | 升 Kit V1.9.0 → V1.21.0（升版對齊，非首次對齊）— 衝突仲裁區塊全面更新：(1) 移除「No emoji 更嚴」誤標（V1.21.0 sela-philosophy 確認 Kit 規範本身就是不用 emoji，我們是符合不是更嚴）(2) 加註本專案 V3.0.0 SELA-handoff 提的 3 條反饋已被 Kit 採納為坑 #50/#51/#52（雙向回流通道有效）(3) 加註 V3.0.1 改法符合 Kit V1.19.0 坑 #61（UI 改名不動程式變數）+ V1.21.0 坑 #63（用 str.replace 不用 re.sub）。執行 V1.17.0 新增「優化體檢」鐵律：對照 optimizations.md 4 條 OPT，純前端 HTML 結論 0 條需動手改（OPT-1/2/3 後端排程/DB/外部請求都不適用，OPT-4 已自然在做）BUG-36 |
 | V3.0.1 | V1.11.1 | 2026-06-01 | 民眾版（patient.html / edu-patient.html）UX 大修 — 從病人視角 10 情境模擬找出 7 類問題並全修：(A) 試驗代號 / 條文編號 / 英文藥名全拔（ADAURA / ALINA / IMpower010 / 9.50~9.126 / carboplatin/pemetrexed / T790M 等）(B) 三個自費術後鞏固藥合併成一個「擇一」step + 明示一個病人只用一種 (C) IA1 初診不再列「術後鞏固」與「II-IIIA 術前輔助」過濾邏輯 (D) 復發路徑措辭「第一線」→「復發後接續治療（第一順位）」+ stageTxt 不再 p 跟 IV 混在一起 (E) 鞏固/序貫/PS 2/PCI/CCRT 等醫護術語全翻譯（追加治療/分開做/體力中等/預防性腦部照射/同步化放療）(F) 同件事說 4 遍精簡為 1 次 BUG-35 |
 | V3.0.0 | V1.11.0 | 2026-06-01 | 首次對齊 SELA-Starter-Kit V1.9.0（重大里程碑）— 版號重置 b（V2.13.0 → V3.0.0 嚴格三位數逢十進位）+ 加 .gitignore（基於 Kit gitignore-template）+ CLAUDE.md 加 Kit 衝突仲裁區塊 + 產出 SELA-handoff.md（首次對齊必含）+ 明寫 4 項刻意不對齊（品牌走醫院 / 配色 #5B8FB9 已驗證 / CLAUDE.md 章節結構保留 / No emoji 更嚴）BUG-34 |
-| V2.13.0 | V1.11.0 | 2026-06-01 | 健保條文大對齊（依《健保第 9 章 1150522 版》+《附件 2 修訂對照表 115/5/1 生效》）— Osimertinib/Alectinib 術後鞏固 (ADAURA/ALINA) NHI→SELF、Atezolizumab IMpower010 鞏固 SELF、Sotorasib 確認健保未給付、Amivantamab 對齊 9.126 限 EGFR exon 20 ins 第一線、Durvalumab 鞏固加上完整條件（III 期不可切除 + CCRT 後 + PD-L1≥1% + EGFR/ALK/ROS-1 原生型 + 12 個月）+ 加 Nivolumab (115/6/1 新增 NSCLC 術前輔助) + drugs-pro/drugs-patient 頁首版本日期同步至 1150522 + 115/5/1 + 115/6/1，清除殘留 emoji 改 Nordic inline SVG BUG-33 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -709,6 +709,17 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**問診 vs 決策要分階段，資訊各歸各位**。問診頁堆建議 = 病人還沒答完就被結論淹沒，而且同樣的建議決策頁又出現一次（重複）。原則：問診頁「收集」、決策頁「輸出」，建議只在決策頁講一次。健保給付狀況這種「決策資訊」也是同理 — 放在基因檢測卡片（決策頁）而非問診頁
 - 教訓：**「健保給付與否」與期別強相關，值得明講**。同一個基因檢測（如 EGFR），晚期非鱗健保給付、鱗狀自費上萬、早期不給付。病人最在意「這要花多少錢」，把健保狀況結合他的實際期別講清楚，比只標一個「健保/自費」tag 更有決策價值
 
+### #43 (lung V1.11.8 / V3.0.9)：電腦版 Q 頁卡片撐爆 + 建大規模模擬 harness 抓臨床合理性
+- 症狀 1：Sela 上傳 Q2（肺癌類型）截圖，電腦版四個類型卡片被撐到滿視窗高度（每個卡片超大、圖示文字置中一堆留白，違和）
+- 原因 1：跟 V3.0.7 總覽頁完全同源 — 桌面版 `body.questioning` 解鎖規則只寫在 `@media(max-width:640px)`，桌面版 `.page`→`.cd`→`.type-grid` 一路 `flex:1` 把卡片撐滿視窗高度。**V3.0.7 修了 summary 頁忘了 questioning 頁也有同款規則**
+- 做法 1：`body.questioning` 解鎖規則提升為全尺寸（移出 media query）+ 桌面版 `.type-grid .btn-type{min-height:130px}` 避免卡片過扁。跟 V3.0.7 summary 頁一模一樣的修法
+- 症狀 2：Sela 要「個管師 + 民眾雙視角，早中晚期 × 開刀不開刀，都跑一輪看有沒有 bug 或分期建議錯誤」
+- 做法 2：建 294 情境模擬 harness（`/tmp/mega_sim.js`）— 全型態（NS/SQ/SCLC）× 全期別（IA1/IB/IIB/IIIA/IIIB/IIIC/IVA/IVB + SCLC Limited/Extensive）× 開刀/不開刀 × 9 種基因 × 復發。7 大類自動檢查：steps 非空 / stageTxt 非空 / IIIB-IIIC 不出現「可切除型 IIIA」（BUG-38 回歸測試）/ IA 初診不出現術後鞏固 / SCLC 不出現基因檢測 / 無醫令碼試驗代號條文編號殘留 / 基因卡片帶期別。**全綠**
+- 發現（人工細看 9 情境臨床合理性，harness 抓不到的）：LOCAL 分支對驅動基因陽性者（EGFR/ALK/ROS1）仍照顯示「同步化放療後免疫維持治療」step，但免疫維持（PACIFIC/Durvalumab）本就排除驅動基因陽性者（note 有列此排除條件但沒針對「這個病人有驅動基因」給替代方向）。補一條 warn：驅動基因陽性 → 提示免疫維持通常不適用 + 可與醫師討論標靶維持治療。patient + edu-patient 同步
+- ⚠️ 待 Sela 確認：CCRT 後標靶維持（LAURA trial osimertinib，2024 陽性結果）的台灣健保給付現況。本版只加「提示方向」不動健保 tag，確認給付後可補正式 step
+- 教訓：**自動化 harness 抓「結構性 bug」，人工細看抓「臨床合理性」，兩者不能互相取代**。294 情境自動檢查全綠（沒有結構性錯誤），但驅動基因 vs 免疫維持這種「臨床上對這個病人不精準」的問題，只有人把 steps 一條條讀出來、對照臨床知識才抓得到。**大規模模擬要「自動掃結構 + 抽樣人工看語意」雙軌**
+- 教訓：**同款 CSS 佈局 bug 會在不同頁面重複出現，修一頁要 grep 全專案同款規則**。V3.0.7 修 summary 頁的「桌面版沒解鎖捲動」，questioning 頁其實有一模一樣的規則沒一起修，拖到 V3.0.9 才補。修 responsive bug 時 grep `body.summary` / `body.questioning` 等所有「模式 class + media query」組合，一次修完
+
 ---
 
 ## 七、擴充新癌別
@@ -726,7 +737,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V3.0.1~V3.0.8** — **這是第 1 名因為連續 8 版都動民眾版核心邏輯（UX 大修 / QR 個人化 / IIIA 細分 / 電腦版窄化 / Q1 加兩欄 / 基因檢測卡片 / 總覽頁 4 修 / 問診頁精簡 + 基因結合期別）都沒實機跑過，實測前不算落地**。(a) V3.0.1 病人視角：IA1 初診不出現「術後鞏固」、pIB EGFR+ 看到「擇一」step (b) V3.0.3 端到端：醫護版建 78 歲 PS 2 → QR 掃 → edu-patient 出現「依您狀況」提示 (c) V3.0.4 IIIB/IIIC 不再顯示「可切除型 IIIA」step (d) V3.0.5 電腦版底部按鈕居中；Q1 看到 4 個 section (e) V3.0.6 非鱗 IVA 未驗 → 基因檢測卡片列 5 項；SCLC → 不出現；全程無醫令碼 (f) V3.0.7 桌面版決策框完整展開不被壓縮；胸內看得到高劍虹 (g) **V3.0.8 問診頁年齡/B肝/重大傷病三欄只有純標籤（無「建議改 Carboplatin/需看腸胃科」提前建議）；基因檢測卡片副標帶實際期別（如「以您的分期（IVA 期、非鱗狀）」）+ foot 明講健保給付；胸內醫師順序張竣期→高劍虹→其他** (h) 個管師找 3-5 個真實病人試用
+1. **GitHub Pages 部署實機驗證 V3.0.1~V3.0.9** — **第 1 名因為連續 9 版都動民眾版核心邏輯，V3.0.9 的 294 情境 harness 過了但那只驗「資料結構」，UI 佈局 / 捲動 / 卡片高度 / QR 掃描這些只有真機能看**。(a) V3.0.1 病人視角：IA1 不出現術後鞏固、pIB EGFR+ 看到擇一 step (b) V3.0.3 端到端：78 歲 PS 2 → QR 掃 → 出現「依您狀況」提示 (c) V3.0.4 IIIB/IIIC 不顯示「可切除型 IIIA」(d) V3.0.5 電腦版底部按鈕居中；Q1 四 section (e) V3.0.6 非鱗 IVA 未驗 → 基因卡片 5 項；SCLC 不出現；無醫令碼 (f) V3.0.7 桌面版總覽頁決策框完整展開 (g) V3.0.8 問診頁純標籤無提前建議；基因卡片帶期別講健保；高劍虹在張竣期後 (h) **V3.0.9 電腦版 Q 問答頁類型/TNM/基因卡片自然高度不再撐爆整屏；IIIA/IIIB EGFR+ 病人總覽 warns 出現「驅動基因→免疫維持不適用」提示** (i) 個管師找 3-5 個真實病人試用
 2. **實作 Q2：民眾版加 IndexedDB 歷史 + 統計（Sela 拍板「參考醫護版作法」）** — 大功能。參考醫護版 `lung/index.html` 的 `openDB()` 三 store（records/drafts/settings）+ 列表頁 `renderRecordList` + 統計頁 `loadStats`。民眾版 patient.html 目前無資料持久化（走完就沒了）。要做：(a) patient.html 加 IndexedDB 存每次查詢紀錄（type/stage/mut/age/ecog/hbv/catastrophic/走完時間）(b) 加「歷史紀錄」入口（首頁或總覽頁）(c) 加簡單統計（查過幾次、多集中在哪些期別）。**注意**：民眾版跟醫護版同 domain（sela1227.github.io/Lung-ca-nevigation/）但不同路徑，IndexedDB 是 origin 級共享 — 要用不同 dbName 避免撞醫護版資料（醫護版 dbName 見 CFG.dbName）
 2. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
@@ -750,4 +761,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V3.0.8 Sela 交辦 3 修：(1) 高劍虹從名單末尾移到張竣期後（第 2 位），醫護版 CFG.team + 民眾版 TEAM 兩處都改 (2) 基因檢測卡片結合病人實際期別 + 明確講健保給付（subtitle/foot 帶「pXXX 期」+「以您的分期，EGFR/ALK/PD-L1 健保有給付」等，依期別型態分三種說法）(3) 問診頁不再提前解釋「為什麼」與給建議 — 年齡「建議改 Carboplatin」、B/C 肝「需看腸胃科/建議先驗」、重大傷病「建議盡快申請」+ 各欄 hint 全拿掉，建議一律留到決策頁 warns。核心原則（BUG-42）：問診頁「收集」、決策頁「輸出」，建議只在決策頁講一次。下版第一優先仍是實機驗證 V3.0.1~V3.0.8（8 版累積都動民眾版核心邏輯還沒實測）；第 2 是實作 Q2（民眾版加 IndexedDB 歷史+統計，參考醫護版三 store，用不同 dbName）。
+V3.0.9 Sela 交辦 2 事：(1) 電腦版 Q 問答頁卡片被 flex:1 撐爆（跟 V3.0.7 總覽頁同源，桌面版 body.questioning 解鎖規則只在手機版 media query），提升為全尺寸解鎖，卡片自然高度堆疊 (2) 建 294 情境大規模模擬 harness（全型態×早中晚期×開刀/不開刀×基因×復發），7 大類結構檢查全綠。人工細看 9 情境臨床合理性，抓到 LOCAL 分支對驅動基因陽性者仍顯示免疫維持治療但沒提示不適用（PACIFIC 排除 EGFR/ALK），補 warn 提示標靶維持方向。BUG-43 兩條教訓：自動 harness 抓結構 bug、人工抽樣抓臨床合理性兩者不能互相取代；同款 CSS 佈局 bug 會跨頁重複，修一頁要 grep 全專案同款規則。⚠️ 待 Sela 確認 CCRT 後標靶維持（LAURA osimertinib）台灣健保現況。下版第一優先仍是實機驗證 V3.0.1~V3.0.9（9 版累積都動民眾版核心邏輯，harness 過了但沒上真機跑過 UI）；第 2 是實作 Q2 個管師看民眾版統計（IndexedDB，參考醫護版三 store，用不同 dbName）。

@@ -369,6 +369,11 @@ function buildPathRawCoreFromData(d){
       '免疫維持治療有條件限制:需第三期無法手術切除、同步化放療後病情穩定、無 EGFR/ALK/ROS-1 等驅動基因、PD-L1 ≥1%，至多 12 個月',
       '建議診斷時即做 EGFR、ALK、PD-L1 等基因與免疫指標檢測',
     ];
+    // V3.0.9: 驅動基因陽性者，免疫維持治療本就排除，提示標靶維持方向
+    const driverMut = ['EGFR','ALK','ROS1','BRAF','MET'].includes(m);
+    if(driverMut){
+      warns.unshift('您帶有 ' + mutDisplay(m) + ' 驅動基因：同步化放療後的免疫維持治療通常不適用（此類藥物排除帶有驅動基因者），可與醫師討論標靶藥維持治療的可能');
+    }
     if(!isIIIA){
       warns.unshift(stage + ' 期腫瘤範圍較廣（涉及 T4 或多處淋巴轉移），一般不建議先手術，以同步化放療 + 免疫維持治療為主');
     }

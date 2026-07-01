@@ -106,31 +106,31 @@ body{
   overflow:hidden;
 }
 
-/* V2.9.4: 手機版全頁解鎖捲動
-   問題：Q1-Q4 桌機鎖屏 OK，但手機 (≤640px) 內容超出時 .cd / .main 都 overflow:hidden 切掉看不見
-   修：手機加 body.questioning class 解開 body / main / page / cd 的 overflow，內容直接堆疊可向下捲
-   桌機 ≥641px 保留鎖屏行為（內容寬鬆夠裝）
-   showPage 進 Q1-Q4 時加 body.questioning，進 summary 時加 body.summary（已存在），切離時各自移除 */
-@media(max-width:640px){
-  body.questioning{
-    height:auto;min-height:100dvh;min-height:100vh;
-    overflow:auto;-webkit-overflow-scrolling:touch;
-  }
-  body.questioning .main{flex:1 0 auto;overflow:visible}
-  body.questioning .page.active{flex:none;min-height:0}
-  body.questioning .cd{flex:none;overflow:visible}
-  /* 各 Q 頁內部容器也解鎖，避免 grid/rows 被截 */
-  body.questioning .tnm-wrap,
-  body.questioning .tnm-rows,
-  body.questioning .sclc-wrap,
-  body.questioning .sclc-grid,
-  body.questioning .mut-grid,
-  body.questioning .brain-grid,
-  body.questioning .type-grid{
-    flex:none;overflow:visible;min-height:0;
-  }
-  /* actbar sticky 貼底（與 summary 模式一致） */
-  body.questioning .actbar{position:sticky;bottom:0;z-index:50}
+/* V2.9.4 + V3.0.9: Q 頁解鎖捲動 — 原本只有手機版解鎖，桌面版 .page→.cd→.type-grid
+   一路 flex:1 把類型卡片撐到滿視窗高度（卡片超大、內容置中一堆留白，違和）。
+   改成全尺寸都解鎖：卡片變自然高度堆疊，整頁可捲動。跟總覽頁 V3.0.7 同套路 */
+body.questioning{
+  height:auto;min-height:100dvh;min-height:100vh;
+  overflow:auto;-webkit-overflow-scrolling:touch;
+}
+body.questioning .main{flex:1 0 auto;overflow:visible}
+body.questioning .page.active{flex:none;min-height:0}
+body.questioning .cd{flex:none;overflow:visible}
+/* 各 Q 頁內部容器也解鎖，避免 grid/rows 被截 */
+body.questioning .tnm-wrap,
+body.questioning .tnm-rows,
+body.questioning .sclc-wrap,
+body.questioning .sclc-grid,
+body.questioning .mut-grid,
+body.questioning .brain-grid,
+body.questioning .type-grid{
+  flex:none;overflow:visible;min-height:0;
+}
+/* actbar sticky 貼底（與 summary 模式一致） */
+body.questioning .actbar{position:sticky;bottom:0;z-index:50}
+/* 桌面版類型卡片給合理最小高度，避免內容太少時卡片過扁 */
+@media(min-width:641px){
+  body.questioning .type-grid .btn-type{min-height:130px}
 }
 
 /* Q-header inside card */
@@ -1670,6 +1670,11 @@ function buildPathRawCore(){
       '免疫維持治療有條件限制:需第三期無法手術切除、同步化放療後病情穩定、無 EGFR/ALK/ROS-1 等驅動基因、PD-L1 ≥1%，至多 12 個月',
       '建議診斷時即做 EGFR、ALK、PD-L1 等基因與免疫指標檢測',
     ];
+    // V3.0.9: 驅動基因陽性者，同步化放療後的免疫維持治療（PACIFIC 類）本就排除驅動基因，提示標靶維持方向
+    const driverMut = ['EGFR','ALK','ROS1','BRAF','MET'].includes(m);
+    if(driverMut){
+      warns.unshift('您帶有 ' + mutDisplay(m) + ' 驅動基因：同步化放療後的免疫維持治療通常不適用（此類藥物排除帶有驅動基因者），可與醫師討論標靶藥維持治療的可能');
+    }
     if(!isIIIA){
       warns.unshift(stage + ' 期腫瘤範圍較廣（涉及 T4 或多處淋巴轉移），一般不建議先手術，以同步化放療 + 免疫維持治療為主');
     }

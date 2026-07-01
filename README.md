@@ -1,4 +1,46 @@
-# Cancer Navigation V3.0.8 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.0.9 — 彰濱秀傳癌症中心
+
+## V3.0.9 — 2026-07-01
+**電腦版 Q 頁修版面 + 294 情境大規模模擬掃 bug**（Sela 交辦 2 事）
+
+### Q1 電腦版 Q 問答頁卡片撐爆
+
+**症狀**：電腦版第 2 步「肺癌類型」四個卡片被撐到滿視窗高度（每個超大、內容置中一堆留白）。
+
+**root cause**：跟 V3.0.7 總覽頁**完全同源** — 桌面版 `body.questioning` 解鎖規則只寫在 `@media(max-width:640px)`，桌面版 `.page`→`.cd`→`.type-grid` 一路 `flex:1` 把卡片撐滿視窗。V3.0.7 修了 summary 頁，忘了 questioning 頁也有同款規則。
+
+**修法**：`body.questioning` 解鎖提升為全尺寸（卡片自然高度堆疊）+ 桌面版 `.type-grid .btn-type{min-height:130px}`。
+
+### Q2 294 情境大規模模擬
+
+建 harness 覆蓋：**全型態（非鱗/鱗狀/SCLC）× 全期別（IA1/IB/IIB/IIIA/IIIB/IIIC/IVA/IVB + SCLC Limited/Extensive）× 開刀/不開刀 × 9 種基因 × 復發**。
+
+**7 大類自動檢查全綠**：
+- steps 非空、stageTxt/pwTxt 非空
+- IIIB/IIIC 不出現「可切除型 IIIA」（BUG-38 回歸測試）
+- IA 初診不出現術後鞏固
+- SCLC 不出現基因檢測建議
+- 無醫令碼/試驗代號/健保條文編號/T790M 殘留
+- 基因卡片帶期別
+
+**人工細看 9 情境臨床合理性**（harness 抓不到的），抓到一個可強化點：
+
+> LOCAL 分支（III 期）對驅動基因陽性者（EGFR/ALK/ROS1）仍照顯示「同步化放療後免疫維持治療」step，但免疫維持（PACIFIC/Durvalumab）本就排除驅動基因陽性者。
+
+**修法**：補一條 warn，驅動基因陽性 → 提示免疫維持通常不適用 + 可與醫師討論標靶維持治療。patient + edu-patient 同步。
+
+⚠️ **待確認**：CCRT 後標靶維持（LAURA trial osimertinib，2024 陽性）的台灣健保給付現況。本版只加「提示方向」不動健保 tag，確認給付後可補正式 step。
+
+### 兩條教訓（BUG-43）
+
+1. **自動 harness 抓「結構 bug」，人工抽樣抓「臨床合理性」，兩者不能互相取代**。294 情境結構全綠，但「驅動基因 vs 免疫維持」這種語意問題只有人讀 steps 對照臨床知識才抓得到。
+2. **同款 CSS 佈局 bug 會跨頁重複，修一頁要 grep 全專案同款規則**。V3.0.7 修 summary 忘了 questioning 頁，拖到 V3.0.9 才補。
+
+### 模組版號
+
+lung **V1.11.7 → V1.11.8**（修了 `patient.html` + `edu-patient.html`），系統版 V3.0.8 → V3.0.9。
+
+---
 
 ## V3.0.8 — 2026-07-01
 **問診頁不提前解釋 + 基因檢測結合期別講健保 + 高劍虹排序**（Sela 交辦 3 修）
