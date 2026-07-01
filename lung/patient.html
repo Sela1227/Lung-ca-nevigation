@@ -649,16 +649,13 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     <div class="info-block">
       <div class="info-block-lbl">
         <span class="info-block-tag">年齡</span>
-        <span class="info-block-hint">影響化療藥物選擇</span>
       </div>
       <div class="age-grid">
         <button type="button" class="age-btn" data-val="lt70" onclick="pickAge(this)">
           <b>&lt; 70 歲</b>
-          <i>標準劑量</i>
         </button>
         <button type="button" class="age-btn" data-val="ge70" onclick="pickAge(this)">
           <b>≥ 70 歲</b>
-          <i>建議改 Carboplatin</i>
         </button>
       </div>
     </div>
@@ -704,17 +701,16 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     <div class="info-block">
       <div class="info-block-lbl">
         <span class="info-block-tag">B 型/C 型肝炎帶原</span>
-        <span class="info-block-hint">影響化療前是否需預防性抗病毒藥</span>
       </div>
       <div class="age-grid" style="grid-template-columns:1fr 1fr 1fr">
         <button type="button" class="age-btn" data-val="yes" onclick="pickHbv(this)">
-          <b>有</b><i>需看腸胃科</i>
+          <b>有</b>
         </button>
         <button type="button" class="age-btn" data-val="no" onclick="pickHbv(this)">
-          <b>沒有</b><i>—</i>
+          <b>沒有</b>
         </button>
         <button type="button" class="age-btn" data-val="unknown" onclick="pickHbv(this)">
-          <b>不知道</b><i>建議先驗</i>
+          <b>不知道</b>
         </button>
       </div>
     </div>
@@ -723,14 +719,13 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     <div class="info-block">
       <div class="info-block-lbl">
         <span class="info-block-tag">重大傷病證明</span>
-        <span class="info-block-hint">可減免部分負擔與看護費</span>
       </div>
       <div class="age-grid">
         <button type="button" class="age-btn" data-val="yes" onclick="pickCatastrophic(this)">
-          <b>已申請</b><i>—</i>
+          <b>已申請</b>
         </button>
         <button type="button" class="age-btn" data-val="no" onclick="pickCatastrophic(this)">
-          <b>還沒申請</b><i>建議盡快申請</i>
+          <b>還沒申請</b>
         </button>
       </div>
     </div>
@@ -1333,7 +1328,7 @@ function isPSLow()  { return S.ecog === '2' || S.ecog === '34'; }
 const TEAM = {
   depts: [
     {id:'surgery',  name:'胸腔外科',         hint:'手術評估', doctors:['李佳穎','黃榆涵']},
-    {id:'medicine', name:'胸腔內科 / 血腫科', hint:'擇一即可', doctors:['張竣期','張正雄','吳敬炫','劉大智','高劍虹']},
+    {id:'medicine', name:'胸腔內科 / 血腫科', hint:'擇一即可', doctors:['張竣期','高劍虹','張正雄','吳敬炫','劉大智']},
     {id:'radonc',   name:'放射腫瘤科',       hint:'放療評估', doctors:['熊敬業','劉育昌','林伯儒']},
   ],
   caseManager: { name:'郭美伶', title:'個案管理師' },
@@ -1415,30 +1410,39 @@ function buildGeneTestAdvice(){
   const advanced = !isEarly || isRecurrence; // IIIB 以上 或 復發/轉移
   const isSquamous = S.type === 'NSCLC_SQ';
   const alreadyTyped = S.mut && S.mut !== 'NONE';
+  const typeLabel = isSquamous ? '鱗狀' : '非鱗狀';
+  // 病人在 hero 已看到自己期別，這裡呼應（帶 p 前綴代表病理期別）
+  const stageTxt = stage ? ((S.postOp ? 'p' : '') + stage + ' 期') : '目前的期別';
 
-  let items = [], title = '基因檢測參考', subtitle = '以下項目可與醫師討論是否檢測', foot = '';
+  let items = [], title = '基因檢測參考', subtitle = '', foot = '';
 
   if(!isSquamous && advanced){
+    // 非鱗 + 晚期/復發 → 健保給付最多
+    subtitle = `以您的分期（${stageTxt}、${typeLabel}），以下多數健保有給付`;
     items = [
       {tag:'健保', name:'EGFR 基因檢測', why:'東方人較常見，若為陽性有對應的口服標靶藥'},
       {tag:'健保', name:'ALK 融合檢測', why:'若為陽性有對應的口服標靶藥'},
       {tag:'健保', name:'PD-L1 免疫指標', why:'與免疫治療、是否加化療的評估有關'},
       {tag:'材料費', self:true, name:'ROS1 基因檢測', why:'較少見，若為陽性有對應的標靶藥'},
     ];
-    foot = 'EGFR、ALK、PD-L1 多數健保給付，ROS1 需材料費。是否檢測、檢測哪些項目，由您與醫師討論後決定。';
+    foot = `以您的分期，<b>EGFR、ALK、PD-L1 健保有給付</b>，ROS1 只需材料費（約數百元）。是否檢測、檢測哪些，由您與醫師討論後決定。`;
   } else if(isSquamous && advanced){
+    // 鱗狀 + 晚期 → 只有 PD-L1 健保
+    subtitle = `以您的分期（${stageTxt}、鱗狀），PD-L1 健保給付`;
     items = [
       {tag:'健保', name:'PD-L1 免疫指標', why:'鱗狀肺癌與免疫治療評估較相關'},
       {tag:'自費', self:true, name:'EGFR / ALK 檢測', why:'鱗狀較少見，少數病人仍可能為陽性'},
       {tag:'材料費', self:true, name:'ROS1 檢測', why:'依醫師評估'},
     ];
-    foot = '鱗狀肺癌一般以 PD-L1 為主。EGFR、ALK 是否加驗，由醫師依您的狀況評估（多為自費）。';
+    foot = `以您的分期，<b>PD-L1 健保有給付</b>；EGFR、ALK 在鱗狀肺癌屬自費項目，是否加驗由醫師依您的狀況評估。`;
   } else {
+    // 早期 → 健保多不給付
+    subtitle = `以您的分期（${stageTxt}、早期），基因檢測多為自費`;
     items = [
       {tag:'材料費', self:true, name:'PD-L1 免疫指標', why:'若未來需要免疫治療評估時可參考'},
-      {tag:'視需要', self:true, name:'EGFR / ALK / ROS1', why:'早期以手術為主，由醫師評估是否需要'},
+      {tag:'自費', self:true, name:'EGFR / ALK / ROS1', why:'早期以手術為主，由醫師評估是否需要'},
     ];
-    foot = '早期肺癌一般以手術為主。是否進行基因檢測、檢測哪些項目，由醫師依您的期別與手術結果評估。';
+    foot = `早期肺癌以手術為主，<b>健保多不給付</b>基因檢測（PD-L1 僅需材料費，其他多為自費）。是否檢測，由醫師依您的期別與手術結果評估。`;
   }
 
   if(alreadyTyped) subtitle = '您已有部分檢測結果，以下供參考';
