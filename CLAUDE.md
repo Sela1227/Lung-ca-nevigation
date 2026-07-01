@@ -227,6 +227,8 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.0.6 | V1.11.5 | 2026-07-01 | Sela 交辦 5 題的第 5 題「基因檢測融入民眾版」— 拍板「可共同決策但不出現醫令碼」。做法：`buildGeneTestAdvice()` 依 type+stage 三分類（非鱗晚期→EGFR/ALK/PD-L1/ROS1 五項一起開、鱗狀晚期→PD-L1 先其他視需要、早期→PD-L1 先）給建議，源自本院「基因檢測開單速查表」但拿掉所有醫令碼（30101B/L09017A 等只留醫護版），改寫成病人語言 + 費用概念（健保/材料費/自費/視需要 tag）。總覽頁「注意事項」下方加基因檢測卡片。6 情境驗證全綠（含已驗過改「供參考是否補齊」、SCLC 不顯示）。edu-patient 不加（掃 QR 多為已驗完，時機不對）BUG-40 |
+| V3.0.5 | V1.11.4 | 2026-07-01 | Sela 一次交辦 5 題，本版做 3 題明確的：(1) patient.html 電腦版 `.actbar` 加 `max-width:600px + margin auto`（跟 `.main` 同寬），底部按鈕不再拉滿寬 (2) Q1 加兩欄 — B/C 肝帶原（有/無/不知）+ 重大傷病（已申請/未申請）；`applyHbvCatastrophic` 串入 warns：hbv=yes+有化療 → 提醒看腸胃科拿抗病毒藥、hbv=unknown+有化療 → 提醒先驗、catastrophic=no → 提醒申請 (3) CFG.team.depts 胸內加高劍虹。剩兩題（個管師看民眾版統計、基因檢測融入民眾版）先給方案不動手 BUG-39 |
 | V3.0.4 | V1.11.3 | 2026-07-01 | Sela 上傳 IIIB 病人畫面截圖發現 bug — LOCAL 分支對 IIIA/IIIB/IIIC 一視同仁，IIIB/IIIC 病人（T4 或 N3 通常不可切除）被塞入「可切除型 IIIA」+「IIIA 開刀切除後追加」兩個 step。修法：加 `isIIIA = stage === 'IIIA'`，兩個 step 用條件包起來；非 IIIA 補開頭 warn「腫瘤範圍較廣不建議先手術」。patient + edu-patient 同步 BUG-38 |
 | V3.0.3 | V1.11.2 | 2026-06-29 | 個管師視角審查找到的隱性 bug 修正 — `buildEduPayload` 補 `a` (age) + `e` (ecog) 兩個欄位，**修「個人化提示永遠不觸發」的隱性 bug**（V2.9.0 加的「依您狀況」邏輯實質沒生效 9 個月）。含醫護版 5 級 ECOG `'0'-'4'` → 民眾版 3 組 `'01'/'2'/'34'` 映射 + birthday 計算實際年齡 → `'lt70'/'ge70'` 二分。3 情境驗證全綠（78 歲 PS 2 / 55 歲 PS 0 / 63 歲 PS 3）BUG-37 |
 | V3.0.2 | V1.11.1 | 2026-06-29 | 升 Kit V1.9.0 → V1.21.0（升版對齊，非首次對齊）— 衝突仲裁區塊全面更新：(1) 移除「No emoji 更嚴」誤標（V1.21.0 sela-philosophy 確認 Kit 規範本身就是不用 emoji，我們是符合不是更嚴）(2) 加註本專案 V3.0.0 SELA-handoff 提的 3 條反饋已被 Kit 採納為坑 #50/#51/#52（雙向回流通道有效）(3) 加註 V3.0.1 改法符合 Kit V1.19.0 坑 #61（UI 改名不動程式變數）+ V1.21.0 坑 #63（用 str.replace 不用 re.sub）。執行 V1.17.0 新增「優化體檢」鐵律：對照 optimizations.md 4 條 OPT，純前端 HTML 結論 0 條需動手改（OPT-1/2/3 後端排程/DB/外部請求都不適用，OPT-4 已自然在做）BUG-36 |
@@ -236,8 +238,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V2.12.0 | V1.10.0 | 2026-06-01 | 醫護版加化療前 B/C 肝病毒篩檢（c40 req:chemo）+ B 肝陽性轉腸胃科 NA 藥物（c41 opt）+ 修總覽未完成清單把 opt（依需要）誤列入未完成的 bug BUG-32 |
 | V2.11.0 | V1.9.0 | 2026-05-08 | 民眾版加 Q5 治療進度 + 三區呈現（已完成/下一步/之後）— `S.txProgress`、`buildPostOpPath` 加 phase 標記、IA 期細分、`buildRecurrencePath`、edu-patient 同步 BUG-31 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
-| V2.9.5 | V1.7.5 | 2026-04-30 | 藥物頁拆兩版（drugs-pro 加 NCCN/事審/必試/cross-ref；drugs-patient 加副作用、用途）+ 個人化推薦（總覽頁帶 query 跳 drugs-patient）|
-| V2.9.4 | V1.7.4 | 2026-04-30 | 手機版 Q-page 鎖屏 bug 修復（TNM 進階 9 欄擠扁、iOS 自動 zoom、safe-area、grid-rows 失效）BUG-29 |
 
 ---
 
@@ -673,6 +673,26 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**「LOCAL/EARLY/META 三分類是 buildPath 的 stageCat 顆粒度，但 UX 上還需要更細**」。V3.0.1 修 EARLY 時已學到（加 `isIA` 過濾 IA/IB+），這次 LOCAL 又踩到 — 沒把教訓推廣。**下版寫新分支時預設檢查：這個 stageCat 內有沒有 stage 級的差異該過濾？**
 - 教訓：**病人視角情境模擬要涵蓋每個 stage 而非每個 stageCat**。V3.0.1 病人視角審查跑的 10 個情境包含 IIIA 但沒 IIIB/IIIC（都併在 LOCAL），漏了這個 bug。下次審查每個 stageCat 內至少各期跑一次
 
+### #39 (lung V1.11.4 / V3.0.5)：民眾版電腦版 actbar 拉滿寬 + Q1 加 B/C 肝與重大傷病兩欄
+- 症狀：Sela 反饋「電腦版畫面太寬，底下按鍵很怪」— `.main` 已 `max-width:600px` 但 `.actbar` 沒限制寬度，電腦版底部按鈕拉滿整螢幕不對齊
+- 原因：patient.html 只在 `.main` 加了 max-width，忘記 sticky 底部 actbar；hdr 有漸層背景故意全寬（設計特色）不動
+- 做法：`@media(min-width:601px){.actbar{max-width:600px;margin:0 auto;width:100%}}`。手機版（≤600px）保持滿寬
+- 症狀 2：Sela 交辦民眾版 Q1 加兩欄 — B/C 肝帶原（有/無/不知）+ 重大傷病申請狀態（是/否），要串入個人化提醒
+- 做法：`S.hbv` + `S.catastrophic` 兩欄；HTML 用 `.age-grid` 樣式加兩個 `.info-block`（B/C 肝 3 顆按鈕、重大傷病 2 顆）；`pickHbv` / `pickCatastrophic` 用 `btn.closest('.info-block').querySelectorAll('.age-btn')` 定位範圍（**避免跟原本用同樣 class 的年齡按鈕互相干擾** — 這是隱藏的坑）；`applyHbvCatastrophic` 串在 `buildPath` 收尾，判斷 `r.steps` 是否含化療關鍵字才觸發 B/C 肝提醒（IA 觀察病人不會多看到不必要提醒）
+- 4 情境驗證：IIIA + 有肝炎 + 沒申請 → 兩條提醒都跳 ✓；IIIA + 不知 → 建議先驗 ✓；IIIA + 沒肝炎 → 不提醒（Sela 明確要求）✓；IA1 + 有肝炎 → 沒化療所以不觸發 ✓
+- 教訓：**共用 CSS class 加新元素要當心 selector 汙染**。`pickAge` 原本用 `document.querySelectorAll('#p-q1 .age-btn')` 全域抓，加了新的 `.age-btn`（B/C 肝、重大傷病也用同 class）後，點年齡會誤影響新按鈕的 selected 狀態。修法是三個 pick 函式都改用 `btn.closest('.info-block').querySelectorAll(...)` 定位範圍
+- 教訓：**hasChemo 判斷邏輯要抽出來共用**。`applyAgeEcog` 跟 `applyHbvCatastrophic` 都需要判斷「這條路徑有沒有化療」— 目前各自寫 regex，未來多一個類似需求（例如提醒糖尿病患者化療前先看新陳代謝科）就會出現第三份重複邏輯。下版考慮抽 `pathHasChemo(r)` 共用函式
+
+### #40 (lung V1.11.5 / V3.0.6)：基因檢測建議融入民眾版（可共同決策，不出現醫令碼）
+- 需求：Sela 交辦 5 題的第 5 題，拍板「可共同決策但不要出現醫療碼」。目的是讓病人（尤其未驗基因的）知道該跟醫師討論驗什麼、大概費用結構，達到「共同決策」
+- 資料源：本院「肺癌基因檢測開單速查表」（Sela 上傳圖）三分類：非鱗+復發/轉移或 IIIB 以上 → 5 項一起開；鱗狀+IIIB 以上 → PD-L1 先；IIIB 以前 → PD-L1 分子 + 視需要
+- 做法：`buildGeneTestAdvice()` 回傳 `{title, subtitle, items:[{tag, self, name, why}], foot}`；`renderSummary` 在「注意事項」卡片下渲染 `#gene-card`。**關鍵：拿掉所有醫令碼（30101B / 30103B / L09017A / L09021 / L09010A 等），只保留「健保 / 材料費 / 自費 / 視需要」費用 tag + 病人語言的「為什麼要驗」**。醫令碼是醫護版 drugs-pro 的事，民眾版純決策參考
+- 三分類邏輯：`isEarly = !/^(IIIB|IIIC|IVA|IVB)/.test(stage)`；`advanced = !isEarly || isRecurrence`；`isSquamous = type==='NSCLC_SQ'`。已驗過（mut!=='NONE'）改 subtitle「供參考是否補齊」。SCLC 直接 return null（不做驅動基因檢測）
+- 6 情境驗證：非鱗 IVA/IIIB → 5 項 ✓；鱗狀 IIIB → PD-L1 先 ✓；早期 IA1 → PD-L1 + 視需要 ✓；已驗 EGFR → subtitle 改供參考 ✓；SCLC → 無建議 ✓；醫令碼殘留檢查 0 筆 ✓
+- 決策：**edu-patient.html（掃 QR 版）不加基因檢測卡片**。理由：掃 QR 是「已看完醫師拿到衛教單」階段，多數已驗完基因，此時顯示「建議驗什麼」時機不對。基因檢測建議的正確時機是 patient.html 主流程（初診決定階段）
+- 教訓：**同一份臨床資料，醫護版與民眾版要抽不同欄位呈現**（BUG-35 教訓的具體應用）。速查表的醫令碼 / 精確費用（自費 10,000 元）對醫護是「開單依據」，對民眾是「決策雜訊甚至造成價格焦慮」。民眾版只給「健保/材料費/自費」的相對概念 + 「為什麼要驗」，不給精確金額與醫令碼
+- 教訓：**功能要放對「病人旅程的時機」**。同一個「基因檢測建議」功能，放 patient.html 主流程（初診）有用、放 edu-patient（已看完醫師）就是雜訊。加功能前先問：病人在這個畫面時，處於旅程哪個階段？這個資訊此時對他有用嗎？
+
 ---
 
 ## 七、擴充新癌別
@@ -690,7 +710,8 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **GitHub Pages 部署實機驗證 V3.0.1 + V3.0.3 + V3.0.4** — **這是第 1 名因為連續 3 版都動民眾版核心邏輯（UX 大修 / QR 個人化 / IIIA 細分）都沒實機跑過，實測前不算落地**。(a) V3.0.1 病人視角：IA1 初診不出現「術後鞏固」、pIB EGFR+ 看到「擇一」step、復發「復發後接續治療（第一順位）」、ECOG 按鈕看不到 PS 標籤 (b) V3.0.3 端到端：醫護版建 78 歲 PS 2 病人 → QR 掃 → edu-patient 出現「依您狀況」個人化提示（修復前完全不出現） (c) **V3.0.4 IIIA/IIIB/IIIC 三個病人各建一次，確認 IIIB/IIIC 不再顯示「可切除型 IIIA」step + 開頭有 warn** (d) Sela 排個管師找 3-5 個真實病人試讀
+1. **GitHub Pages 部署實機驗證 V3.0.1~V3.0.6** — **這是第 1 名因為連續 6 版都動民眾版核心邏輯（UX 大修 / QR 個人化 / IIIA 細分 / 電腦版窄化 / Q1 加兩欄 / 基因檢測卡片）都沒實機跑過，實測前不算落地**。(a) V3.0.1 病人視角：IA1 初診不出現「術後鞏固」、pIB EGFR+ 看到「擇一」step (b) V3.0.3 端到端：醫護版建 78 歲 PS 2 → QR 掃 → edu-patient 出現「依您狀況」提示 (c) V3.0.4 IIIB/IIIC 不再顯示「可切除型 IIIA」step (d) V3.0.5 電腦版底部按鈕居中對齊卡片；Q1 看到 4 個 section；有 B/C 肝 + IIIA → warns 出現腸胃科提醒；IA1 觀察 + 有 B/C 肝 → 不提醒 (e) **V3.0.6 非鱗 IVA 未驗病人 → 總覽頁看到「建議做的基因檢測」卡片列 EGFR/ALK/PD-L1/ROS1；鱗狀 IIIB → PD-L1 先；早期 IA1 → PD-L1；SCLC → 卡片不出現；全程無醫令碼** (f) 個管師找 3-5 個真實病人試用
+2. **實作 Q2：民眾版加 IndexedDB 歷史 + 統計（Sela 拍板「參考醫護版作法」）** — 大功能。參考醫護版 `lung/index.html` 的 `openDB()` 三 store（records/drafts/settings）+ 列表頁 `renderRecordList` + 統計頁 `loadStats`。民眾版 patient.html 目前無資料持久化（走完就沒了）。要做：(a) patient.html 加 IndexedDB 存每次查詢紀錄（type/stage/mut/age/ecog/hbv/catastrophic/走完時間）(b) 加「歷史紀錄」入口（首頁或總覽頁）(c) 加簡單統計（查過幾次、多集中在哪些期別）。**注意**：民眾版跟醫護版同 domain（sela1227.github.io/Lung-ca-nevigation/）但不同路徑，IndexedDB 是 origin 級共享 — 要用不同 dbName 避免撞醫護版資料（醫護版 dbName 見 CFG.dbName）
 2. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
    - 🟡 #2 紀錄列表頁加 3 個 KPI 色點（30 分）
@@ -713,4 +734,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V3.0.4 修 IIIB/IIIC 病人被塞 IIIA 建議的 bug。Sela 上傳 IIIB (T4 N2a M0) 病人的畫面截圖 — 「可切除型 IIIA:先手術」+「IIIA 開刀切除後依基因檢測結果擇一」兩個 step 顯示給這位非 IIIA 病人。根因是 LOCAL 分支對 IIIA/IIIB/IIIC 一視同仁，但 IIIA 部分可切除、IIIB/IIIC 通常不可切除。修法：加 `isIIIA = stage === 'IIIA'` 條件過濾兩個 step，非 IIIA 補開頭 warn 說明「腫瘤範圍較廣不建議手術」。3 情境驗證全綠（IIIA 4 個 step / IIIB 2 個 step + warn / IIIC 同 IIIB）。同時發現的元教訓：V3.0.1 修 EARLY 時已學到 `isIA` 過濾，這次 LOCAL 又踩同類 bug 沒推廣。下版第一優先仍是實機驗證 V3.0.1 + V3.0.3 + V3.0.4（三版都動了民眾版核心邏輯還沒實測）。
+V3.0.6 完成 Sela 5 題交辦的最後一題「基因檢測融入民眾版」（拍板：可共同決策但不出現醫令碼）。`buildGeneTestAdvice()` 依 type+stage 三分類給建議（源自本院基因檢測開單速查表），總覽頁「注意事項」下方加基因檢測卡片，拿掉所有醫令碼只留「健保/材料費/自費/視需要」費用 tag + 病人語言的「為什麼要驗」。6 情境驗證全綠。edu-patient 掃 QR 版不加（時機不對，掃 QR 多為已驗完）。**至此 Sela 5 題全數完成：Q1 電腦版窄化、Q3 B/C 肝+重大傷病、Q4 高劍虹（以上 V3.0.5）+ Q5 基因檢測（V3.0.6）+ Q2 個管師看民眾版統計拍板「參考醫護版 IndexedDB 作法」尚未實作**。下版第一優先：實機驗證 V3.0.1~V3.0.6（6 版累積都動民眾版核心邏輯還沒實測）；第 2 是實作 Q2（民眾版加 IndexedDB 歷史 + 統計，參考醫護版 records/drafts/settings 三 store 結構，這是大功能）。
