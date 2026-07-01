@@ -389,19 +389,22 @@ body{
 /* ── Summary ── */
 .sum-wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
 
-/* V2.8.11: 手機版總覽頁解鎖捲動 — 鎖屏在小螢幕擠成一坨，改開放讓藥物清單完整展開 */
-/* showPage() 進總覽時加 body.summary，離開時移除 */
-@media(max-width:640px){
-  body.summary{
-    height:auto;min-height:100dvh;min-height:100vh;
-    overflow:auto;-webkit-overflow-scrolling:touch;
-  }
-  body.summary .main{flex:1 0 auto}
-  body.summary .page#p-sum{height:auto;min-height:0;flex:none}
-  body.summary .sum-wrap{overflow:visible;flex:none;min-height:0}
-  body.summary .sum-drugs{flex:none}
-  body.summary .sum-drugs-body{overflow:visible;max-height:none}
-  body.summary .actbar{position:sticky;bottom:0;z-index:50}
+/* V2.8.11 + V3.0.7: 總覽頁解鎖捲動 — 原本只有手機版解鎖，桌面版硬塞一屏導致
+   「治療方向與藥物」決策框被 team/warns/基因卡片擠壓到只剩一條。改成全尺寸都解鎖，
+   決策框完整展開、其他卡片往下排、整頁自然捲動 */
+body.summary{
+  height:auto;min-height:100dvh;min-height:100vh;
+  overflow:auto;-webkit-overflow-scrolling:touch;
+}
+body.summary .main{flex:1 0 auto}
+body.summary .page#p-sum{height:auto;min-height:0;flex:none}
+body.summary .sum-wrap{overflow:visible;flex:none;min-height:0}
+body.summary .sum-drugs{flex:none}
+body.summary .sum-drugs-body{overflow:visible;max-height:none}
+body.summary .actbar{position:sticky;bottom:0;z-index:50}
+/* 桌面版決策框給足最小高度，確保完整顯示不再被壓 */
+@media(min-width:641px){
+  body.summary .sum-drugs-body{min-height:220px}
 }
 
 /* hero band: 2-col on desktop, stacked on mobile */
@@ -1164,8 +1167,8 @@ body{
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3c0 4 8 6 8 10a4 4 0 0 1-8 0c0-4 8-6 8-10"/><path d="M8 21c0-4 8-6 8-10"/><path d="M9 6h6M9 18h6M10.5 9h3M10.5 15h3"/></svg>
         </span>
         <div class="gene-hd-txt">
-          <div class="gene-hd-t" id="gene-hd-t">建議做的基因檢測</div>
-          <div class="gene-hd-s" id="gene-hd-s">跟醫師確認，一次開齊省時間</div>
+          <div class="gene-hd-t" id="gene-hd-t">基因檢測參考</div>
+          <div class="gene-hd-s" id="gene-hd-s">以下項目可與醫師討論</div>
         </div>
       </div>
       <div id="gene-body"></div>
@@ -1330,7 +1333,7 @@ function isPSLow()  { return S.ecog === '2' || S.ecog === '34'; }
 const TEAM = {
   depts: [
     {id:'surgery',  name:'胸腔外科',         hint:'手術評估', doctors:['李佳穎','黃榆涵']},
-    {id:'medicine', name:'胸腔內科 / 血腫科', hint:'擇一即可', doctors:['張竣期','張正雄','吳敬炫','劉大智']},
+    {id:'medicine', name:'胸腔內科 / 血腫科', hint:'擇一即可', doctors:['張竣期','張正雄','吳敬炫','劉大智','高劍虹']},
     {id:'radonc',   name:'放射腫瘤科',       hint:'放療評估', doctors:['熊敬業','劉育昌','林伯儒']},
   ],
   caseManager: { name:'郭美伶', title:'個案管理師' },
@@ -1413,32 +1416,32 @@ function buildGeneTestAdvice(){
   const isSquamous = S.type === 'NSCLC_SQ';
   const alreadyTyped = S.mut && S.mut !== 'NONE';
 
-  let items = [], title = '建議做的基因檢測', subtitle = '跟醫師確認，一次開齊省時間', foot = '';
+  let items = [], title = '基因檢測參考', subtitle = '以下項目可與醫師討論是否檢測', foot = '';
 
   if(!isSquamous && advanced){
     items = [
-      {tag:'健保', name:'EGFR 基因檢測', why:'東方人常見，找到就有口服標靶藥可用'},
-      {tag:'健保', name:'ALK 融合檢測', why:'找到有專屬口服標靶藥，效果好'},
-      {tag:'健保', name:'PD-L1 免疫指標', why:'決定能不能用免疫治療、要不要加化療'},
-      {tag:'材料費', self:true, name:'ROS1 基因檢測', why:'較少見但有專屬標靶藥'},
+      {tag:'健保', name:'EGFR 基因檢測', why:'東方人較常見，若為陽性有對應的口服標靶藥'},
+      {tag:'健保', name:'ALK 融合檢測', why:'若為陽性有對應的口服標靶藥'},
+      {tag:'健保', name:'PD-L1 免疫指標', why:'與免疫治療、是否加化療的評估有關'},
+      {tag:'材料費', self:true, name:'ROS1 基因檢測', why:'較少見，若為陽性有對應的標靶藥'},
     ];
-    foot = '<b>建議一次開齊</b>：EGFR、ALK、PD-L1 多數健保給付，ROS1 只需材料費。一次驗完省去等待與重複抽血。';
+    foot = 'EGFR、ALK、PD-L1 多數健保給付，ROS1 需材料費。是否檢測、檢測哪些項目，由您與醫師討論後決定。';
   } else if(isSquamous && advanced){
     items = [
-      {tag:'健保', name:'PD-L1 免疫指標', why:'鱗狀肺癌首選先驗，決定免疫治療'},
-      {tag:'自費', self:true, name:'EGFR / ALK 檢測（視需要）', why:'鱗狀較少見，但少數病人仍可能有；醫師評估後決定'},
-      {tag:'材料費', self:true, name:'ROS1 檢測（視需要）', why:'依醫師判斷'},
+      {tag:'健保', name:'PD-L1 免疫指標', why:'鱗狀肺癌與免疫治療評估較相關'},
+      {tag:'自費', self:true, name:'EGFR / ALK 檢測', why:'鱗狀較少見，少數病人仍可能為陽性'},
+      {tag:'材料費', self:true, name:'ROS1 檢測', why:'依醫師評估'},
     ];
-    foot = '鱗狀肺癌以 <b>PD-L1</b> 為主。EGFR、ALK 在鱗狀較少見，是否加驗由醫師依您狀況決定（多為自費）。';
+    foot = '鱗狀肺癌一般以 PD-L1 為主。EGFR、ALK 是否加驗，由醫師依您的狀況評估（多為自費）。';
   } else {
     items = [
-      {tag:'材料費', self:true, name:'PD-L1 免疫指標', why:'先驗起來放，未來若需要免疫治療時已有結果'},
-      {tag:'視需要', self:true, name:'EGFR / ALK / ROS1（視需要）', why:'早期以手術為主；若醫師評估有需要再加驗'},
+      {tag:'材料費', self:true, name:'PD-L1 免疫指標', why:'若未來需要免疫治療評估時可參考'},
+      {tag:'視需要', self:true, name:'EGFR / ALK / ROS1', why:'早期以手術為主，由醫師評估是否需要'},
     ];
-    foot = '早期肺癌以<b>手術</b>為主，通常先驗 <b>PD-L1</b>。其他基因是否要驗，由醫師依您的期別與手術結果決定。';
+    foot = '早期肺癌一般以手術為主。是否進行基因檢測、檢測哪些項目，由醫師依您的期別與手術結果評估。';
   }
 
-  if(alreadyTyped) subtitle = '您已有部分檢測結果，以下供參考是否補齊';
+  if(alreadyTyped) subtitle = '您已有部分檢測結果，以下供參考';
   return { title, subtitle, items, foot };
 }
 
@@ -1461,14 +1464,14 @@ function applyHbvCatastrophic(r){
 
   // B/C 肝
   if(S.hbv === 'yes' && hasChemo){
-    r.warns.push('您有 B 型或 C 型肝炎帶原：開始化療前，請先看腸胃科拿預防性抗病毒藥。化療會壓抑免疫，可能讓病毒活躍造成肝炎爆發，影響治療進行');
+    r.warns.push('您有 B/C 型肝炎：化療前先看腸胃科拿預防性抗病毒藥（避免化療期間病毒活躍傷肝）');
   } else if(S.hbv === 'unknown' && hasChemo){
-    r.warns.push('您不確定 B 型/C 型肝炎狀態：建議化療前先抽血檢驗，若為帶原者需先看腸胃科拿預防性抗病毒藥');
+    r.warns.push('化療前建議先驗 B/C 型肝炎，帶原者需先看腸胃科拿抗病毒藥');
   }
 
   // 重大傷病
   if(S.catastrophic === 'no'){
-    r.warns.push('您尚未申請重大傷病證明：肺癌屬健保重大傷病範圍，申請後可減免部分負擔（藥費、住院、部分自費項目），請儘早向醫院申請');
+    r.warns.push('肺癌可申請重大傷病證明，減免部分醫療費用，請儘早向醫院申請');
   }
 }
 
@@ -1629,7 +1632,7 @@ function buildPathRawCore(){
       warns.push('若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加術後化療');
     } else {
       warns.push('IB 期若有腫瘤 ≥4cm、血管侵犯、臟層肋膜侵犯等高風險因子，建議做術後化療');
-      warns.push('建議手術後做 EGFR、ALK 基因檢測，影響後續追加治療藥物選擇');
+      // V3.0.7: 「建議做基因檢測」已由總覽頁基因檢測卡片涵蓋，這裡不重複
     }
     return {
       stageTxt:`${typeLabel} 早期 (I-II)`,
@@ -1854,7 +1857,7 @@ function buildPostOpPath(t, st, m, brain){
       warns.push('若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加輔助化療');
     } else {
       warns.push('II 期或高風險 IB：請務必完成 4 個療程術後輔助化療');
-      warns.push('建議手術後做 EGFR、ALK、PD-L1 等檢測，決定後續追加治療藥物');
+      // V3.0.7: 「建議做基因檢測」已由總覽頁基因檢測卡片涵蓋，這裡不重複
       warns.push('術後追加治療目前健保未給付，需自費或申請藥廠資源（每位病人通常只用一種）');
     }
     if(!isNS && !isIA) warns.push('鱗狀肺癌目前無口服標靶追加治療藥物，以化療搭配免疫為主');
