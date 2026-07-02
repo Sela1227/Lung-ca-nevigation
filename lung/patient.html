@@ -585,6 +585,11 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 .rec-stat-big span{font-size:14px;font-weight:600;color:var(--tx3);margin-left:6px}
 .rec-list-hd{font-size:13px;font-weight:800;color:var(--tx2);margin-bottom:8px}
 .rec-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px}
+.rec-item-clickable{display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s,background .15s,transform .12s}
+.rec-item-clickable:hover{border-color:var(--teal);background:var(--teal-soft)}
+.rec-item-clickable:active{transform:scale(.99)}
+.rec-item-main{flex:1;min-width:0}
+.rec-item-arrow{color:var(--tx3);flex-shrink:0}
 .rec-item-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
 .rec-item-who{font-size:15px;font-weight:700;color:var(--tx)}
 .rec-item-date{font-size:11px;color:var(--tx3);flex-shrink:0}
@@ -1274,7 +1279,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
       </button>
       <div class="rec-title-main">查詢紀錄</div>
     </div>
-    <div class="rec-note">紀錄只存在這台裝置，不會上傳。若為公用電腦，看完可用下方「清除紀錄」保護隱私。</div>
+    <div class="rec-note">點任一筆可載入、修改後再次儲存。紀錄只存在這台裝置，不會上傳。若為公用電腦，看完可用下方「清除紀錄」保護隱私。</div>
     <div id="rec-stats"></div>
     <div class="rec-list-hd">歷次查詢</div>
     <div id="rec-list"></div>
@@ -1348,23 +1353,30 @@ function pdbOpen(){
 }
 function pdbTx(mode){ return PDB.db.transaction(PDB.store, mode).objectStore(PDB.store); }
 async function pdbAdd(rec){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readwrite').add(rec); q.onsuccess=()=>res(q.result); q.onerror=rej; }); }
+async function pdbPut(rec){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readwrite').put(rec); q.onsuccess=()=>res(q.result); q.onerror=rej; }); }
 async function pdbAll(){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readonly').getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=rej; }); }
 async function pdbClear(){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readwrite').clear(); q.onsuccess=()=>res(); q.onerror=rej; }); }
 
-// 走完流程存一筆（總覽頁「儲存這次查詢」）
+// V3.3.0: 載入編輯用 — 記住正在編輯哪一筆（null = 全新查詢）
+let pdbEditId = null;
+
+// 走完流程存一筆（總覽頁「儲存這次查詢」）；有 pdbEditId 則更新該筆
 async function saveQuery(){
+  const isUpdate = (pdbEditId != null);
   const rec = {
     code:S.code||'', name:(S.name||'').slice(0,8),
-    type:S.type, stage:S.stage, stageCat:S.stageCat,
+    type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
     mut:S.mut||'', brainMet:S.brainMet||'',
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
     savedAt:new Date().toISOString(),
   };
+  if(isUpdate) rec.id = pdbEditId;  // 更新既有那筆
   try{
-    await pdbAdd(rec);
+    const id = await pdbPut(rec);
+    if(!isUpdate) pdbEditId = id;  // 首次存完綁定 id，再按就是更新同一筆
     const btn = document.getElementById('bt-save-q');
-    if(btn){ btn.classList.add('saved'); btn.querySelector('.sq-lbl').textContent='已儲存 ✓'; btn.disabled=true; }
+    if(btn){ btn.classList.add('saved'); btn.querySelector('.sq-lbl').textContent = isUpdate ? '已更新 ✓' : '已儲存 ✓'; btn.disabled=true; }
   }catch(e){
     alert('儲存失敗，此裝置可能不支援或為無痕模式');
   }
@@ -1430,9 +1442,12 @@ function renderRecordsList(list){
     const catStr = CAT_LABEL_P[r.stageCat]||'';
     const dt = new Date(r.savedAt);
     const ds = dt.toLocaleDateString('zh-TW') + ' ' + dt.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
-    return `<div class="rec-item">
-      <div class="rec-item-top"><span class="rec-item-who">${who}</span><span class="rec-item-date">${ds}</span></div>
-      <div class="rec-item-info">${[typeStr, stageStr||catStr].filter(Boolean).join(' · ')||'未完成分期'}</div>
+    return `<div class="rec-item rec-item-clickable" onclick="loadRecord(${r.id})">
+      <div class="rec-item-main">
+        <div class="rec-item-top"><span class="rec-item-who">${who}</span><span class="rec-item-date">${ds}</span></div>
+        <div class="rec-item-info">${[typeStr, stageStr||catStr].filter(Boolean).join(' · ')||'未完成分期'}</div>
+      </div>
+      <svg class="rec-item-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </div>`;
   }).join('');
 }
@@ -1440,7 +1455,72 @@ function renderRecordsList(list){
 async function clearRecords(){
   if(!confirm('確定清除這台裝置上的所有查詢紀錄？\n\n此動作無法復原。若為公用電腦，清除可保護前一位使用者的隱私。')) return;
   await pdbClear();
+  pdbEditId = null;
   openRecords();
+}
+
+// V3.3.0: 把 S 的值回填到所有 Q 頁 UI（載入舊紀錄修改用）
+function restoreAllUI(){
+  // Q1 — 基本資料（用 onclick 屬性精準定位，避免 age/hbv/catastrophic 都用 .age-btn 互相干擾）
+  const codeEl = document.getElementById('pt-code'); if(codeEl) codeEl.value = S.code||'';
+  const nameEl = document.getElementById('pt-name'); if(nameEl) nameEl.value = S.name||'';
+  document.querySelectorAll('[onclick^="pickAge"]').forEach(b=>b.classList.toggle('selected', S.age===b.dataset.val));
+  document.querySelectorAll('#p-q1 .ecog-btn').forEach(b=>b.classList.toggle('selected', S.ecog===b.dataset.val));
+  document.querySelectorAll('[onclick^="pickHbv"]').forEach(b=>b.classList.toggle('selected', S.hbv===b.dataset.val));
+  document.querySelectorAll('[onclick^="pickCatastrophic"]').forEach(b=>b.classList.toggle('selected', S.catastrophic===b.dataset.val));
+  // Q2 — 類型
+  q2Mode = isSCLC() ? 'sclc' : 'tnm';
+  document.querySelectorAll('#opt-type .btn-type').forEach(b=>b.classList.toggle('selected', S.type===b.dataset.val));
+  applyQ2Mode();  // 切 Q3 頁的 TNM / SCLC 顯示 + postOp 視覺
+  // Q3 — 分期
+  if(isSCLC()){
+    const sclcVal = (S.stageCat==='META') ? 'EXTENSIVE' : 'LIMITED';
+    document.querySelectorAll('.sclc-btn').forEach(b=>b.classList.toggle('selected', b.dataset.val===sclcVal));
+  } else {
+    // 判斷 t/n/m 是否有進階組專屬值 → 決定顯示簡易或進階
+    tnmAdv = false;
+    ['t','n','m'].forEach(ax=>{
+      const val = S[ax]; if(!val) return;
+      const inSimple = document.querySelector(`.tnm-simple[data-axis="${ax}"] .tnm-btn[data-val="${val}"]`);
+      if(!inSimple) tnmAdv = true;
+    });
+    document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display = tnmAdv?'none':'');
+    document.querySelectorAll('.tnm-adv').forEach(el=>el.style.display = tnmAdv?'':'none');
+    ['t','n','m'].forEach(ax=>{
+      document.querySelectorAll(`[data-axis="${ax}"] .tnm-btn`).forEach(b=>b.classList.toggle('selected', S[ax]===b.dataset.val));
+    });
+    const tt = document.getElementById('tnm-toggle');
+    if(tt) tt.textContent = tnmAdv ? '切換簡化模式' : '切換進階模式';
+  }
+  applyPostOpVisuals();
+  recomputeStage();
+  // Q4 — 基因 / 腦轉移
+  applyQ3Mode();
+  document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', S.mut===b.dataset.val));
+  document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
+  // Q5 — 治療進度
+  document.querySelectorAll('#opt-progress .prog-btn').forEach(b=>b.classList.toggle('selected', S.txProgress===b.dataset.val));
+}
+
+// V3.3.0: 從紀錄載入一筆 → 回填 → 進總覽頁（個管師修改用）
+async function loadRecord(id){
+  const all = await pdbAll();
+  const rec = all.find(r=>r.id===id);
+  if(!rec) return;
+  Object.assign(S, {
+    age:rec.age||'', ecog:rec.ecog||'', hbv:rec.hbv||'', catastrophic:rec.catastrophic||'',
+    code:rec.code||'', name:rec.name||'',
+    type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
+    stage:rec.stage||'', stageCat:rec.stageCat||'',
+    postOp:!!rec.postOp, mut:rec.mut||'', brainMet:rec.brainMet||'',
+    txProgress:rec.txProgress||'', consult:{},
+  });
+  pdbEditId = id;                       // 綁定：之後「儲存」= 更新這筆
+  restoreAllUI();
+  document.getElementById('p-records').classList.remove('open');
+  document.body.style.overflow = '';
+  stepIdx = 5;
+  showPage(5);                          // 進總覽頁看載入結果
 }
 
 // V2.11.0: 6 頁流程（postOp 才有 Q5）— Q1 基本 / Q2 類型 / Q3 分期 / Q4 基因或腦 / Q5 進度 / 總覽
@@ -2511,8 +2591,9 @@ function showPage(idx){
   if(pageId==='p-sum'){
     renderSummary();
     // V3.2.0: 每次進總覽頁重設「儲存這次查詢」按鈕（避免上次存過殘留已儲存態）
+    // V3.3.0: 載入編輯時（pdbEditId 有值）顯示「更新這筆紀錄」
     const sq = document.getElementById('bt-save-q');
-    if(sq){ sq.classList.remove('saved'); sq.disabled=false; const l=sq.querySelector('.sq-lbl'); if(l) l.textContent='儲存這次查詢'; }
+    if(sq){ sq.classList.remove('saved'); sq.disabled=false; const l=sq.querySelector('.sq-lbl'); if(l) l.textContent = (pdbEditId!=null) ? '更新這筆紀錄' : '儲存這次查詢'; }
     window.scrollTo({top:0, behavior:'auto'});
   } else {
     // 進新 Q 頁時捲到頂（避免使用者切到下一題時還停在前頁尾）
@@ -2896,6 +2977,7 @@ function restart(){
   S.txProgress='';  // V2.11.0
   S.age=''; S.ecog='';
   S.code=''; S.name=''; S.consult={};
+  pdbEditId = null;  // V3.3.0: 重新查詢 = 新的一筆，不綁舊紀錄
   stepIdx=0; tnmAdv=false; q2Mode='tnm';
   document.querySelectorAll('.btn-type, .tnm-btn, .mut-btn, .brain-btn, .sclc-btn, .age-btn, .ecog-btn, .prog-btn').forEach(b=>b.classList.remove('selected'));
   document.querySelectorAll('.tnm-simple').forEach(el=>el.style.display='');

@@ -1,4 +1,44 @@
-# Cancer Navigation V3.2.1 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.3.0 — 彰濱秀傳癌症中心
+
+## V3.3.0 — 2026-07-02
+**民眾版紀錄可「載入 → 修改 → 再次儲存」**（個管師用）
+
+之前(V3.2.0)紀錄只能看不能改。這版讓個管師能把存過的查詢叫回來、改一改、再存回同一筆。
+
+### 三塊工程
+
+1. **紀錄卡片可點** → `loadRecord(id)`:把該筆填回 S + `restoreAllUI()` 回填所有 Q 頁 UI → 進總覽頁看載入結果
+2. **`pdbEditId` 綁定正在編輯哪筆**:`saveQuery` 有 editId 就更新(非新增),總覽頁按鈕文字對應變「更新這筆紀錄」
+3. **restart 清 pdbEditId**:重新查詢 = 新的一筆
+
+### 先踩到的坑:saveQuery 沒存 t/n/m
+
+V3.2.0 的 saveQuery 只存 stage/stageCat(算出來的結果),沒存 t/n/m(原始選擇)。載入時 TNM 按鈕無從回填 → 先補存 t/n/m。
+
+**教訓:存檔要存「能還原 UI 的最小完整集」,不是只存「算出來的結果」**。stage 是 t/n/m 算出來的,只存 stage 能顯示不能還原選擇。
+
+### restoreAllUI 的難點
+
+- **Q1 三組都用 `.age-btn`**(age/hbv/catastrophic)且 hbv/catastrophic 都有 yes/no → 用 `[onclick^="pickHbv"]` 屬性選擇器精準定位,不靠 data-val(會混)
+- **Q3 TNM** 要判斷值在簡易組還進階組(找不到簡易組就 tnmAdv=true 切進階顯示),再複用 applyQ2Mode / applyPostOpVisuals / recomputeStage 讓衍生 UI 同步
+
+### 驗證
+
+fake-indexeddb 測完整循環:存(綁 id)→ 載入改 mut/stage 再存(**仍 1 筆＝更新**)→ 清 editId 存新(2 筆＝新增)。全綠。
+
+### 三條教訓(BUG-51)
+
+1. **存檔要存「能還原 UI 的最小完整集」** — 不是只存算出來的結果。
+2. **回填 UI 是清空 UI 的鏡像** — restart↔restoreAllUI 要對稱維護(同 BUG-46「兩處要同步」家族)。
+3. **onclick 屬性選擇器 `[onclick^="fnName"]` 是「同 class 不同用途按鈕」的精準定位法**。
+
+### 模組版號
+
+lung **V1.12.1 → V1.13.0**(新功能進位),系統版 V3.2.1 → V3.3.0。
+
+⚠️ **實機驗證重點**:點紀錄 → 總覽顯示對 → 退 Q 頁看 TNM/mut/年齡回填對(尤其 TNM 進階值)→ 改後按「更新這筆紀錄」→ 確認是更新同一筆不是多一筆。
+
+---
 
 ## V3.2.1 — 2026-07-02
 **紀錄頁改全屏獨立 overlay**（修 V3.2.0 紀錄頁跟查詢流程混在一起）
