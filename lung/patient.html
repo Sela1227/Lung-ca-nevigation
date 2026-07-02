@@ -570,9 +570,10 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 .gene-foot b{color:var(--teal-d)}
 
 /* V3.2.0: 查詢紀錄 / 統計 */
-body.records{height:auto;min-height:100dvh;overflow:auto;-webkit-overflow-scrolling:touch}
-#p-records{display:none}
-#p-records.active{display:block}
+/* V3.2.1: 查詢紀錄改「全屏獨立 overlay」— 原本做成 .page 寄生在查詢流程容器裡，
+   底部會殘留「上一題/下一題」actbar、頂部殘留查詢進度點。改成 fixed 全屏蓋住一切 */
+#p-records{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
+#p-records.open{display:block}
 .rec-wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px}
 .rec-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .rec-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--teal);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:6px 4px;min-height:44px}
@@ -1264,7 +1265,7 @@ body.records{height:auto;min-height:100dvh;overflow:auto;-webkit-overflow-scroll
 <!-- ════════════════════════════════════════════ -->
 <!-- 查詢紀錄 / 統計 -->
 <!-- ════════════════════════════════════════════ -->
-<div class="page" id="p-records">
+<div id="p-records">
   <div class="rec-wrap">
     <div class="rec-head">
       <button type="button" class="rec-back" onclick="closeRecords()">
@@ -1373,18 +1374,19 @@ const TYPE_LABEL_P = {NSCLC_NS:'非小細胞（非鱗）', NSCLC_SQ:'非小細�
 const CAT_LABEL_P = {EARLY:'早期', LOCAL:'局部晚期', META:'轉移期'};
 
 async function openRecords(){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('p-records').classList.add('active');
-  document.body.className = 'records';
+  const el = document.getElementById('p-records');
+  el.classList.add('open');
+  el.scrollTop = 0;
+  document.body.style.overflow = 'hidden';  // 鎖背景捲動
   const list = await pdbAll();
   list.sort((a,b)=> new Date(b.savedAt) - new Date(a.savedAt));
   renderRecordsStats(list);
   renderRecordsList(list);
 }
 function closeRecords(){
-  document.getElementById('p-records').classList.remove('active');
-  document.body.classList.remove('records');
-  showPage(0); // 回 Q1
+  // V3.2.1: 只關 overlay，底下查詢流程維持原狀（不再 showPage(0) 硬回 Q1）
+  document.getElementById('p-records').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function renderRecordsStats(list){

@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.2.1 | V1.12.1 | 2026-07-02 | Sela 截圖回報 V3.2.0 紀錄頁「跟病人流程混在一起」— 紀錄頁做成 `.page` 寄生在查詢流程容器裡，底部殘留「上一題/下一題」actbar、頂部殘留查詢進度點。修法：紀錄頁改「全屏獨立 overlay」（`position:fixed;inset:0;z-index:200` 蓋過 topbar+actbar，比照 qr-modal 作法），有自己的返回 header。openRecords 加 `.open` + 鎖背景捲動，closeRecords 只關 overlay 不再 `showPage(0)` 硬回 Q1（底下查詢流程維持原狀）BUG-50 |
 | V3.2.0 | V1.12.0 | 2026-07-02 | 民眾版加查詢紀錄 + 統計（Sela 定方向「主要給病人看自己的歷史，個管師可統計給哪些病人看/做過哪些資料」）。民眾版原本是無狀態查詢工具（走完就沒），現在加 IndexedDB（dbName `'LungNavPatient'` 刻意不同於醫護版 `'LungNav'`，同 origin 不同路徑避免撞資料）。總覽頁加「儲存這次查詢」；topbar 加「紀錄」入口 → `p-records` 頁：上半統計卡（總查詢數 + 型態/分期分布長條 + 有填識別筆數，個管師參考）、下半歷次查詢卡片列表（病人看自己的）、底部「清除本機紀錄」（公用裝置隱私）。識別用 Q1 既有的選填 code/name。fake-indexeddb 端到端測存取/統計/清除全綠 BUG-49 |
 | V3.1.4 | V1.11.13 | 2026-07-02 | Sela 實機試用發現「電腦版民眾版解析度略下降」→ 確認是 V3.1.0 換的 Noto Sans TC webfont：Windows 上 Noto CJK 的 hinting 不如系統原生 JhengHei 銳利，中文字顯柔（民眾版大字給長者更明顯）。修法：7 頁 font-family 退回 JhengHei 優先、Noto 降為 fallback（`'Microsoft JhengHei','微軟正黑體','Noto Sans TC'`）。**webfont link 保留不移除** — Windows 第一位命中 JhengHei 用原生銳利字體且不下載 Noto，Mac/iPhone 沒 JhengHei 才 fallback 到 Noto，兩全。不動 A 級無障礙（focus/reduced-motion/觸控與字體無關）BUG-48 |
 | V3.1.3 | V1.11.12 | 2026-07-01 | 個管師摩擦報告第二批「時效管理」#4+#5+#6（同組需求一起設計）：核心是共用函式 `calcTimeliness(d)`（時效狀態單一真相，呼應 BUG-46 避免多處分叉）。(#4) 紀錄清單每列加 3 個 KPI 色點（收案→確診/首治/MDT，綠 pass /黃 warn /紅 fail /灰 na） (#5) **主動預警** — 原本 KPI 是「確診後算超沒超」的事後檢核，新增「已收案 N 天還沒確診」的倒數：收案 ≥12 天未確診 → 黃、>14 天 → 紅；首治 ≥35 天 → 黃、>42 → 紅 (#6) 新增「待辦」分頁 — `collectAllAlerts()` 彙整所有病人的 alerts，fail 逾期在前、warn 快到期在後，點任一筆直接開該病人；sidebar nav 帶未處理數 badge。7 情境驗證全綠 BUG-47 |
@@ -236,7 +237,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V3.0.9 | V1.11.8 | 2026-07-01 | Sela 交辦 2 事：(1) 電腦版 Q 問答頁違和 — `.page`→`.cd`→`.type-grid` 一路 flex:1 把類型卡片撐到滿視窗高度（卡片超大、內容置中一堆留白）。root cause 同 V3.0.7 總覽頁：桌面版 `body.questioning` 解鎖規則只在 `@media(max-width:640px)`。修法：提升為全尺寸解鎖（卡片自然高度堆疊）+ 桌面版 type-btn min-height:130px (2) 建 294 情境大規模模擬 harness（全型態×早中晚期×開刀/不開刀×基因×復發），7 大類結構檢查（steps 非空/stageTxt/IIIA 回歸/IA 鞏固/SCLC 基因/禁字殘留/期別帶入）全綠。人工細看 9 情境臨床合理性，抓到 LOCAL 分支對驅動基因陽性者仍顯示免疫維持治療但沒提示不適用（PACIFIC 排除 EGFR/ALK），補一條 warn 提示標靶維持方向（patient + edu-patient 同步）BUG-43 |
 | V3.0.8 | V1.11.7 | 2026-07-01 | Sela 交辦 3 修：(1) 高劍虹從名單末尾移到張竣期後（第 2 位）— 醫護版 CFG.team + 民眾版 TEAM 兩處都改 (2) 基因檢測卡片結合病人實際期別 + 明確講健保給付狀況 — subtitle/foot 帶入「pXXX 期」+「以您的分期，EGFR/ALK/PD-L1 健保有給付」（非鱗晚期）/「PD-L1 健保、EGFR/ALK 自費」（鱗狀晚期）/「健保多不給付」（早期）(3) **問診頁（Q1 基本資料）不再提前解釋「為什麼」與給建議** — 年齡拿掉「建議改 Carboplatin」、B/C 肝拿掉「需看腸胃科/建議先驗」、重大傷病拿掉「建議盡快申請」+ 各欄 hint 說明；建議一律留到決策頁 warns。原則：問診頁只問「有沒有/是什麼狀態」，決策頁才給建議 BUG-42 |
 | V3.0.7 | V1.11.6 | 2026-07-01 | Sela 上傳 IIB 總覽頁截圖交辦 4 個民眾版問題：(1) 精簡注意事項冗長措辭 — B/C 肝從 3 句砍成 1 句、重大傷病從 2 句砍成 1 句、砍掉 EARLY/postOp 兩處跟新基因卡片重複的「建議做基因檢測」warn (2) 高劍虹沒出現 → root cause：民眾版 patient.html 有獨立 TEAM 常數，V3.0.5 只改醫護版 CFG.team 沒同步民眾版（雙人口資料源要兩邊改的坑又踩一次）(3) 決策框「治療方向與藥物」被壓縮 → 桌面版總覽頁比照手機版解鎖捲動（原本 `body.summary` 解鎖只在 `@media(max-width:640px)`，提升為全尺寸），決策框完整展開不再被 team/warns/基因卡片擠壓 (4) 基因檢測語氣中性化 — 「建議做的基因檢測/一次開齊省時間/省去等待重複抽血」→「基因檢測參考/可與醫師討論/由您與醫師討論後決定」BUG-41 |
-| V3.0.6 | V1.11.5 | 2026-07-01 | Sela 交辦 5 題的第 5 題「基因檢測融入民眾版」— 拍板「可共同決策但不出現醫令碼」。做法：`buildGeneTestAdvice()` 依 type+stage 三分類（非鱗晚期→EGFR/ALK/PD-L1/ROS1 五項一起開、鱗狀晚期→PD-L1 先其他視需要、早期→PD-L1 先）給建議，源自本院「基因檢測開單速查表」但拿掉所有醫令碼（30101B/L09017A 等只留醫護版），改寫成病人語言 + 費用概念（健保/材料費/自費/視需要 tag）。總覽頁「注意事項」下方加基因檢測卡片。6 情境驗證全綠（含已驗過改「供參考是否補齊」、SCLC 不顯示）。edu-patient 不加（掃 QR 多為已驗完，時機不對）BUG-40 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -780,6 +780,13 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**同 origin 不同路徑的兩個前端 app，IndexedDB / localStorage 會互撞，dbName 要刻意區隔**。醫護版 `LungNav` 和民眾版 `LungNavPatient` 在 GitHub Pages 是同 origin，若同名 dbName 會共用同一個 DB，病人查詢會混進個管師的病歷庫。這類「同站多 app」的本機儲存，命名空間要從一開始就分開
 - 教訓：**加獨立頁面時，既有的「模式 class 切換」機制可能不涵蓋新頁**。showPage 的 toggle 只認 summary/questioning 兩種，新增 records 頁得自己管 body class 的加與清。凡是「n 選一的狀態 class」用 toggle 硬編兩種時，加第三種要檢查所有進出點
 
+### #50 (lung V1.12.1 / V3.2.1)：紀錄頁「寄生在查詢流程」→ 改全屏獨立 overlay
+- 症狀：Sela 截圖回報 V3.2.0 紀錄頁跟病人查詢流程混在一起 — 底部殘留「上一題/下一題」actbar、頂部殘留查詢進度點
+- 原因：V3.2.0 把紀錄頁做成 `.page`（`class="page" id="p-records"`），塞在查詢流程的 main 容器裡。但 `.actbar`（上一題/下一題）和 topbar 進度點是**全域元件、不隨 page 切換隱藏**，所以紀錄頁「寄生」在查詢框架中，兩個查詢專用元件殘留。這是 BUG-49 教訓的延伸 — 當時只解決了 body class，沒解決「actbar/進度點是全域的」這層
+- 做法：紀錄頁從「.page 寄生」改成「全屏獨立 overlay」— `#p-records{position:fixed;inset:0;z-index:200}` 蓋過 topbar+actbar(z:50)+qr-modal(z:100)，比照既有 qr-modal 的 fixed overlay 作法。拿掉 `class="page"` 脫離 page 機制；openRecords 加 `.open` + `body.style.overflow='hidden'` 鎖背景；closeRecords 只移除 `.open` + 恢復 overflow，**不再 `showPage(0)` 硬回 Q1**（overlay 蓋著，底下查詢流程原封不動，關掉就回到開啟前的頁面）
+- 教訓：**「獨立頁面」的正解是 fixed overlay 蓋一切，不是 .page 塞進流程容器**。判斷準則：新頁面如果不該有主框架的東西（這裡是 actbar/進度點），就別讓它共用主容器 — 用 fixed overlay 從視覺層級完全脫離。塞進 .page 機制只換來「內容區對了、周邊元件全殘留」
+- 教訓：**同類問題會分層出現，一次要挖到底**。BUG-49 修了 body class（第一層），V3.2.0 上線才發現 actbar/進度點也殘留（第二層）。當初做 p-records 時若直接問「這頁該不該有 actbar/進度點」就會一次用 overlay 解決。加新頁面時，把「主框架有哪些全域元件、這頁要不要」一次列清楚
+
 ---
 
 ## 七、擴充新癌別
@@ -797,7 +804,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **完整實機驗證 V3.0.1~V3.2.0** — **第 1 名因為累積多版沒完整上真機，V3.2.0 IndexedDB 尤其要真機驗**。(a) V3.2.0 查詢紀錄：民眾版走完按「儲存這次查詢」→ 開「紀錄」看到該筆 + 統計數字對；存多筆確認型態/分期分布長條對；清除鈕清空；**關鍵：確認民眾版紀錄沒撞進醫護版病歷庫**（開醫護版看紀錄分頁沒多出病人查詢）(b) V3.1.4 字體：電腦版民眾版 JhengHei 銳利；Mac/iPhone fallback Noto (c) V3.1.3 時效：不同收案日病人的清單色點/待辦分頁/badge (d) V3.1.2 資料安全：改舊病人切分頁存檔、未儲存提醒、刪除帶識別 (e) V3.1.1 視覺 (f) V3.1.0 A 級 focus/44px/reduced-motion (g) V3.0.9 Q 頁不撐爆+驅動基因提示 (h) V3.0.1~V3.0.8 病人視角逐項 (i) 個管師找 3-5 個真實病人試用
+1. **完整實機驗證 V3.0.1~V3.2.1** — **第 1 名因為累積多版沒完整上真機，V3.2.0/V3.2.1 民眾版紀錄功能尤其要真機驗**。(a) V3.2.1 紀錄頁：點「紀錄」開全屏獨立頁，**確認底部沒有「上一題/下一題」、頂部沒有查詢進度點**（不再寄生查詢流程）；返回回到開啟前的頁面 (b) V3.2.0 查詢紀錄：走完按「儲存這次查詢」→ 開紀錄看到該筆 + 統計數字對；多筆確認型態/分期分布長條對；清除鈕清空；**確認民眾版紀錄沒撞進醫護版病歷庫**（開醫護版紀錄分頁沒多出病人查詢）(c) V3.1.4 字體 JhengHei 銳利 (d) V3.1.3 時效色點/待辦/badge (e) V3.1.2 資料安全存檔/未儲存提醒/刪除帶識別 (f) V3.1.1 視覺 (g) V3.1.0 A 級 focus/44px/reduced-motion (h) V3.0.9 Q 頁不撐爆+驅動基因提示 (i) V3.0.1~V3.0.8 病人視角逐項 (j) 個管師找 3-5 個真實病人試用
 2. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
 3. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
@@ -821,4 +828,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V3.2.0 民眾版加查詢紀錄 + 統計（Sela 拍板已久的 Q2 終於實作）。方向：主要給病人看自己的查詢歷史，個管師可統計給哪些病人看/做過哪些資料。民眾版原本無狀態（走完就沒），加 IndexedDB（dbName `'LungNavPatient'` 刻意不同醫護版 `'LungNav'` 避免同 origin 撞資料）：總覽頁「儲存這次查詢」+ topbar「紀錄」入口 → p-records 頁（統計卡 + 歷次查詢列表 + 清除鈕）。識別複用 Q1 既有選填 code/name。fake-indexeddb 端到端測全綠。BUG-49 兩條教訓：同 origin 不同路徑的兩個 app IndexedDB 會互撞 dbName 要區隔、加獨立頁面時既有的「模式 class toggle」機制可能不涵蓋新頁（showPage 只 toggle summary/questioning，records 頁要自己管 body class）。下版第一優先仍是**完整實機驗證 V3.0.1~V3.2.0**（尤其 V3.2.0 IndexedDB 要真機驗存取/統計/清除、確認沒撞醫護版資料）；第 2 是摩擦報告順手項（#7 病人分頁就地儲存 + #9 MDM 欄位版面）；第 3 是民眾版統計上線後看個管師要不要更多維度（如日期區間篩選）。
+V3.2.1 修 V3.2.0 紀錄頁「跟病人查詢流程混在一起」（Sela 截圖回報底部殘留上一題/下一題、頂部殘留進度點）。原因是紀錄頁做成 .page 寄生在查詢容器裡，而 actbar/進度點是全域元件不隨 page 隱藏。修法：改「全屏獨立 overlay」（fixed inset:0 z-index:200 蓋過一切，比照 qr-modal），關掉回到開啟前頁面不再硬回 Q1。BUG-50 兩條教訓：「獨立頁面」正解是 fixed overlay 蓋一切不是塞進 .page 容器、同類問題會分層出現（BUG-49 修 body class 是第一層、actbar 殘留是第二層）一次要挖到底。下版第一優先仍是**完整實機驗證 V3.0.1~V3.2.1**（尤其 V3.2.0/V3.2.1 民眾版紀錄要真機驗：存取/統計/清除/獨立頁面不殘留 actbar、確認沒撞醫護版病歷庫）；第 2 是摩擦報告順手項（#7 病人分頁就地儲存 + #9 MDM 欄位版面）；第 3 是民眾版統計上線後看個管師要不要更多維度。
