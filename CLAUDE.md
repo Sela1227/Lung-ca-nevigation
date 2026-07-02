@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.2.0 | V1.12.0 | 2026-07-02 | 民眾版加查詢紀錄 + 統計（Sela 定方向「主要給病人看自己的歷史，個管師可統計給哪些病人看/做過哪些資料」）。民眾版原本是無狀態查詢工具（走完就沒），現在加 IndexedDB（dbName `'LungNavPatient'` 刻意不同於醫護版 `'LungNav'`，同 origin 不同路徑避免撞資料）。總覽頁加「儲存這次查詢」；topbar 加「紀錄」入口 → `p-records` 頁：上半統計卡（總查詢數 + 型態/分期分布長條 + 有填識別筆數，個管師參考）、下半歷次查詢卡片列表（病人看自己的）、底部「清除本機紀錄」（公用裝置隱私）。識別用 Q1 既有的選填 code/name。fake-indexeddb 端到端測存取/統計/清除全綠 BUG-49 |
 | V3.1.4 | V1.11.13 | 2026-07-02 | Sela 實機試用發現「電腦版民眾版解析度略下降」→ 確認是 V3.1.0 換的 Noto Sans TC webfont：Windows 上 Noto CJK 的 hinting 不如系統原生 JhengHei 銳利，中文字顯柔（民眾版大字給長者更明顯）。修法：7 頁 font-family 退回 JhengHei 優先、Noto 降為 fallback（`'Microsoft JhengHei','微軟正黑體','Noto Sans TC'`）。**webfont link 保留不移除** — Windows 第一位命中 JhengHei 用原生銳利字體且不下載 Noto，Mac/iPhone 沒 JhengHei 才 fallback 到 Noto，兩全。不動 A 級無障礙（focus/reduced-motion/觸控與字體無關）BUG-48 |
 | V3.1.3 | V1.11.12 | 2026-07-01 | 個管師摩擦報告第二批「時效管理」#4+#5+#6（同組需求一起設計）：核心是共用函式 `calcTimeliness(d)`（時效狀態單一真相，呼應 BUG-46 避免多處分叉）。(#4) 紀錄清單每列加 3 個 KPI 色點（收案→確診/首治/MDT，綠 pass /黃 warn /紅 fail /灰 na） (#5) **主動預警** — 原本 KPI 是「確診後算超沒超」的事後檢核，新增「已收案 N 天還沒確診」的倒數：收案 ≥12 天未確診 → 黃、>14 天 → 紅；首治 ≥35 天 → 黃、>42 → 紅 (#6) 新增「待辦」分頁 — `collectAllAlerts()` 彙整所有病人的 alerts，fail 逾期在前、warn 快到期在後，點任一筆直接開該病人；sidebar nav 帶未處理數 badge。7 情境驗證全綠 BUG-47 |
 | V3.1.2 | V1.11.11 | 2026-07-01 | 個管師操作醫護版摩擦報告後動手做「資料安全三修」（Sela 挑第一批 1+2+3）：(1) 編輯舊病人在「病人」分頁改基本資料切到總覽/手冊時漏存 — root cause 比表面深：`autoUpdateRecord` 不只觸發條件窄（只認 basicck/checklist/decision/pathway），連 `Object.assign` 欄位也不完整（缺 type/stage/mutation 等分期欄位），跟 `save()` 欄位集各寫一份會分叉。抽共用函式 `collectStateFields()`（完整 33 欄位），save + autoUpdate 都用它永不分叉 + go() 放寬到所有分頁都 autoUpdate (2) 無未儲存離開提醒 — 加 `_dirty` 旗標（input 委派設 true、save/autoUpdate/saveDraft/load/newPatient 清 false）+ `beforeunload` 攔截，防「當前分頁改了沒切走就關」遺失 (3) 刪除確認「確定刪除？」沒帶病人識別 → 改「確定刪除『A0012 王小明』的紀錄？」，管幾百病人不刪錯 BUG-46 |
@@ -236,7 +237,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V3.0.8 | V1.11.7 | 2026-07-01 | Sela 交辦 3 修：(1) 高劍虹從名單末尾移到張竣期後（第 2 位）— 醫護版 CFG.team + 民眾版 TEAM 兩處都改 (2) 基因檢測卡片結合病人實際期別 + 明確講健保給付狀況 — subtitle/foot 帶入「pXXX 期」+「以您的分期，EGFR/ALK/PD-L1 健保有給付」（非鱗晚期）/「PD-L1 健保、EGFR/ALK 自費」（鱗狀晚期）/「健保多不給付」（早期）(3) **問診頁（Q1 基本資料）不再提前解釋「為什麼」與給建議** — 年齡拿掉「建議改 Carboplatin」、B/C 肝拿掉「需看腸胃科/建議先驗」、重大傷病拿掉「建議盡快申請」+ 各欄 hint 說明；建議一律留到決策頁 warns。原則：問診頁只問「有沒有/是什麼狀態」，決策頁才給建議 BUG-42 |
 | V3.0.7 | V1.11.6 | 2026-07-01 | Sela 上傳 IIB 總覽頁截圖交辦 4 個民眾版問題：(1) 精簡注意事項冗長措辭 — B/C 肝從 3 句砍成 1 句、重大傷病從 2 句砍成 1 句、砍掉 EARLY/postOp 兩處跟新基因卡片重複的「建議做基因檢測」warn (2) 高劍虹沒出現 → root cause：民眾版 patient.html 有獨立 TEAM 常數，V3.0.5 只改醫護版 CFG.team 沒同步民眾版（雙人口資料源要兩邊改的坑又踩一次）(3) 決策框「治療方向與藥物」被壓縮 → 桌面版總覽頁比照手機版解鎖捲動（原本 `body.summary` 解鎖只在 `@media(max-width:640px)`，提升為全尺寸），決策框完整展開不再被 team/warns/基因卡片擠壓 (4) 基因檢測語氣中性化 — 「建議做的基因檢測/一次開齊省時間/省去等待重複抽血」→「基因檢測參考/可與醫師討論/由您與醫師討論後決定」BUG-41 |
 | V3.0.6 | V1.11.5 | 2026-07-01 | Sela 交辦 5 題的第 5 題「基因檢測融入民眾版」— 拍板「可共同決策但不出現醫令碼」。做法：`buildGeneTestAdvice()` 依 type+stage 三分類（非鱗晚期→EGFR/ALK/PD-L1/ROS1 五項一起開、鱗狀晚期→PD-L1 先其他視需要、早期→PD-L1 先）給建議，源自本院「基因檢測開單速查表」但拿掉所有醫令碼（30101B/L09017A 等只留醫護版），改寫成病人語言 + 費用概念（健保/材料費/自費/視需要 tag）。總覽頁「注意事項」下方加基因檢測卡片。6 情境驗證全綠（含已驗過改「供參考是否補齊」、SCLC 不顯示）。edu-patient 不加（掃 QR 多為已驗完，時機不對）BUG-40 |
-| V3.0.5 | V1.11.4 | 2026-07-01 | Sela 一次交辦 5 題，本版做 3 題明確的：(1) patient.html 電腦版 `.actbar` 加 `max-width:600px + margin auto`（跟 `.main` 同寬），底部按鈕不再拉滿寬 (2) Q1 加兩欄 — B/C 肝帶原（有/無/不知）+ 重大傷病（已申請/未申請）；`applyHbvCatastrophic` 串入 warns：hbv=yes+有化療 → 提醒看腸胃科拿抗病毒藥、hbv=unknown+有化療 → 提醒先驗、catastrophic=no → 提醒申請 (3) CFG.team.depts 胸內加高劍虹。剩兩題（個管師看民眾版統計、基因檢測融入民眾版）先給方案不動手 BUG-39 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -769,6 +769,17 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**font-family fallback 鏈可以「同時」兼顧原生銳利與跨平台兜底**。第一位放系統原生字體（有的平台用原生、銳利）、最後放 webfont（沒原生字體的平台 fallback）— 不是二選一。且 webfont link 保留不影響有原生字體的平台（命中即停不下載）。這比「全站 webfont」或「全站系統字體」都好
 - 教訓：**webfont 這種視覺代價只有實機看得出來**。本地 harness、語法檢查都驗不出「字體渲染柔了」。呼應 BUG-44「webfont 要漸進增強」— 當時只想到「連不到 Google 要 fallback」，沒想到「連得到但渲染不如原生」也是代價。這正是下版候選 #1「實機驗證」的價值
 
+### #49 (lung V1.12.0 / V3.2.0)：民眾版加查詢紀錄 + 統計（IndexedDB）
+- 背景：Sela 拍板已久的「Q2 民眾版統計」終於實作。方向：主要給病人看自己的查詢歷史，個管師可統計「給哪些病人看過、做過哪些資料」
+- 做法：民眾版原本無狀態（S 物件走完就沒），加 IndexedDB 層 `PDB`（pdbOpen/pdbAdd/pdbAll/pdbClear）。**dbName `'LungNavPatient'` 刻意不同於醫護版 `'LungNav'`** — 兩者同 origin（sela1227.github.io）不同路徑，IndexedDB 是 origin 級共享，同名會撞資料。總覽頁加「儲存這次查詢」`saveQuery()`（存 code/name/type/stage/mut/age/ecog/hbv/catastrophic/postOp/txProgress/savedAt）；topbar 加「紀錄」→ `openRecords()` 顯示 `p-records` 頁
+- p-records 頁三段：(1) 統計卡 `renderRecordsStats`（總查詢數 + 型態分布長條 + 分期分布長條 + 有識別筆數，個管師參考）(2) 歷次查詢卡片 `renderRecordsList`（病人看自己的，顯示識別/型態/期別/時間）(3) 「清除本機紀錄」`clearRecords`（公用裝置隱私，帶確認）
+- 識別來源：Q1 既有的選填 `code`（病歷號）+ `name`（姓名，存時 slice 8 字隱私）。不新增輸入欄位，複用現有
+- 隱私設計：明寫「紀錄只存這台裝置不上傳」+ 清除鈕。因為民眾版可能是院內公用平板（多病人共用一台）也可能病人自己手機，兩種場景都是「本機紀錄」語意，清除鈕讓公用裝置能保護前一位隱私
+- 頁面切換：p-records 用 `body.records` class（比照 summary/questioning 的解鎖捲動）。**坑：`showPage` 用 `classList.toggle` 只管 summary/questioning，不會清 records class** → `closeRecords` 要手動 `classList.remove('records')` 再 showPage(0)。同理 saveQuery 按鈕的「已儲存」態要在每次進總覽頁 reset（否則上次存過殘留）
+- 驗證：用 `fake-indexeddb` 端到端測（存 3 筆含選填識別 → 讀出正確 → 統計聚合對 → 清除歸零）。這是第一次用 fake-indexeddb 測 IndexedDB 邏輯，比只驗語法紮實
+- 教訓：**同 origin 不同路徑的兩個前端 app，IndexedDB / localStorage 會互撞，dbName 要刻意區隔**。醫護版 `LungNav` 和民眾版 `LungNavPatient` 在 GitHub Pages 是同 origin，若同名 dbName 會共用同一個 DB，病人查詢會混進個管師的病歷庫。這類「同站多 app」的本機儲存，命名空間要從一開始就分開
+- 教訓：**加獨立頁面時，既有的「模式 class 切換」機制可能不涵蓋新頁**。showPage 的 toggle 只認 summary/questioning 兩種，新增 records 頁得自己管 body class 的加與清。凡是「n 選一的狀態 class」用 toggle 硬編兩種時，加第三種要檢查所有進出點
+
 ---
 
 ## 七、擴充新癌別
@@ -786,10 +797,9 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **完整實機驗證 V3.0.1~V3.1.4** — **第 1 名因為到 V3.1.4 只實機驗了字體，其他多版改動都還沒上真機**。(a) V3.1.4 字體：電腦版民眾版確認 JhengHei 銳利（解析度下降感消失）；Mac/iPhone 確認 fallback 到 Noto 仍一致 (b) V3.1.3 時效管理：建幾個不同收案日的病人（收案 13 天沒確診、首治超 42 天），確認清單三色點對、待辦分頁分逾期/快到期兩區、nav badge 數字對、點待辦直接開病人 (c) V3.1.2 資料安全：載入舊病人→改 ECOG→切總覽→再開確認有存；編輯到一半關分頁跳未儲存提醒；刪除跳帶病人代號姓名確認 (d) V3.1.1 視覺：portal hero 中文副標、總覽頁決策框比其他卡突出、radius 沒破圖 (e) V3.1.0 A 級：Tab 看得到 focus 環、按鈕 ≥44px、reduced-motion (f) V3.0.9 電腦版 Q 頁不撐爆；IIIA/IIIB EGFR+ 驅動基因提示 (g) V3.0.1~V3.0.8 病人視角逐項 (h) 個管師找 3-5 個真實病人試用
+1. **完整實機驗證 V3.0.1~V3.2.0** — **第 1 名因為累積多版沒完整上真機，V3.2.0 IndexedDB 尤其要真機驗**。(a) V3.2.0 查詢紀錄：民眾版走完按「儲存這次查詢」→ 開「紀錄」看到該筆 + 統計數字對；存多筆確認型態/分期分布長條對；清除鈕清空；**關鍵：確認民眾版紀錄沒撞進醫護版病歷庫**（開醫護版看紀錄分頁沒多出病人查詢）(b) V3.1.4 字體：電腦版民眾版 JhengHei 銳利；Mac/iPhone fallback Noto (c) V3.1.3 時效：不同收案日病人的清單色點/待辦分頁/badge (d) V3.1.2 資料安全：改舊病人切分頁存檔、未儲存提醒、刪除帶識別 (e) V3.1.1 視覺 (f) V3.1.0 A 級 focus/44px/reduced-motion (g) V3.0.9 Q 頁不撐爆+驅動基因提示 (h) V3.0.1~V3.0.8 病人視角逐項 (i) 個管師找 3-5 個真實病人試用
 2. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
-3. **實作 Q2：民眾版加 IndexedDB 歷史 + 統計（Sela 拍板「參考醫護版作法」）** — 大功能。參考醫護版 `lung/index.html` 的 `openDB()` 三 store（records/drafts/settings）+ 列表頁 `renderRecordList` + 統計頁 `loadStats`。民眾版 patient.html 目前無資料持久化（走完就沒了）。要做：(a) patient.html 加 IndexedDB 存每次查詢紀錄（type/stage/mut/age/ecog/hbv/catastrophic/走完時間）(b) 加「歷史紀錄」入口（首頁或總覽頁）(c) 加簡單統計（查過幾次、多集中在哪些期別）。**注意**：民眾版跟醫護版同 domain（sela1227.github.io/Lung-ca-nevigation/）但不同路徑，IndexedDB 是 origin 級共享 — 要用不同 dbName 避免撞醫護版資料（醫護版 dbName 見 CFG.dbName）
-4. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
+3. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
    - 🟡 #2 紀錄列表頁加 3 個 KPI 色點（30 分）
    - 🟡 #3「我的待辦 / 即將超期」清單分頁（2 小時，大功能）
@@ -797,18 +807,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
    - 🟡 #5「實際治療」勾選加治療日期欄位（1 小時）
    - 🟢 #6 副作用追蹤系統 CTCAE 分級（半天起跳）
    - 🟢 #7 個管師名字改設定（15 分）
-5. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
-6. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
-7. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
-8. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
-9. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
-10. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
-11. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
-12. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-13. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
+4. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
+5. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
+6. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
+7. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
+8. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
+9. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
+10. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
+11. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+12. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V3.1.4 Sela 實機試用發現「電腦版民眾版解析度略下降」→ 確認是 V3.1.0 換的 Noto Sans TC webfont 在 Windows 上 CJK hinting 不如原生 JhengHei 銳利（民眾版大字給長者更明顯）。修法：7 頁 font-family 退回 JhengHei 優先、Noto 降 fallback，webfont link 保留（Windows 命中 JhengHei 不下載 Noto、Mac/iPhone 才 fallback，兩全）。不動 A 級無障礙。BUG-48 三條教訓：跨平台一致 vs 原生銳利要看實際受眾權衡（院內工具重銳利）、font-family fallback 鏈能同時兼顧原生銳利+跨平台兜底不必二選一、webfont 視覺代價只有實機看得出來（呼應 BUG-44）。下版第一優先仍是**完整實機驗證 V3.0.1~V3.1.4**（這次只驗了字體，其他改動如待辦分頁時效邏輯/資料安全存檔/視覺層次都還沒真機跑）；第 2 是摩擦報告順手項（#7 病人分頁就地儲存 + #9 MDM 欄位版面）；第 3 是民眾版 IndexedDB 歷史統計。
+V3.2.0 民眾版加查詢紀錄 + 統計（Sela 拍板已久的 Q2 終於實作）。方向：主要給病人看自己的查詢歷史，個管師可統計給哪些病人看/做過哪些資料。民眾版原本無狀態（走完就沒），加 IndexedDB（dbName `'LungNavPatient'` 刻意不同醫護版 `'LungNav'` 避免同 origin 撞資料）：總覽頁「儲存這次查詢」+ topbar「紀錄」入口 → p-records 頁（統計卡 + 歷次查詢列表 + 清除鈕）。識別複用 Q1 既有選填 code/name。fake-indexeddb 端到端測全綠。BUG-49 兩條教訓：同 origin 不同路徑的兩個 app IndexedDB 會互撞 dbName 要區隔、加獨立頁面時既有的「模式 class toggle」機制可能不涵蓋新頁（showPage 只 toggle summary/questioning，records 頁要自己管 body class）。下版第一優先仍是**完整實機驗證 V3.0.1~V3.2.0**（尤其 V3.2.0 IndexedDB 要真機驗存取/統計/清除、確認沒撞醫護版資料）；第 2 是摩擦報告順手項（#7 病人分頁就地儲存 + #9 MDM 欄位版面）；第 3 是民眾版統計上線後看個管師要不要更多維度（如日期區間篩選）。

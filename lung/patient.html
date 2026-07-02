@@ -569,6 +569,32 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 .gene-foot{font-size:11px;color:var(--tx2);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr2);background:var(--teal-soft);margin:10px -16px -14px;padding:10px 16px 12px;border-radius:0 0 13px 13px}
 .gene-foot b{color:var(--teal-d)}
 
+/* V3.2.0: 查詢紀錄 / 統計 */
+body.records{height:auto;min-height:100dvh;overflow:auto;-webkit-overflow-scrolling:touch}
+#p-records{display:none}
+#p-records.active{display:block}
+.rec-wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px}
+.rec-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.rec-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--teal);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:6px 4px;min-height:44px}
+.rec-title-main{font-size:19px;font-weight:900;color:var(--tx)}
+.rec-note{font-size:12px;color:var(--tx3);line-height:1.5;background:var(--teal-bg);border-radius:var(--r-md);padding:10px 12px;margin-bottom:16px}
+.rec-stat-card{background:var(--card);border:1.5px solid var(--teal-bdr);border-radius:var(--r-lg);padding:16px;margin-bottom:20px;box-shadow:0 2px 10px rgba(13,148,136,.08)}
+.rec-stat-hd{font-size:13px;font-weight:800;color:var(--teal-d);margin-bottom:8px}
+.rec-stat-big{font-size:34px;font-weight:900;color:var(--teal);line-height:1}
+.rec-stat-big span{font-size:14px;font-weight:600;color:var(--tx3);margin-left:6px}
+.rec-list-hd{font-size:13px;font-weight:800;color:var(--tx2);margin-bottom:8px}
+.rec-item{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px}
+.rec-item-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.rec-item-who{font-size:15px;font-weight:700;color:var(--tx)}
+.rec-item-date{font-size:11px;color:var(--tx3);flex-shrink:0}
+.rec-item-info{font-size:13px;color:var(--tx2)}
+.rec-empty{text-align:center;color:var(--tx3);font-size:13px;line-height:1.6;padding:32px 20px;background:var(--card);border:1px dashed var(--bdr);border-radius:var(--r-md)}
+.rec-clear{display:block;width:100%;margin-top:20px;padding:12px;background:none;border:1px solid var(--red);color:var(--red);border-radius:var(--r-md);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;min-height:44px}
+.rec-clear:active{background:var(--red-bg)}
+.save-q-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;padding:13px;background:var(--card);border:1.5px solid var(--teal-bdr);color:var(--teal-d);border-radius:var(--r-lg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;min-height:48px;transition:transform .12s,background .15s}
+.save-q-btn:active{transform:scale(.98)}
+.save-q-btn.saved{background:var(--teal-soft);border-color:var(--teal);color:var(--teal-d)}
+
 /* ── Bottom action bar ── */
 .actbar{
   flex-shrink:0;min-height:var(--bar-h);
@@ -622,6 +648,10 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     </div>
   </div>
   <div class="hdr-r">
+    <button type="button" onclick="openRecords()" class="drug-btn" title="查詢紀錄與統計">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+      <span class="drug-btn-lbl">紀錄</span>
+    </button>
     <a href="drugs-patient.html" class="drug-btn" title="肺癌常用藥物（民眾版）">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 1 5.66-5.66l-7.34 7.34a4 4 0 1 1-5.66-5.66"/><path d="m14 7 6 6"/></svg>
       <span class="drug-btn-lbl">藥物查詢</span>
@@ -1203,6 +1233,12 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
       <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </a>
 
+    <!-- V3.2.0: 儲存這次查詢（存本機，可在「紀錄」查閱） -->
+    <button type="button" id="bt-save-q" class="save-q-btn" onclick="saveQuery()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+      <span class="sq-lbl">儲存這次查詢</span>
+    </button>
+
   </div>
 </div>
 
@@ -1225,6 +1261,26 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 
 <!-- ════════════════════════════════════════════ -->
 <!-- Action bar                                    -->
+<!-- ════════════════════════════════════════════ -->
+<!-- 查詢紀錄 / 統計 -->
+<!-- ════════════════════════════════════════════ -->
+<div class="page" id="p-records">
+  <div class="rec-wrap">
+    <div class="rec-head">
+      <button type="button" class="rec-back" onclick="closeRecords()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+        返回查詢
+      </button>
+      <div class="rec-title-main">查詢紀錄</div>
+    </div>
+    <div class="rec-note">紀錄只存在這台裝置，不會上傳。若為公用電腦，看完可用下方「清除紀錄」保護隱私。</div>
+    <div id="rec-stats"></div>
+    <div class="rec-list-hd">歷次查詢</div>
+    <div id="rec-list"></div>
+    <button type="button" class="rec-clear" onclick="clearRecords()">清除這台裝置的所有紀錄</button>
+  </div>
+</div>
+
 <!-- ════════════════════════════════════════════ -->
 <div class="actbar" id="actbar">
   <button class="act-btn act-back" id="bt-back" onclick="goPrev()" style="display:none"></button>
@@ -1269,6 +1325,122 @@ const S = {
 let stepIdx = 0;
 let tnmAdv = false;
 let q2Mode = 'tnm';  // 'tnm' (NSCLC) or 'sclc' (SCLC 兩段式)
+
+/* ═══════════════════════════════════════════════════
+   V3.2.0: 查詢紀錄（IndexedDB）— 主要給病人看自己的查詢歷史，
+   個管師可統計「給哪些病人看過、做過哪些資料」
+   dbName 'LungNavPatient' 刻意不同於醫護版 'LungNav'（同 origin 不同路徑，
+   IndexedDB 是 origin 級共享，避免撞醫護版資料）
+═══════════════════════════════════════════════════ */
+const PDB = { name:'LungNavPatient', store:'queries', db:null };
+function pdbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(PDB.db) return resolve(PDB.db);
+    const r = indexedDB.open(PDB.name, 1);
+    r.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(PDB.store)) db.createObjectStore(PDB.store, {keyPath:'id', autoIncrement:true});
+    };
+    r.onsuccess = e => { PDB.db = e.target.result; resolve(PDB.db); };
+    r.onerror = e => reject(e);
+  });
+}
+function pdbTx(mode){ return PDB.db.transaction(PDB.store, mode).objectStore(PDB.store); }
+async function pdbAdd(rec){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readwrite').add(rec); q.onsuccess=()=>res(q.result); q.onerror=rej; }); }
+async function pdbAll(){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readonly').getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=rej; }); }
+async function pdbClear(){ await pdbOpen(); return new Promise((res,rej)=>{ const q=pdbTx('readwrite').clear(); q.onsuccess=()=>res(); q.onerror=rej; }); }
+
+// 走完流程存一筆（總覽頁「儲存這次查詢」）
+async function saveQuery(){
+  const rec = {
+    code:S.code||'', name:(S.name||'').slice(0,8),
+    type:S.type, stage:S.stage, stageCat:S.stageCat,
+    mut:S.mut||'', brainMet:S.brainMet||'',
+    age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
+    postOp:S.postOp, txProgress:S.txProgress||'',
+    savedAt:new Date().toISOString(),
+  };
+  try{
+    await pdbAdd(rec);
+    const btn = document.getElementById('bt-save-q');
+    if(btn){ btn.classList.add('saved'); btn.querySelector('.sq-lbl').textContent='已儲存 ✓'; btn.disabled=true; }
+  }catch(e){
+    alert('儲存失敗，此裝置可能不支援或為無痕模式');
+  }
+}
+
+const TYPE_LABEL_P = {NSCLC_NS:'非小細胞（非鱗）', NSCLC_SQ:'非小細胞（鱗狀）', SCLC:'小細胞'};
+const CAT_LABEL_P = {EARLY:'早期', LOCAL:'局部晚期', META:'轉移期'};
+
+async function openRecords(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-records').classList.add('active');
+  document.body.className = 'records';
+  const list = await pdbAll();
+  list.sort((a,b)=> new Date(b.savedAt) - new Date(a.savedAt));
+  renderRecordsStats(list);
+  renderRecordsList(list);
+}
+function closeRecords(){
+  document.getElementById('p-records').classList.remove('active');
+  document.body.classList.remove('records');
+  showPage(0); // 回 Q1
+}
+
+function renderRecordsStats(list){
+  const el = document.getElementById('rec-stats');
+  if(!el) return;
+  if(list.length===0){ el.innerHTML=''; return; }
+  const byType = {}, byCat = {};
+  list.forEach(r=>{ if(r.type) byType[r.type]=(byType[r.type]||0)+1; if(r.stageCat) byCat[r.stageCat]=(byCat[r.stageCat]||0)+1; });
+  const named = list.filter(r=>r.code||r.name);
+  const bar = (obj, labelMap) => Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+    const pct = Math.round(v/list.length*100);
+    return `<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span>${labelMap[k]||k}</span><span style="color:var(--tx3)">${v} 筆</span></div><div style="height:6px;background:var(--teal-bg);border-radius:var(--r-pill);overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--teal);border-radius:var(--r-pill)"></div></div></div>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="rec-stat-card">
+      <div class="rec-stat-hd">統計（個管師參考）</div>
+      <div class="rec-stat-big">${list.length}<span>次查詢</span></div>
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">肺癌類型分布</div>
+        ${bar(byType, TYPE_LABEL_P)}
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">分期分布</div>
+        ${bar(byCat, CAT_LABEL_P)}
+      </div>
+      ${named.length ? `<div style="margin-top:12px;font-size:12px;color:var(--tx3)">其中 ${named.length} 筆有填病歷號/姓名</div>` : ''}
+    </div>`;
+}
+
+function renderRecordsList(list){
+  const el = document.getElementById('rec-list');
+  if(!el) return;
+  if(list.length===0){
+    el.innerHTML = '<div class="rec-empty">尚無查詢紀錄。走完一次查詢後，在結果頁按「儲存這次查詢」即可留存。</div>';
+    return;
+  }
+  el.innerHTML = list.map(r=>{
+    const who = (r.code||'') + (r.name?' '+r.name:'') || '（未填識別）';
+    const typeStr = TYPE_LABEL_P[r.type]||r.type||'';
+    const stageStr = r.stage ? (r.postOp?'p':'')+r.stage+' 期' : '';
+    const catStr = CAT_LABEL_P[r.stageCat]||'';
+    const dt = new Date(r.savedAt);
+    const ds = dt.toLocaleDateString('zh-TW') + ' ' + dt.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="rec-item">
+      <div class="rec-item-top"><span class="rec-item-who">${who}</span><span class="rec-item-date">${ds}</span></div>
+      <div class="rec-item-info">${[typeStr, stageStr||catStr].filter(Boolean).join(' · ')||'未完成分期'}</div>
+    </div>`;
+  }).join('');
+}
+
+async function clearRecords(){
+  if(!confirm('確定清除這台裝置上的所有查詢紀錄？\n\n此動作無法復原。若為公用電腦，清除可保護前一位使用者的隱私。')) return;
+  await pdbClear();
+  openRecords();
+}
+
 // V2.11.0: 6 頁流程（postOp 才有 Q5）— Q1 基本 / Q2 類型 / Q3 分期 / Q4 基因或腦 / Q5 進度 / 總覽
 const PAGES = ['p-q1','p-q2','p-q3','p-q4','p-q5','p-sum'];
 
@@ -2336,6 +2508,9 @@ function showPage(idx){
   document.body.classList.toggle('questioning', pageId!=='p-sum');
   if(pageId==='p-sum'){
     renderSummary();
+    // V3.2.0: 每次進總覽頁重設「儲存這次查詢」按鈕（避免上次存過殘留已儲存態）
+    const sq = document.getElementById('bt-save-q');
+    if(sq){ sq.classList.remove('saved'); sq.disabled=false; const l=sq.querySelector('.sq-lbl'); if(l) l.textContent='儲存這次查詢'; }
     window.scrollTo({top:0, behavior:'auto'});
   } else {
     // 進新 Q 頁時捲到頂（避免使用者切到下一題時還停在前頁尾）
