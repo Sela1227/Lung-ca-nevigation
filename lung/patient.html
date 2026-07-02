@@ -391,6 +391,12 @@ body.questioning .actbar{position:sticky;bottom:0;z-index:50}
 
 /* ── Q3: mutation grid (3-col desktop, 2-col mobile) ── */
 .mut-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:7px;overflow:hidden}
+/* V3.4.0: Q4 拆兩區（驅動基因 + PD-L1），不再撐滿高度、改自然堆疊 */
+body.questioning #opt-mut, body.questioning #opt-pdl1{flex:none;min-height:0;overflow:visible}
+.q4-sec-label{font-size:13px;font-weight:800;color:var(--tx2);margin:12px 0 7px}
+.q4-sec-label:first-of-type{margin-top:2px}
+.q4-sec-opt{font-size:11px;font-weight:500;color:var(--teal-d);background:var(--teal-bg);padding:1px 7px;border-radius:var(--r-pill)}
+.pdl1-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 @media(max-width:480px){
   .mut-grid{grid-template-columns:repeat(2,1fr);gap:6px}
 }
@@ -997,11 +1003,12 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
       <div class="cd-head-l">
         <div class="cd-step">第 3 步（最後一題）</div>
         <div class="cd-q" id="q3-q">基因 / PD-L1 結果？</div>
-        <div class="cd-sub" id="q3-sub">這會決定可用的標靶或免疫藥物</div>
+        <div class="cd-sub" id="q3-sub">驅動基因與 PD-L1 是兩種不同檢測，可以併存</div>
       </div>
     </div>
 
-    <!-- NSCLC: mutation grid -->
+    <!-- NSCLC: ① 驅動基因（單選，必填） -->
+    <div class="q4-sec-label" id="q4-lbl-mut">① 驅動基因（擇一）</div>
     <div class="mut-grid" id="opt-mut">
       <button type="button" class="mut-btn" data-val="EGFR" onclick="pickMut(this)">
         <span class="mut-tag">EGFR</span>
@@ -1033,17 +1040,27 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
         <div class="mut-tt">KRAS G12C (+)</div>
         <div class="mut-ss">較新藥</div>
       </button>
-      <button type="button" class="mut-btn pdl1" data-val="PDL1_HIGH" onclick="pickMut(this)">
+      <button type="button" class="mut-btn muted" data-val="NONE" onclick="pickMut(this)">
+        <span class="mut-tag">無 / 未驗</span>
+        <div class="mut-tt">無驅動基因或尚未檢測</div>
+        <div class="mut-ss">看 PD-L1 決定</div>
+      </button>
+    </div>
+
+    <!-- NSCLC: ② PD-L1 免疫指標（單選，可與驅動基因併存） -->
+    <div class="q4-sec-label" id="q4-lbl-pdl1">② PD-L1 免疫指標<span class="q4-sec-opt">　可與驅動基因併存</span></div>
+    <div class="pdl1-grid" id="opt-pdl1">
+      <button type="button" class="mut-btn pdl1" data-val="HIGH" onclick="pickPdl1(this)">
         <span class="mut-tag">PD-L1 ≥ 50%</span>
-        <div class="mut-tt">原生 + 高表現</div>
+        <div class="mut-tt">高表現</div>
         <div class="mut-ss">免疫效果佳</div>
       </button>
-      <button type="button" class="mut-btn pdl1" data-val="PDL1_LOW" onclick="pickMut(this)">
+      <button type="button" class="mut-btn pdl1" data-val="LOW" onclick="pickPdl1(this)">
         <span class="mut-tag">PD-L1 &lt; 50%</span>
-        <div class="mut-tt">原生 + 低/中</div>
-        <div class="mut-ss">化療為主</div>
+        <div class="mut-tt">低 / 中表現</div>
+        <div class="mut-ss">常合併化療</div>
       </button>
-      <button type="button" class="mut-btn muted" data-val="NONE" onclick="pickMut(this)">
+      <button type="button" class="mut-btn muted" data-val="UNKNOWN" onclick="pickPdl1(this)">
         <span class="mut-tag">未驗</span>
         <div class="mut-tt">尚未檢測</div>
         <div class="mut-ss">先看一般原則</div>
@@ -1321,7 +1338,8 @@ const S = {
   // V2.10.0: 期別來源 — false = 臨床期別 (cTNM)；true = 病理期別 (pTNM, 已手術)
   postOp:false,
   // Q4 基因/腦轉移
-  mut:'',          // NSCLC
+  mut:'',          // NSCLC 驅動基因: '' / EGFR / ALK / ROS1 / BRAF / MET / KRAS / NONE
+  pdl1:'',         // V3.4.0: PD-L1 免疫指標(與驅動基因併存): '' / HIGH / LOW / UNKNOWN
   brainMet:'',     // SCLC: '' / 'no' / 'yes' / 'unknown'
   // V2.11.0: Q5 治療進度（僅 postOp 時顯示）
   txProgress:'',   // '' / 'just_op' / 'chemo' / 'awaiting_consol' / 'consol' / 'followup' / 'recurrence'
@@ -1366,7 +1384,7 @@ async function saveQuery(){
   const rec = {
     code:S.code||'', name:(S.name||'').slice(0,8),
     type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
-    mut:S.mut||'', brainMet:S.brainMet||'',
+    mut:S.mut||'', pdl1:S.pdl1||'', brainMet:S.brainMet||'',
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
     consult:{...S.consult},   // V3.3.2: 照護團隊醫師選擇（原本漏存）
@@ -1498,6 +1516,7 @@ function restoreAllUI(){
   // Q4 — 基因 / 腦轉移
   applyQ3Mode();
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', S.mut===b.dataset.val));
+  document.querySelectorAll('#opt-pdl1 .mut-btn').forEach(b=>b.classList.toggle('selected', S.pdl1===b.dataset.val));  // V3.4.0
   document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
   // Q5 — 治療進度
   document.querySelectorAll('#opt-progress .prog-btn').forEach(b=>b.classList.toggle('selected', S.txProgress===b.dataset.val));
@@ -1513,7 +1532,7 @@ async function loadRecord(id){
     code:rec.code||'', name:rec.name||'',
     type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
     stage:rec.stage||'', stageCat:rec.stageCat||'',
-    postOp:!!rec.postOp, mut:rec.mut||'', brainMet:rec.brainMet||'',
+    postOp:!!rec.postOp, mut:rec.mut||'', pdl1:rec.pdl1||'', brainMet:rec.brainMet||'',
     txProgress:rec.txProgress||'', consult:{...(rec.consult||{})},  // V3.3.2: 還原團隊選擇
   });
   pdbEditId = id;                       // 綁定：之後「儲存」= 更新這筆
@@ -2000,27 +2019,35 @@ function buildPathRawCore(){
         { title:'第二線：口服 KRAS G12C 標靶', line:DRUGS.KRAS.line, nhi:'SELF', drugs: DRUGS.KRAS.list, note: DRUGS.KRAS.note },
       ];
       warns.push('KRAS G12C 口服標靶藥（Sotorasib）目前健保未給付，需自費');
-    } else if(m==='PDL1_HIGH'){
-      const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
-      steps = [
-        { title:'第一線（首選）：免疫治療單藥', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'免疫指標（PD-L1）≥50% 時可不加化療。' },
-        { title:'第一線（合併）：免疫治療 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note:'腫瘤負擔較重或有症狀者可加化療快速控制。' },
-        { title:'病情惡化後：化療接續治療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測（NGS）找其他可治療的突變。' },
-      ];
-    } else if(m==='PDL1_LOW'){
-      const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
-      steps = [
-        { title:'第一線：化療搭配免疫治療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
-        { title:'病情惡化後：接續化療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測找其他可治療的突變。' },
-      ];
     } else {
-      // NONE
-      steps = [
-        { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'包含 EGFR、ALK、ROS1、BRAF、MET、KRAS、NTRK 等基因 + PD-L1 免疫指標。' },
-        { title:'等檢測報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
-        { title:'依檢測結果決定個人化治療', line:'後續', note:'有基因突變 → 用標靶；免疫指標高 → 用免疫治療搭配化療。' },
-      ];
-      warns.push('基因檢測會大幅影響可用藥物，請務必完成');
+      // V3.4.0: 無驅動基因（NONE）→ 依 PD-L1 免疫指標決定（driver 與 PD-L1 已拆成兩維度）
+      const pdl1 = S.pdl1;
+      if(pdl1==='HIGH'){
+        const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
+        steps = [
+          { title:'第一線（首選）：免疫治療單藥', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'無驅動基因且免疫指標（PD-L1）≥50% 時，可不加化療。' },
+          { title:'第一線（合併）：免疫治療 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note:'腫瘤負擔較重或有症狀者可加化療快速控制。' },
+          { title:'病情惡化後：化療接續治療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測（NGS）找其他可治療的突變。' },
+        ];
+      } else if(pdl1==='LOW'){
+        const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
+        steps = [
+          { title:'第一線：化療搭配免疫治療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
+          { title:'病情惡化後：接續化療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測找其他可治療的突變。' },
+        ];
+      } else {
+        // 驅動基因與 PD-L1 都未驗 / 未填 → 先完整檢測
+        steps = [
+          { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'包含 EGFR、ALK、ROS1、BRAF、MET、KRAS、NTRK 等基因 + PD-L1 免疫指標。' },
+          { title:'等檢測報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
+          { title:'依檢測結果決定個人化治療', line:'後續', note:'有基因突變 → 用標靶；免疫指標高 → 用免疫治療搭配化療。' },
+        ];
+        warns.push('基因檢測會大幅影響可用藥物，請務必完成');
+      }
+    }
+    // V3.4.0: 驅動基因陽性 + PD-L1 也高 → 提醒仍以標靶優先（免疫對驅動基因陽性者效果較差）
+    if(['EGFR','ALK','ROS1','BRAF','MET'].includes(m) && S.pdl1==='HIGH'){
+      warns.push('您的 PD-L1 偏高，但因帶有 ' + mutDisplay(m) + ' 驅動基因，第一線仍以標靶藥為主（驅動基因陽性者用免疫治療效果通常較差）');
     }
     return { stageTxt:`${typeLabel} 轉移期 (IV)`, pwTxt:'依基因檢測結果與免疫指標選擇個人化治療', steps, warns };
   }
@@ -2320,6 +2347,7 @@ function renderSummary(){
   const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
   if(tnmStr) meta += ' · ' + tnmStr;
   if(S.mut && S.mut!=='NONE') meta += ' · ' + mutDisplay(S.mut);
+  if(pdl1Display(S.pdl1)) meta += ' · ' + pdl1Display(S.pdl1);  // V3.4.0 PD-L1 併存顯示
   if(isSCLC() && S.brainMet){
     const bLabel = ({yes:'有腦/脊髓轉移', no:'無腦/脊髓轉移', unknown:'腦/脊髓轉移未明'})[S.brainMet] || '';
     if(bLabel) meta += ' · ' + bLabel;
@@ -2475,6 +2503,7 @@ function buildHumanReadableSummary(){
   parts.push((S.postOp ? '病理' : 'Stage ') + (S.postOp ? '' : '') + stageDisplay());
   if(tnmStr) parts.push((S.postOp ? '病理 ' : '') + tnmStr);
   if(S.mut && S.mut!=='NONE') parts.push(mutDisplay(S.mut));
+  if(pdl1Display(S.pdl1)) parts.push(pdl1Display(S.pdl1));  // V3.4.0
   if(isSCLC() && S.brainMet){
     const bL = ({yes:'腦/脊髓(+)', no:'腦/脊髓(-)', unknown:''})[S.brainMet];
     if(bL) parts.push(bL);
@@ -2536,8 +2565,10 @@ function stageDisplay(){
   return '?';
 }
 function mutDisplay(m){
-  return ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:''}[m] || '');
+  return ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NONE:''}[m] || '');
 }
+// V3.4.0: PD-L1 免疫指標顯示（與驅動基因併存）
+function pdl1Display(v){ return ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%'}[v] || ''); }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ═══════════════════════════════════════════════════
@@ -2762,7 +2793,7 @@ function pickType(btn){
   const newType = btn.dataset.val;
   // 改變 type 時，重置下游所有狀態（避免 stale data 帶到後面）
   if(S.type && S.type !== newType){
-    S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
+    S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.pdl1=''; S.brainMet='';
     S.postOp=false;  // V2.10.0: 換 type 也清病理模式
     S.txProgress='';  // V2.11.0: 也清治療進度
     // 視覺：清掉 TNM/mut/brain/sclc/prog 的 selected
@@ -2800,7 +2831,13 @@ function pickBrain(btn){
 function pickMut(btn){
   S.mut = btn.dataset.val;
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
-  setTimeout(()=>goNext(), 200);
+  updateActBar();  // V3.4.0: 驅動基因選完不自動跳（讓使用者續填 PD-L1），由「下一步」前進
+}
+// V3.4.0: PD-L1 免疫指標（與驅動基因併存，可各自單選）
+function pickPdl1(btn){
+  S.pdl1 = btn.dataset.val;
+  document.querySelectorAll('#opt-pdl1 .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  updateActBar();
 }
 
 /* V2.11.0: Q5 治療進度 picker */
@@ -2874,6 +2911,7 @@ function recomputeStage(){
   // 若 stage 改變導致 mut/brainMet 不再相關，清掉避免殘留
   if(oldCat !== S.stageCat && !q3Needed()){
     if(S.mut){ S.mut=''; document.querySelectorAll('.mut-btn').forEach(b=>b.classList.remove('selected')); }
+    S.pdl1='';  // V3.4.0
     if(S.brainMet){ S.brainMet=''; document.querySelectorAll('.brain-btn').forEach(b=>b.classList.remove('selected')); }
   }
   const foot = document.getElementById('tnm-foot');
@@ -2903,7 +2941,7 @@ function toggleTNMMode(){
 
 function setStageUnknown(){
   // Fallback: 民眾不確定 TNM。清空 T/N/M、mut、brainMet，明確標記 stageCat 走最保守一般原則
-  S.t=''; S.n=''; S.m=''; S.stage=''; S.mut=''; S.brainMet='';
+  S.t=''; S.n=''; S.m=''; S.stage=''; S.mut=''; S.pdl1=''; S.brainMet='';
   // SCLC fallback: 侷限期；NSCLC fallback: 早期
   S.stageCat = isSCLC() ? 'LOCAL' : 'EARLY';
   document.querySelectorAll('.tnm-btn,.mut-btn,.brain-btn').forEach(b=>b.classList.remove('selected'));
@@ -2973,7 +3011,7 @@ function goPrev(){
 
 function restart(){
   // 全清
-  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.brainMet='';
+  S.type=''; S.t=''; S.n=''; S.m=''; S.stage=''; S.stageCat=''; S.mut=''; S.pdl1=''; S.brainMet='';
   S.postOp=false;  // V2.10.0
   S.txProgress='';  // V2.11.0
   S.age=''; S.ecog='';
