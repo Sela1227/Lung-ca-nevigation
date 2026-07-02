@@ -9,12 +9,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.4.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* A11y: 鍵盤 focus 環 */
+:focus-visible{outline:2.5px solid var(--primary);outline-offset:2px;border-radius:5px}
+/* A11y: 尊重減少動態偏好 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
 :root{
   --bg:#F7F9FB;--surface:#fff;--surface2:#F1F4F8;
   --border:#E2E8F0;--border2:#CBD5DF;
@@ -26,12 +37,14 @@
   --indigo:#4f46e5;--indigo-light:#eef2ff;
   --sidebar:#37516b;--sidebar-text:#9ca3af;--sidebar-active:#5B8FB9;
   --radius:10px;--radius-lg:16px;
+  /* V3.1.1: radius scale token — 供新元件採用（既有 border-radius 漸進替換） */
+  --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:10px; --r-xl:12px; --r-2xl:16px; --r-pill:999px;
   --shadow:0 1px 4px rgba(0,0,0,.06);
   --shadow-md:0 4px 16px rgba(0,0,0,.08);
   --transition:all .25s cubic-bezier(.4,0,.2,1);
 }
 html,body{height:100%;overflow:hidden;background:var(--bg)}
-body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;color:var(--text);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC','Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;color:var(--text);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit;color:inherit}
 input,textarea,select{font-family:inherit;font-size:inherit}
 
@@ -48,6 +61,9 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .sidebar .nav-item.active::before{content:'';position:absolute;left:-2px;top:50%;transform:translateY(-50%);width:4px;height:24px;border-radius:0 4px 4px 0;background:var(--sidebar-active)}
 .sidebar .nav-item.active i{color:var(--sidebar-active)}
 .sidebar .spacer{flex:1}
+/* V3.1.3 #6: 待辦數 badge */
+.todo-badge{position:absolute;top:4px;right:6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--rose,#dc2626);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1}
+@media(max-width:820px){ .todo-badge{top:2px;right:calc(50% - 22px)} }
 
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0}
@@ -680,6 +696,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
     <button class="nav-item" data-panel="summary" onclick="APP.go('summary')"><i class="fa-solid fa-id-card-clip"></i><span>總覽</span></button>
     <button class="nav-item" data-panel="edu" onclick="APP.go('edu')"><i class="fa-solid fa-book-medical"></i><span>手冊</span></button>
     <div class="spacer"></div>
+    <button class="nav-item" data-panel="todo" onclick="APP.go('todo')"><i class="fa-solid fa-bell"></i><span>待辦</span><span id="todo-badge" class="todo-badge" style="display:none"></span></button>
     <button class="nav-item" data-panel="records" onclick="APP.go('records')"><i class="fa-solid fa-folder-open"></i><span>紀錄</span></button>
     <button class="nav-item" data-panel="stats" onclick="APP.go('stats')"><i class="fa-solid fa-chart-pie"></i><span>統計</span></button>
     <button class="nav-item" data-panel="backup" onclick="APP.go('backup')"><i class="fa-solid fa-hard-drive"></i><span>備份</span></button>
@@ -789,6 +806,21 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
       </div>
 
       <!-- ═══ PANEL: RECORDS ═══ -->
+      <div class="panel" id="panel-todo"><div class="panel-inner">
+        <div style="max-width:900px;margin:0 auto;width:100%">
+          <div class="card" style="padding:16px 20px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <i class="fa-solid fa-bell" style="color:var(--primary)"></i>
+              <div style="font-size:17px;font-weight:700">待辦 / 即將超期</div>
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-top:6px">
+              依時效門檻自動彙整：收案→確診 ≤14 天、收案→首治 ≤42 天、MDT 須治療前。點任一筆可直接開啟該病人。
+            </div>
+          </div>
+          <div id="todo-list"></div>
+        </div>
+      </div></div>
+
       <div class="panel" id="panel-records"><div class="panel-inner">
         <div>
           <!-- Search + filter bar -->
@@ -1178,8 +1210,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.11.8';
-const SYSTEM_VERSION = 'V3.0.9';
+const MODULE_VERSION = 'V1.11.12';
+const SYSTEM_VERSION = 'V3.1.3';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1321,7 +1353,7 @@ function isItemRequired(item, type, stage){
 
 function getRequiredCK(type, stage){ return CK.filter(c=>isItemRequired(c, type, stage)); }
 function getOptionalCK(type, stage){ return CK.filter(c=>!isItemRequired(c, type, stage) && c.req!=='all'); }
-const PANELS = ['patient','basicck','decision','checklist','pathway','summary','records','stats','backup'];
+const PANELS = ['patient','basicck','decision','checklist','pathway','summary','todo','records','stats','backup'];
 
 let cur = 'patient';
 let db;
@@ -1330,6 +1362,7 @@ let db;
 A.S = {code:'',name:'',caseDate:'',dateDiag:'',dateTx:'',dateMdm:'',gender:'',birthday:'',ecog:'',type:'',tstage:'',nstage:'',mstage:'',stage:'',mutation:'',mutSite:'',pdl1:'',drivers:{},pdl1Val:'',driverSites:{},ptstage:'',pnstage:'',pmstage:'',pstage:'',pmargin:'',ppending:false,notes:'',ck:{},actualTx:{},bio:{},consult:{},created:new Date().toISOString()};
 let editId = null;
 let draftId = null;
+let _dirty = false;  // V3.1.2 #2: 未儲存變更旗標 — input 時設 true，寫入 draft/record 時清 false
 
 // ── AJCC Stage auto-computation ──
 function computeAJCC(t,n,m){
@@ -1439,7 +1472,9 @@ function _initNavCache(){
   if(!_navs)   _navs   = document.querySelectorAll('.nav-item');
 }
 A.go = function(name){
-  try{ readForm(); saveDraft(); if(editId && (cur==='basicck'||cur==='checklist'||cur==='decision'||cur==='pathway')){ autoUpdateRecord(); } } catch(e){}
+  // V3.1.2 #1: 編輯舊病人時，切換到任何分頁都 autoUpdate（原本只認 basicck/checklist/decision/pathway
+  //           四個分頁，導致在「病人」分頁改基本資料切到總覽/手冊時漏存）
+  try{ readForm(); saveDraft(); if(editId){ autoUpdateRecord(); } } catch(e){}
   cur = name;
   _initNavCache();
   // Toggle panel + nav classes (cheap class flips, single reflow batch)
@@ -1451,6 +1486,7 @@ A.go = function(name){
   requestAnimationFrame(()=>{
     try{
       if(name==='records') loadList();
+      else if(name==='todo'){ loadList().then(()=>renderTodo()); }
       else if(name==='pathway') renderPW();
       else if(name==='summary'){ document.getElementById('sum-saved').style.display='none'; renderSummary(); }
       else if(name==='edu'){ const hasData=A.S.type&&A.S.stage; document.getElementById('edu-empty').style.display=hasData?'none':''; document.getElementById('edu-content').style.display=hasData?'':'none'; if(hasData) renderEduHandout(); }
@@ -1462,13 +1498,22 @@ A.go = function(name){
   });
 };
 
+// V3.1.2 #1: 病人資料欄位集中一處 — save() 與 autoUpdateRecord() 共用，
+// 避免兩處各寫一份欄位清單導致「autoUpdate 漏存分期欄位」的隱性遺失
+function collectStateFields(){
+  const S = A.S;
+  return {code:S.code,name:S.name,caseDate:S.caseDate,dateDiag:S.dateDiag,dateTx:S.dateTx,dateMdm:S.dateMdm,gender:S.gender,birthday:S.birthday,ecog:S.ecog,type:S.type,tstage:S.tstage,nstage:S.nstage,mstage:S.mstage,stage:S.stage,mutation:S.mutation,mutSite:S.mutSite,pdl1:S.pdl1,drivers:S.drivers||{},pdl1Val:S.pdl1Val||'',driverSites:S.driverSites||{},pdl1Tps:S.pdl1Tps||'',ptstage:S.ptstage||'',pnstage:S.pnstage||'',pmstage:S.pmstage||'',pstage:S.pstage||'',pmargin:S.pmargin||'',ppending:S.ppending||false,notes:S.notes,ck:S.ck,actualTx:S.actualTx||{},bio:S.bio||{},consult:S.consult||{}};
+}
+
 async function autoUpdateRecord(){
   if(!editId) return;
   try{
     const existing = await get('records', editId);
     if(!existing) return;
-    Object.assign(existing, {ck:A.S.ck, notes:A.S.notes, code:A.S.code, name:A.S.name, caseDate:A.S.caseDate, dateDiag:A.S.dateDiag, dateTx:A.S.dateTx, dateMdm:A.S.dateMdm, gender:A.S.gender, birthday:A.S.birthday, ecog:A.S.ecog, actualTx:A.S.actualTx||{}, mutSite:A.S.mutSite, bio:A.S.bio||{},consult:A.S.consult||{}});
+    // V3.1.2 #1: 用完整欄位集（含分期），不再只更新部分欄位
+    Object.assign(existing, collectStateFields());
     await put('records', existing);
+    _dirty = false;  // V3.1.2 #2: 已寫入，清除未儲存旗標
   }catch(e){}
 }
 A.back = function(){ const flow=['patient','basicck','decision','checklist','pathway','summary','edu']; const i=flow.indexOf(cur); if(i>0) A.go(flow[i-1]); };
@@ -1545,6 +1590,7 @@ async function saveDraft(){
   if(draftId) d.id = draftId; else delete d.id;
   await put('drafts', d);
   if(!draftId){ const all = await getAll('drafts'); draftId = all[all.length-1]?.id; }
+  _dirty = false;  // V3.1.2 #2: 草稿已存，清除未儲存旗標
 }
 
 // ── Record list ──
@@ -1559,6 +1605,7 @@ async function loadList(){
   records.forEach(r=>allRecordItems.push({...r,_k:'saved',_d:r.caseDate||r.savedAt||r.created}));
   allRecordItems.sort((a,b)=>new Date(b._d)-new Date(a._d));
   renderRecordList();
+  updateTodoBadge();  // V3.1.3 #6: 待辦數隨資料更新
 }
 
 function renderRecordList(){
@@ -1594,8 +1641,16 @@ function renderRecordList(){
     let codeTxt = d.code||'（未命名）';
     const nameTxt = d.name ? ` <span style="font-weight:400;color:var(--text2)">${d.name}</span>` : '';
     if(q && d.code){ codeTxt = highlightMatch(codeTxt, q); }
+    // V3.1.3 #4: 時效 KPI 三色點（確診 / 首治 / MDT），滑鼠移上顯示天數
+    const tl = calcTimeliness(d);
+    const dot = (o, name) => `<span title="${name}：${o.txt||'—'}" style="display:inline-flex;align-items:center;gap:2px"><span style="width:8px;height:8px;border-radius:50%;background:${TL_COLOR[o.st]};display:inline-block"></span></span>`;
+    const anyData = d.caseDate && (d.dateDiag||d.dateTx||d.dateMdm|| calcDayDiff(d.caseDate,todayStr())>=12);
+    const dots = anyData ? `<div class="rec-kpi" style="display:flex;gap:7px;align-items:center;margin-top:5px">
+        <span style="font-size:10px;color:var(--text3)">時效</span>
+        ${dot(tl.diag,'收案→確診')}${dot(tl.tx,'收案→首治')}${dot(tl.mdt,'MDT')}
+      </div>` : '';
     return `<div class="rec-row" onclick="APP.load(${d.id},'${d._k}')">
-      <div class="rec-info"><div class="rec-title">${codeTxt}${nameTxt} ${badge}</div><div class="rec-meta">${info}${ckInfo}</div></div>
+      <div class="rec-info"><div class="rec-title">${codeTxt}${nameTxt} ${badge}</div><div class="rec-meta">${info}${ckInfo}</div>${dots}</div>
       <div class="rec-date">${ds}</div>
       <button class="rec-del" onclick="event.stopPropagation();APP.del(${d.id},'${d._k}')" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
     </div>`;
@@ -1603,6 +1658,54 @@ function renderRecordList(){
 }
 
 function highlightMatch(text, q){ const idx = text.toLowerCase().indexOf(q); if(idx<0) return text; return text.substring(0,idx)+'<mark>'+text.substring(idx,idx+q.length)+'</mark>'+text.substring(idx+q.length); }
+
+// V3.1.3 #5/#6: 待辦分頁 — 彙整所有病人的時效 alerts（fail 逾期在前、warn 快到期在後）
+function collectAllAlerts(){
+  const all = [];
+  allRecordItems.forEach(d=>{
+    const tl = calcTimeliness(d);
+    tl.alerts.forEach(a=>all.push(a));
+  });
+  // fail 排前面，同級按病人代號
+  all.sort((a,b)=> (a.lvl===b.lvl ? (a.who>b.who?1:-1) : (a.lvl==='fail'?-1:1)) );
+  return all;
+}
+
+function updateTodoBadge(){
+  const alerts = collectAllAlerts();
+  const failN = alerts.filter(a=>a.lvl==='fail').length;
+  const badge = document.getElementById('todo-badge');
+  if(!badge) return;
+  if(alerts.length===0){ badge.style.display='none'; return; }
+  badge.style.display='';
+  badge.textContent = alerts.length;
+  badge.style.background = failN>0 ? 'var(--rose,#dc2626)' : 'var(--amber,#d97706)';
+}
+
+function renderTodo(){
+  const el = document.getElementById('todo-list');
+  if(!el) return;
+  const alerts = collectAllAlerts();
+  if(alerts.length===0){
+    el.innerHTML = '<div class="card" style="padding:40px;text-align:center;color:var(--text3)"><i class="fa-solid fa-circle-check" style="font-size:32px;display:block;margin-bottom:12px;color:#16a34a;opacity:.7"></i>目前沒有即將超期或逾期的病人</div>';
+    return;
+  }
+  const fails = alerts.filter(a=>a.lvl==='fail');
+  const warns = alerts.filter(a=>a.lvl==='warn');
+  const section = (title, list, color, icon) => list.length ? `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:${color};margin-bottom:8px">
+        <i class="fa-solid ${icon}"></i> ${title}（${list.length}）
+      </div>
+      ${list.map(a=>`<div class="rec-row" onclick="APP.load(${a.id},'${a.kind}')" style="border-left:3px solid ${color}">
+        <div class="rec-info"><div class="rec-title">${a.who}</div><div class="rec-meta" style="color:${color}">${a.msg}</div></div>
+        <i class="fa-solid fa-chevron-right" style="color:var(--text3);font-size:12px"></i>
+      </div>`).join('')}
+    </div>` : '';
+  el.innerHTML =
+    section('已逾期 — 請優先處理', fails, '#dc2626', 'fa-triangle-exclamation') +
+    section('即將到期 — 建議追蹤', warns, '#d97706', 'fa-clock');
+}
 
 A.load = async function(id, kind){
   const obj = kind==='saved' ? await get('records',id) : await get('drafts',id);
@@ -1629,11 +1732,15 @@ A.load = async function(id, kind){
   restoreBioPanel();
   renderCK();
   updateTitle();
+  _dirty = false;  // V3.1.2 #2: 剛載入是乾淨狀態
   A.go('patient');
 };
 
 A.del = async function(id, kind){
-  if(!confirm('確定刪除？')) return;
+  // V3.1.2 #3: 確認訊息帶病人代號/姓名，避免管幾百病人時刪錯
+  const item = allRecordItems.find(x=>x.id===id && x._k===kind);
+  const who = item ? ((item.code||'未命名') + (item.name ? ' '+item.name : '')) : '此筆';
+  if(!confirm(`確定刪除「${who}」的紀錄？\n\n此動作無法復原。`)) return;
   await del(kind==='saved'?'records':'drafts', id);
   if(editId===id) editId=null; if(draftId===id) draftId=null;
   loadList();
@@ -1667,6 +1774,7 @@ A.newPatient = function(){
   updateTitle();
   restoreBioPanel();
   renderCK();
+  _dirty = false;  // V3.1.2 #2: 新病人初始為乾淨狀態
   A.go('patient');
 };
 
@@ -2908,6 +3016,54 @@ function calcDayDiff(d1, d2){
   return Math.round((new Date(d2) - new Date(d1)) / 86400000);
 }
 
+// V3.1.3 #4/#5/#6: 病人時效狀態「單一真相」— 清單 KPI 色點、快到期預警、待辦分頁共用
+// 門檻：收案→確診 ≤14天、收案→首治 ≤42天、MDT 須治療前。快到期門檻：確診 12天、首治 35天
+// 回傳每個 KPI 的 {st:'pass'|'warn'|'fail'|'na', txt} + alerts（需個管師關注的項目）
+function calcTimeliness(d){
+  const caseDate = d.caseDate;
+  const r = { diag:{st:'na',txt:''}, tx:{st:'na',txt:''}, mdt:{st:'na',txt:''}, alerts:[] };
+  if(!caseDate) return r;
+  const today = todayStr();
+  const label = (d.code||'未命名') + (d.name?' '+d.name:'');
+  // 收案 → 確診 ≤14 天
+  if(d.dateDiag){
+    const n = calcDayDiff(caseDate, d.dateDiag);
+    r.diag = n<=14 ? {st:'pass',txt:n+'天'} : {st:'fail',txt:n+'天'};
+  } else {
+    const e = calcDayDiff(caseDate, today);
+    if(e>14){ r.diag={st:'fail',txt:'逾'+e+'天'}; r.alerts.push({lvl:'fail',who:label,id:d.id,kind:d._k,msg:`確診已超期（收案 ${e} 天未確診）`}); }
+    else if(e>=12){ r.diag={st:'warn',txt:'第'+e+'天'}; r.alerts.push({lvl:'warn',who:label,id:d.id,kind:d._k,msg:`確診快到期（收案 ${e} 天，剩 ${14-e} 天）`}); }
+    else r.diag={st:'na',txt:'第'+e+'天'};
+  }
+  // 收案 → 首治 ≤42 天
+  if(d.dateTx){
+    const n = calcDayDiff(caseDate, d.dateTx);
+    r.tx = n<=42 ? {st:'pass',txt:n+'天'} : {st:'fail',txt:n+'天'};
+  } else {
+    const e = calcDayDiff(caseDate, today);
+    if(e>42){ r.tx={st:'fail',txt:'逾'+e+'天'}; r.alerts.push({lvl:'fail',who:label,id:d.id,kind:d._k,msg:`首治已超期（收案 ${e} 天未首治）`}); }
+    else if(e>=35){ r.tx={st:'warn',txt:'第'+e+'天'}; r.alerts.push({lvl:'warn',who:label,id:d.id,kind:d._k,msg:`首治快到期（收案 ${e} 天，剩 ${42-e} 天）`}); }
+    else r.tx={st:'na',txt:'第'+e+'天'};
+  }
+  // MDT 須在首治前
+  if(d.dateMdm){
+    if(d.dateTx){
+      const ok = new Date(d.dateMdm) <= new Date(d.dateTx);
+      r.mdt = ok ? {st:'pass',txt:'治療前'} : {st:'fail',txt:'晚於首治'};
+      if(!ok) r.alerts.push({lvl:'fail',who:label,id:d.id,kind:d._k,msg:'MDT 晚於首治'});
+    } else r.mdt = {st:'pass',txt:'已排'};
+  } else {
+    if(d.dateTx){ r.mdt={st:'fail',txt:'未開'}; r.alerts.push({lvl:'fail',who:label,id:d.id,kind:d._k,msg:'首治前未開 MDT'}); }
+    else {
+      const e = calcDayDiff(caseDate, today);
+      if(e>=35){ r.mdt={st:'warn',txt:'未排'}; r.alerts.push({lvl:'warn',who:label,id:d.id,kind:d._k,msg:'接近首治期限，MDT 尚未安排'}); }
+      else r.mdt={st:'na',txt:'未排'};
+    }
+  }
+  return r;
+}
+const TL_COLOR = {pass:'#16a34a', warn:'#d97706', fail:'#dc2626', na:'#cbd5e1'};
+
 function checkKPI(){
   const S = A.S;
   const items = [];
@@ -3134,7 +3290,8 @@ A.save = async function(){
   }
   readForm();
   const now = new Date().toISOString();
-  const rec = {code:A.S.code,name:A.S.name,caseDate:A.S.caseDate,dateDiag:A.S.dateDiag,dateTx:A.S.dateTx,dateMdm:A.S.dateMdm,gender:A.S.gender,birthday:A.S.birthday,ecog:A.S.ecog,type:A.S.type,tstage:A.S.tstage,nstage:A.S.nstage,mstage:A.S.mstage,stage:A.S.stage,mutation:A.S.mutation,mutSite:A.S.mutSite,pdl1:A.S.pdl1,drivers:A.S.drivers||{},pdl1Val:A.S.pdl1Val||'',driverSites:A.S.driverSites||{},pdl1Tps:A.S.pdl1Tps||'',ptstage:A.S.ptstage||'',pnstage:A.S.pnstage||'',pmstage:A.S.pmstage||'',pstage:A.S.pstage||'',pmargin:A.S.pmargin||'',ppending:A.S.ppending||false,notes:A.S.notes,ck:A.S.ck,actualTx:A.S.actualTx||{},bio:A.S.bio||{},consult:A.S.consult||{},created:A.S.created,savedAt:now};
+  const rec = {...collectStateFields(), created:A.S.created, savedAt:now};
+  _dirty = false;  // V3.1.2 #2: 已存檔，清除未儲存旗標
   let isNew = !editId;
   if(editId){ rec.id = editId; await put('records', rec); }
   else { await put('records', rec); if(draftId){ await del('drafts',draftId); draftId=null; } const all = await getAll('records'); editId = all[all.length-1]?.id; }
@@ -3868,6 +4025,13 @@ async function boot(){
   document.getElementById('pt-casedate').value = todayStr();
   A.S.caseDate = todayStr();
   renderBasicCK(); renderCK(); updateBar(); loadList(); updateTitle();
+  // V3.1.2 #2: 任何表單輸入標記為未儲存；切分頁(saveDraft/autoUpdate)或存檔會清除
+  document.addEventListener('input', ()=>{ _dirty = true; }, true);
+  document.addEventListener('click', (e)=>{ if(e.target.closest('.big-btn,.gender-btn,.ecog-btn')) _dirty = true; }, true);
+  // V3.1.2 #2: 有未儲存變更時，關閉/重整前提醒（避免當前分頁改了沒切走就關 → 遺失）
+  window.addEventListener('beforeunload', (e)=>{
+    if(_dirty){ e.preventDefault(); e.returnValue = ''; }
+  });
 }
 boot();
 

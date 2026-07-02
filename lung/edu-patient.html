@@ -6,8 +6,20 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0d9488">
 <title>個人化照護導航手冊（民眾版） — 彰濱秀傳癌症中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* A11y: 鍵盤 focus 環 */
+:focus-visible{outline:2.5px solid var(--teal);outline-offset:2px;border-radius:5px}
+/* A11y: 尊重減少動態偏好 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
 :root{
   --teal:#0d9488;--teal2:#0f766e;--teal-d:#115e59;
   --teal-bg:rgba(13,148,136,.08);--teal-bdr:rgba(13,148,136,.22);--teal-soft:#e6f5f3;
@@ -17,7 +29,7 @@
   --self:#94703f;--self-bg:#fef9e7;
   --rose:#dc2626;--rose-bg:#FEF2F2;
 }
-body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.55;padding:14px 12px 30px}
+body{font-family:'Noto Sans TC','Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.55;padding:14px 12px 30px}
 
 .handout{max-width:820px;margin:0 auto}
 
