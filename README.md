@@ -1,4 +1,40 @@
-# Cancer Navigation V3.3.1 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.3.2 — 彰濱秀傳癌症中心
+
+## V3.3.2 — 2026-07-02
+**修「團隊狀態沒有儲存」— 存檔又漏一個欄位**
+
+### 問題
+
+Sela 回報民眾版總覽頁選的照護團隊醫師(S.consult),存查詢/載入時沒被保存。
+
+### 原因
+
+- `saveQuery` 的 rec **完全沒列 consult**
+- 更糟:`loadRecord` 還把 `consult:{}` 寫死清空
+
+存了讀不回、載入還被清掉。
+
+### 修法
+
+- saveQuery 加 `consult:{...S.consult}`(深拷貝避免共用參照)
+- loadRecord 改 `consult:{...(rec.consult||{})}`
+- 載入後 showPage(5) → renderSummary → renderTeam 依 S.consult 重繪選中醫師
+
+fake-indexeddb 測:存含三科醫師(李佳穎/高劍虹/熊敬業)→ 讀出三科都還原。
+
+### 教訓(BUG-53)
+
+**這是 BUG-51「存檔要存能還原的最小完整集」的直接復發**。V3.3.0 補 t/n/m 時只想到 TNM 按鈕要回填,沒把總覽頁的 consult 一起盤點。同一個 saveQuery 先漏 t/n/m、再漏 consult — 印證 BUG-46「欄位集散落多處是隱性遺失溫床」。
+
+**下次動 saveQuery/loadRecord,先把 S 所有欄位列一遍逐一問「要不要存」,而不是想到哪個補哪個。** 已排下版候選:抽 `collectQueryFields()` 單一真相(saveQuery/loadRecord/restart 共用)根治。
+
+### 模組版號
+
+lung **V1.13.1 → V1.13.2**,系統版 V3.3.1 → V3.3.2。
+
+⚠️ **實機驗證**:總覽頁選各科醫師 → 儲存 → 開紀錄載入該筆 → 確認團隊醫師有還原顯示。
+
+---
 
 ## V3.3.1 — 2026-07-02
 **修民眾版「返回有時整頁跳走」— 接 History API**

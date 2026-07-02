@@ -1369,6 +1369,7 @@ async function saveQuery(){
     mut:S.mut||'', brainMet:S.brainMet||'',
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
+    consult:{...S.consult},   // V3.3.2: 照護團隊醫師選擇（原本漏存）
     savedAt:new Date().toISOString(),
   };
   if(isUpdate) rec.id = pdbEditId;  // 更新既有那筆
@@ -1513,7 +1514,7 @@ async function loadRecord(id){
     type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
     stage:rec.stage||'', stageCat:rec.stageCat||'',
     postOp:!!rec.postOp, mut:rec.mut||'', brainMet:rec.brainMet||'',
-    txProgress:rec.txProgress||'', consult:{},
+    txProgress:rec.txProgress||'', consult:{...(rec.consult||{})},  // V3.3.2: 還原團隊選擇
   });
   pdbEditId = id;                       // 綁定：之後「儲存」= 更新這筆
   restoreAllUI();
