@@ -1,4 +1,47 @@
-# Cancer Navigation V3.1.3 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.1.4 — 彰濱秀傳癌症中心
+
+## V3.1.4 — 2026-07-02
+**字體退回 JhengHei 優先**（修 V3.1.0 webfont 在 Windows 的解析度下降感）
+
+### 問題確認
+
+Sela 實機試用回報「電腦版民眾版解析度略下降」。確認是 V3.1.0 換的 Noto Sans TC webfont：
+
+- **Microsoft JhengHei**（Windows 原生）有針對 ClearType 高度優化的中文 hinting，銳利硬朗
+- **Noto Sans TC**（webfont）CJK hinting 跨平台通用，Windows 上筆畫較柔、邊緣較糊 → 主觀「解析度下降」
+- 民眾版「大字給長者」，字越大柔邊越明顯，特別有感
+
+### 修法
+
+7 頁 font-family 退回：
+```
+'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui,...
+```
+
+**webfont link 保留不移除** — 這是關鍵:
+
+| 平台 | 行為 |
+|------|------|
+| Windows（大宗）| 第一位命中 JhengHei，用原生銳利字體，**不下載 Noto** |
+| Mac/iPhone | 沒 JhengHei，fallback 到 Noto webfont，仍跨平台一致 |
+
+等於 Windows 銳利 + 非 Windows 有 Noto 兜底 + Windows 零字體下載成本。
+
+### 不動的部分
+
+A 級無障礙（focus 環、reduced-motion、觸控 44px）跟字體無關，完全保留。
+
+### 教訓（BUG-48）
+
+1. **跨平台一致 vs 原生銳利，要看實際受眾權衡** — 院內工具、台灣受眾、Windows 大宗、大字給長者，銳利易讀 > 跨平台一致。webfont 一致性對「公開多平台產品」有意義，對「特定環境內部工具」是負收益。
+2. **font-family fallback 鏈能同時兼顧原生銳利+跨平台兜底** — 第一位系統原生、最後 webfont，不是二選一。
+3. **webfont 視覺代價只有實機看得出來** — 呼應 BUG-44，當時只想到「連不到要 fallback」，沒想到「連得到但渲染不如原生」也是代價。
+
+### 模組版號
+
+lung **V1.11.12 → V1.11.13**，系統版 V3.1.3 → V3.1.4。
+
+---
 
 ## V3.1.3 — 2026-07-01
 **個管師摩擦報告第二批：時效管理 #4+#5+#6**（同組需求一起設計）
