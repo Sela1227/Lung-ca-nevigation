@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.3.1 | V1.13.1 | 2026-07-02 | Sela 回報民眾版「導航/返回有時整個跳到不知道哪頁」。先用導航模擬 harness 窮舉前進/返回/載入紀錄/開關 overlay 全部情境 → **頁內 JS 導航邏輯全部正確**（goNext/goPrev/loadRecord 的 stepIdx 與 pageId 都同步）。判定真兇：民眾版是單頁 SPA 但**沒接 History API**，使用者按手機/瀏覽器「返回鍵、返回手勢」會整頁跳離 patient.html 回 portal，被誤以為是「上一題」。修法：`initBackButton` 用 `history.pushState` 墊一筆 + `popstate` 攔截 → overlay/QR 開著先關、Q2-Q5/總覽 轉成 goPrev、只有 Q1 放行離開；每次攔截後補 pushState 形成持續攔截直到 Q1 BUG-52 |
 | V3.3.0 | V1.13.0 | 2026-07-02 | 民眾版紀錄可「載入舊紀錄 → 修改 → 再次儲存」（個管師用）。三塊：(1) 紀錄卡片可點 → `loadRecord(id)` 把該筆填回 S + `restoreAllUI()` 回填所有 Q 頁 UI（Q1 用 onclick 屬性精準定位 age/hbv/catastrophic、Q3 TNM 判斷簡易/進階組決定顯示 + 複用 applyQ2Mode/applyPostOpVisuals/recomputeStage、Q4/Q5 依 data-val toggle）→ 進總覽頁看載入結果 (2) `pdbEditId` 全域旗標綁定正在編輯哪筆；`saveQuery` 有 editId 就 `pdbPut` 更新（非新增），總覽頁按鈕文字對應變「更新這筆紀錄」 (3) **saveQuery 補存 t/n/m**（原本只存 stage/stageCat，載入無法回填 TNM 按鈕）。restart 清 pdbEditId。fake-indexeddb 測「存→載入→改→更新（仍 1 筆）→ 清 editId 存新（2 筆）」全綠 BUG-51 |
 | V3.2.1 | V1.12.1 | 2026-07-02 | Sela 截圖回報 V3.2.0 紀錄頁「跟病人流程混在一起」— 紀錄頁做成 `.page` 寄生在查詢流程容器裡，底部殘留「上一題/下一題」actbar、頂部殘留查詢進度點。修法：紀錄頁改「全屏獨立 overlay」（`position:fixed;inset:0;z-index:200` 蓋過 topbar+actbar，比照 qr-modal 作法），有自己的返回 header。openRecords 加 `.open` + 鎖背景捲動，closeRecords 只關 overlay 不再 `showPage(0)` 硬回 Q1（底下查詢流程維持原狀）BUG-50 |
 | V3.2.0 | V1.12.0 | 2026-07-02 | 民眾版加查詢紀錄 + 統計（Sela 定方向「主要給病人看自己的歷史，個管師可統計給哪些病人看/做過哪些資料」）。民眾版原本是無狀態查詢工具（走完就沒），現在加 IndexedDB（dbName `'LungNavPatient'` 刻意不同於醫護版 `'LungNav'`，同 origin 不同路徑避免撞資料）。總覽頁加「儲存這次查詢」；topbar 加「紀錄」入口 → `p-records` 頁：上半統計卡（總查詢數 + 型態/分期分布長條 + 有填識別筆數，個管師參考）、下半歷次查詢卡片列表（病人看自己的）、底部「清除本機紀錄」（公用裝置隱私）。識別用 Q1 既有的選填 code/name。fake-indexeddb 端到端測存取/統計/清除全綠 BUG-49 |
@@ -236,7 +237,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V3.1.1 | V1.11.10 | 2026-07-01 | 設計審核 C 級（設計系統一致性）+ D 級（逐頁視覺）：(C) radius 收斂 — 民眾版原本 13 種散落值（4~16px+99）收斂成 6 級語意 token（--r-xs/sm/md/lg/xl/pill），50 處替換每值最多 ±2px 肉眼無感；portal 同步 token 化；醫護版補 token 定義供漸進採用（80+ 處不全面替換，個管師工具次要）。**text 色票命名重新評估後判定「現狀正確不改」** — 醫護藍灰 vs 民眾綠灰本就該不同色票呼應各自主色，強行統一反而混淆人口區隔 (D) portal hero 副標「CANCER NAVIGATION SYSTEM」英文無 thesis → 中文功能定位「癌症臨床路徑導航 · 從分期到治療的每一步」；民眾版總覽頁修正視覺層次 — 決策框（sum-drugs）從灰邊扁平升為主角（teal 邊 + 陰影 + teal header），gene-card 從 teal 邊降為灰邊配角（原本基因卡比決策框還突出，層次是反的）BUG-45 |
 | V3.1.0 | V1.11.9 | 2026-07-01 | 設計師視角 UI 審核後的 A 級無障礙 + B 級字體升級（全 7 頁）：(A) 每頁加 `:focus-visible` 鍵盤 focus 環（醫護 --primary 藍 / 民眾 --teal）+ `prefers-reduced-motion` 尊重減少動態 + 民眾版觸控目標保底（age-btn 48px / mut-btn·tnm-btn 44px）(B) 全站 font-family 改 `'Noto Sans TC'` 優先、JhengHei 降為 fallback（漸進增強：連不到 Google Fonts 自動退回 JhengHei，不會比現況差）+ 民眾版病人要讀的小字放大（mut-ss 10→11.5px 提對比、tnm-btn i 9.5→10.5px）。7 頁語法全綠 BUG-44 |
 | V3.0.9 | V1.11.8 | 2026-07-01 | Sela 交辦 2 事：(1) 電腦版 Q 問答頁違和 — `.page`→`.cd`→`.type-grid` 一路 flex:1 把類型卡片撐到滿視窗高度（卡片超大、內容置中一堆留白）。root cause 同 V3.0.7 總覽頁：桌面版 `body.questioning` 解鎖規則只在 `@media(max-width:640px)`。修法：提升為全尺寸解鎖（卡片自然高度堆疊）+ 桌面版 type-btn min-height:130px (2) 建 294 情境大規模模擬 harness（全型態×早中晚期×開刀/不開刀×基因×復發），7 大類結構檢查（steps 非空/stageTxt/IIIA 回歸/IA 鞏固/SCLC 基因/禁字殘留/期別帶入）全綠。人工細看 9 情境臨床合理性，抓到 LOCAL 分支對驅動基因陽性者仍顯示免疫維持治療但沒提示不適用（PACIFIC 排除 EGFR/ALK），補一條 warn 提示標靶維持方向（patient + edu-patient 同步）BUG-43 |
-| V3.0.8 | V1.11.7 | 2026-07-01 | Sela 交辦 3 修：(1) 高劍虹從名單末尾移到張竣期後（第 2 位）— 醫護版 CFG.team + 民眾版 TEAM 兩處都改 (2) 基因檢測卡片結合病人實際期別 + 明確講健保給付狀況 — subtitle/foot 帶入「pXXX 期」+「以您的分期，EGFR/ALK/PD-L1 健保有給付」（非鱗晚期）/「PD-L1 健保、EGFR/ALK 自費」（鱗狀晚期）/「健保多不給付」（早期）(3) **問診頁（Q1 基本資料）不再提前解釋「為什麼」與給建議** — 年齡拿掉「建議改 Carboplatin」、B/C 肝拿掉「需看腸胃科/建議先驗」、重大傷病拿掉「建議盡快申請」+ 各欄 hint 說明；建議一律留到決策頁 warns。原則：問診頁只問「有沒有/是什麼狀態」，決策頁才給建議 BUG-42 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -796,6 +796,15 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**「回填 UI」是「清空 UI」的鏡像，有 restart 就照著寫 restoreAllUI**。restart 清哪些 class/input，restoreAllUI 就依 S 把那些設回去。兩個函式要對稱維護 — 之後加 Q6 欄位，restart 跟 restoreAllUI 都要記得加（又一個「兩處要同步」，同 BUG-46 家族）
 - 教訓：**onclick 屬性選擇器 `[onclick^="fnName"]` 是「同 class 不同用途按鈕」的精準定位法**。當多組按鈕共用同一 class（省 CSS）又要分別操作時，比起硬加 id / data 屬性，用既有的 onclick 綁定來選最省事
 
+### #52 (lung V1.13.1 / V3.3.1)：SPA 沒接 History API → 系統返回鍵整頁跳走
+- 症狀：Sela 回報民眾版「導航/返回有時整個跳到不知道哪頁」
+- 診斷過程（值得記）：先建導航模擬 harness 窮舉「4/5/6 頁三型態 × 前進到底 × 返回到底 × 中途改期別 × 載入紀錄 × 開關 overlay」→ **頁內 JS 導航邏輯全部正確**（goNext/goPrev/loadRecord 的 stepIdx 與 activePage 完全同步，返回鏈都是前進鏈的反向）。模擬測不出 bug，反而是最有用的線索：既然頁內邏輯對，「整頁跳走」就不是 JS 導航問題，而是**瀏覽器層級**的
+- 真兇：民眾版是單頁 SPA（JS 切 .page），但沒接 History API。使用者按手機/瀏覽器的「返回鍵、返回手勢」→ 瀏覽器直接離開 patient.html 回 portal（或前一站），使用者以為是「上一題」→ 不預期整頁跳走。這解釋「有時」（用頁面按鈕沒事、用系統返回就跳走）
+- 做法：`initBackButton` — `history.pushState` 墊一筆，`popstate` 攔截：overlay/QR 開著先關 → Q2-Q5/總覽 轉 goPrev → 只有 Q1 放行 `history.back()` 離開。每次攔截後補 pushState，形成「持續攔截直到 Q1」
+- 教訓：**模擬測不出 bug，本身就是強線索 — 代表 bug 不在你測的那層**。頁內導航邏輯窮舉全過，反而證明問題在更上層（瀏覽器 history）。與其反覆看 JS，不如問「哪一層我還沒驗」。debug 時「排除法」跟「找到」一樣有價值
+- 教訓：**任何用 JS 切畫面的 SPA，第一天就該接 History API**。只要頁面看起來會「切換」但 URL 沒變，使用者的系統返回鍵預期就會落空。這類 file-based 單頁工具最容易漏 — 因為「看起來像多頁」但瀏覽器只有一個 entry。判準：畫面會切換 + URL 不變 = 要嘛接 history、要嘛接受返回鍵離開
+- ⚠️ 待實機確認：History API 攔返回鍵的行為（尤其 Q1 放行離開、overlay 開著返回先關）只有真機/真返回鍵測得準，本地語法檢查驗不到 popstate 實際行為
+
 ---
 
 ## 七、擴充新癌別
@@ -813,7 +822,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **完整實機驗證 V3.0.1~V3.3.0** — **第 1 名因為累積多版沒完整上真機，V3.3.0 載入修改邏輯 + V3.2.x 紀錄功能尤其要真機驗**。(a) V3.3.0 載入修改：紀錄頁點一筆 → 總覽顯示該筆內容對 → 退回 Q 頁看 TNM/mut/年齡等 UI 都回填對（尤其 TNM 進階值如 T1a 要能回填 + 切到進階組顯示）→ 改一改按「更新這筆紀錄」→ 回紀錄頁確認是更新同一筆不是多一筆 (b) V3.2.1 紀錄頁全屏獨立、無殘留 actbar/進度點 (c) V3.2.0 存查詢/統計/清除 + **確認沒撞醫護版病歷庫** (d) V3.1.4 字體 JhengHei 銳利 (e) V3.1.3 時效色點/待辦/badge (f) V3.1.2 資料安全存檔/未儲存提醒/刪除帶識別 (g) V3.1.1 視覺 (h) V3.1.0 A 級 focus/44px/reduced-motion (i) V3.0.9 Q 頁不撐爆+驅動基因提示 (j) V3.0.1~V3.0.8 病人視角逐項 (k) 個管師找 3-5 個真實病人試用
+1. **完整實機驗證 V3.0.1~V3.3.1** — **第 1 名因為累積多版沒完整上真機，V3.3.1 返回鍵行為 + V3.3.0 載入修改只有真機測得準**。(a) V3.3.1 返回鍵：Q3 按手機返回鍵/手勢 → 回 Q2（不是跳離）；Q1 按返回 → 才回 portal；開紀錄 overlay 按返回 → 先關 overlay；QR 開著按返回 → 先關 QR (b) V3.3.0 載入修改：點紀錄→總覽顯示對→退 Q 頁看 TNM/mut/年齡回填對（尤其 TNM 進階值）→ 改後按「更新這筆紀錄」→ 確認更新同一筆不是多一筆 (c) V3.2.x 紀錄：存查詢/統計/清除/獨立頁不殘留 actbar + **確認沒撞醫護版病歷庫** (d) V3.1.4 字體 JhengHei 銳利 (e) V3.1.3 時效色點/待辦/badge (f) V3.1.2 資料安全 (g) V3.1.1 視覺 (h) V3.1.0 A 級 (i) V3.0.9 Q 頁不撐爆 (j) V3.0.1~V3.0.8 病人視角 (k) 個管師找 3-5 個真實病人試用
 2. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
 3. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
@@ -837,4 +846,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V3.3.0 民眾版紀錄可「載入 → 修改 → 再次儲存」（個管師用）。紀錄卡片可點 → loadRecord 填 S + restoreAllUI 回填所有 Q 頁 UI → 進總覽；pdbEditId 綁定編輯中那筆，saveQuery 有 editId 就更新非新增，按鈕文字變「更新這筆紀錄」；先補 saveQuery 存 t/n/m（原本只存 stage 無法回填 TNM）。fake-indexeddb 測存→載入改→更新（仍 1 筆）→ 清 editId 存新（2 筆）全綠。BUG-51 三條教訓：存檔要存「能還原 UI 的最小完整集」不是只存算出來的結果、回填 UI 是清空 UI 的鏡像（restart↔restoreAllUI 要對稱維護，同 BUG-46 家族）、onclick 屬性選擇器是同 class 不同用途按鈕的精準定位法。下版第一優先仍是**完整實機驗證 V3.0.1~V3.3.0**（尤其 V3.3.0 載入修改要真機驗：點紀錄→總覽顯示對→退 Q 頁改 TNM/mut→更新回同一筆不新增、確認 TNM 進階值也回填正確）；第 2 是摩擦報告順手項（#7 病人分頁就地儲存 + #9 MDM 欄位版面）；第 3 是民眾版統計上線後看個管師要不要更多維度。
+V3.3.1 修民眾版「返回有時整頁跳走」。先建導航模擬窮舉前進/返回/載入/開關 overlay → 頁內 JS 導航邏輯全對，反而證明 bug 在更上層：民眾版是 SPA 但沒接 History API，系統返回鍵/手勢會整頁跳離 patient.html 回 portal，被誤以為「上一題」。修法 initBackButton：pushState 墊一筆 + popstate 攔截，overlay/QR 先關、Q2-Q5/總覽轉 goPrev、只有 Q1 放行離開。BUG-52 兩條教訓：模擬測不出 bug 本身是強線索（代表問題不在那層，用排除法找到瀏覽器層）、任何 JS 切畫面的 SPA 第一天就該接 History API（畫面切換+URL 不變=返回鍵預期會落空）。⚠️ History API 攔返回鍵只有真機測得準。下版第一優先仍是**完整實機驗證 V3.0.1~V3.3.1**（尤其 V3.3.1 返回鍵行為：Q 流程中按手機返回=上一題、Q1 返回才離開、overlay 開著返回先關；V3.3.0 載入修改）；第 2 是摩擦報告順手項（#7 病人分頁就地儲存 + #9 MDM 版面）；第 3 是民眾版統計更多維度。

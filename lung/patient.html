@@ -2995,6 +2995,29 @@ function restart(){
 
 // init
 showPage(0);
+
+/* V3.3.1: 攔截瀏覽器/手機的「返回鍵、返回手勢」，轉成 app 內導航。
+   民眾版是單頁 SPA（靠 JS 切換 .page），原本系統返回會整頁跳離 patient.html
+   回到 portal，使用者以為按的是「上一題」→ 不預期整頁跳走。
+   接 History API 後：Q2-Q5/總覽 的系統返回 = 上一題；overlay/QR 開著則先關；
+   只有在 Q1（入口）按返回才真的離開回 portal */
+(function initBackButton(){
+  try{
+    history.pushState({app:1}, '');  // 墊一筆，讓第一次系統返回有得攔
+    window.addEventListener('popstate', function(){
+      // 1. 紀錄 overlay 開著 → 先關 overlay（不離開）
+      const rec = document.getElementById('p-records');
+      if(rec && rec.classList.contains('open')){ closeRecords(); history.pushState({app:1},''); return; }
+      // 2. QR 彈窗開著 → 先關 QR
+      const qr = document.getElementById('qr-modal');
+      if(qr && qr.style.display === 'flex'){ closeQR(); history.pushState({app:1},''); return; }
+      // 3. 在 Q2-Q5 / 總覽 → 回上一題（等同按「上一題」）
+      if(stepIdx > 0){ goPrev(); history.pushState({app:1},''); return; }
+      // 4. 在 Q1（入口）→ 放行，真的返回上一頁（portal）
+      history.back();
+    });
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
