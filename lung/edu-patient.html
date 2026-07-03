@@ -253,6 +253,7 @@ function buildPathRawFromData(d){
 
 function buildPathRawCoreFromData(d){
   const t = d._type, st = d._stageCat, m = d.m, brain = d.b;
+  const pdl1 = d.pd || '';  // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
   // SCLC special
   if(t==='SCLC'){
     if(st==='META'){
@@ -435,27 +436,34 @@ function buildPathRawCoreFromData(d){
         { title:'第二線：口服 KRAS G12C 標靶', line:DRUGS.KRAS.line, nhi:'SELF', drugs: DRUGS.KRAS.list, note: DRUGS.KRAS.note },
       ];
       warns.push('KRAS G12C 口服標靶藥（Sotorasib）目前健保未給付，需自費');
-    } else if(m==='PDL1_HIGH'){
-      const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
-      steps = [
-        { title:'第一線（首選）：免疫治療單藥', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'免疫指標（PD-L1）≥50% 時可不加化療。' },
-        { title:'第一線（合併）：免疫治療 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note:'腫瘤負擔較重或有症狀者可加化療快速控制。' },
-        { title:'病情惡化後：化療接續治療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測（NGS）找其他可治療的突變。' },
-      ];
-    } else if(m==='PDL1_LOW'){
-      const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
-      steps = [
-        { title:'第一線：化療搭配免疫治療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
-        { title:'病情惡化後：接續化療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測找其他可治療的突變。' },
-      ];
     } else {
-      // NONE
-      steps = [
-        { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'包含 EGFR、ALK、ROS1、BRAF、MET、KRAS、NTRK 等基因 + PD-L1 免疫指標。' },
-        { title:'等檢測報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
-        { title:'依檢測結果決定個人化治療', line:'後續', note:'有基因突變 → 用標靶；免疫指標高 → 用免疫治療搭配化療。' },
-      ];
-      warns.push('基因檢測會大幅影響可用藥物，請務必完成');
+      // V3.4.2: 無驅動基因（NONE）→ 依 PD-L1 免疫指標決定（與 patient.html 同邏輯）
+      if(pdl1==='HIGH'){
+        const k = isNS ? 'NS_PDL1H' : 'SQ_PDL1H';
+        steps = [
+          { title:'第一線（首選）：免疫治療單藥', line:'一線', nhi:'NHI', drugs:[{n:'Pembrolizumab',z:'吉舒達'}], note:'無驅動基因且免疫指標（PD-L1）≥50% 時，可不加化療。' },
+          { title:'第一線（合併）：免疫治療 + 化療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note:'腫瘤負擔較重或有症狀者可加化療快速控制。' },
+          { title:'病情惡化後：化療接續治療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測（NGS）找其他可治療的突變。' },
+        ];
+      } else if(pdl1==='LOW'){
+        const k = isNS ? 'NS_PDL1L' : 'SQ_PDL1L';
+        steps = [
+          { title:'第一線：化療搭配免疫治療', line:DRUGS[k].line, nhi:'NHI', drugs: DRUGS[k].list, note: DRUGS[k].note },
+          { title:'病情惡化後：接續化療或加做完整基因檢測', line:'接續治療', note:'透過完整基因檢測找其他可治療的突變。' },
+        ];
+      } else {
+        // 驅動基因與 PD-L1 都未驗 / 未填 → 先完整檢測
+        steps = [
+          { title:'建議盡快完成完整基因檢測', line:'前置檢查', note:'包含 EGFR、ALK、ROS1、BRAF、MET、KRAS、NTRK 等基因 + PD-L1 免疫指標。' },
+          { title:'等檢測報告期間：可先用化療', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'' },
+          { title:'依檢測結果決定個人化治療', line:'後續', note:'有基因突變 → 用標靶；免疫指標高 → 用免疫治療搭配化療。' },
+        ];
+        warns.push('基因檢測會大幅影響可用藥物，請務必完成');
+      }
+    }
+    // V3.4.2: 驅動基因陽性 + PD-L1 也高 → 提醒仍以標靶優先
+    if(['EGFR','ALK','ROS1','BRAF','MET'].includes(m) && pdl1==='HIGH'){
+      warns.push('您的 PD-L1 偏高，但因帶有 ' + mutDisplay(m) + ' 驅動基因，第一線仍以標靶藥為主（驅動基因陽性者用免疫治療效果通常較差）');
     }
     return { stageTxt:`${typeLabel} 轉移期 (IV)`, pwTxt:'依基因檢測結果與免疫指標選擇個人化治療', steps, warns };
   }
@@ -683,7 +691,10 @@ function stageDisplay(d){
 }
 
 function mutDisplay(m){
-  return ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF V600E(+)',MET:'MET ex14(+)',KRAS:'KRAS G12C(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:''}[m] || '');
+  return ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF V600E(+)',MET:'MET ex14(+)',KRAS:'KRAS G12C(+)',NONE:''}[m] || '');
+}
+// V3.4.2: PD-L1 顯示
+function pdl1Display(v){ return ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%'}[v] || '');
 }
 
 function escapeHtml(s){ return String(s||'').replace(/[&<>"\']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -801,6 +812,7 @@ function render(d){
   h += `<div><div class="pw">${escapeHtml(r.pwTxt||'')}</div>`;
   let meta = r.stageTxt;
   if(d.m && d.m!=='NONE') meta += ' · ' + mutDisplay(d.m);
+  if(pdl1Display(d.pd)) meta += ' · ' + pdl1Display(d.pd);  // V3.4.2 PD-L1 併存
   if(d._type==='SCLC' && d.b){
     const bL = ({yes:'腦/脊髓(+)', no:'腦/脊髓(-)', unknown:''})[d.b];
     if(bL) meta += ' · ' + bL;

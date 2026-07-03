@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.4.2 | V1.14.2 | 2026-07-03 | Sela 交辦 2 事：(1) **edu-patient QR 衛教頁同步 PD-L1**（V3.4.0 留的待辦）— patient.html buildEduPayload 加 `pd` 欄位（QR 帶 pdl1）；edu-patient buildPathRawCoreFromData 同步成兩維度（讀 `d.pd`，PDL1_HIGH/LOW 舊分支 → 無 driver 看 pdl1 的 HIGH/LOW/未驗），加 driver+ 且 PD-L1 高的標靶優先 warn，mutDisplay 拿掉 PDL1_* + 加 pdl1Display + meta 顯示。**舊 QR 相容**：無 pd 欄位時走「未驗」（NONE→先檢測、driver 仍標靶）(2) 文字修正：驅動基因 label 加「通常擇一，彼此多為互斥」。edu 6 組合分流 + 舊 QR 相容測試全綠，與 patient.html 對齊 BUG-56 |
 | V3.4.1 | V1.14.1 | 2026-07-02 | 修 V3.4.0 密碼 4 問題（Sela 回報）：(1) 輸對密碼進不去 — 疑似 `type=password` 觸發瀏覽器密碼管理員自動填干擾 value；(2) 密碼該在 portal 點醫護版時確認、非進到 lung 才確認；(3) 明碼不遮蔽；(4) 密碼 cbshow。**整個密碼機制從 lung/index.html 搬到 portal**：portal 點醫護版癌別卡片 → `requireProAuth` 彈明碼 modal（`type=text` + trim 比對）→ 對 → `sessionStorage('pro_auth')` + 跳轉；同 session 再點免重輸。lung/index.html 移除原 auth-gate，改輕量 `proGuard`（沒驗證過直接輸網址 → `location.replace('../')` 踢回 portal）。node 模擬 4 情境（彈框/輸錯擋/輸對進/免重輸）全綠 BUG-55 |
 | V3.4.0 | V1.14.0 | 2026-07-02 | Sela 交辦 2 事：(1) **醫護版加進入密碼**「cbshow」— 全屏 auth-gate overlay（z:9999），輸入正確存 sessionStorage（同 session 免再輸），純前端明碼擋非醫護人員（非高強度安全）(2) **民眾版基因檢測與免疫檢測併存** — 原本 Q4 驅動基因（EGFR/ALK/ROS1/BRAF/MET/KRAS）跟 PD-L1（HIGH/LOW）擠在同一組單選互斥，病人有 EGFR+ 且 PD-L1 高時只能選一個。拆成兩區：驅動基因（S.mut，必選）+ PD-L1 免疫指標（S.pdl1 新欄位，選填）各自單選。buildPath 改「driver 優先，無 driver 才看 pdl1」：有驅動基因→標靶（PD-L1 高也提醒仍標靶優先，因免疫對 driver+ 效果差）、無驅動+PD-L1高→免疫單藥、無驅動+PD-L1低→化療+免疫。pdl1 一併加進 saveQuery/loadRecord/restoreAllUI/restart（記取 BUG-53）。6 組合分流驗證全綠。⚠️ edu-patient QR 衛教頁的 PD-L1 同步未做（列待辦）BUG-54 |
 | V3.3.2 | V1.13.2 | 2026-07-02 | Sela 回報「團隊狀態沒有儲存」— 民眾版總覽頁選的照護團隊醫師（S.consult）在存查詢/載入時沒被保存。同 BUG-51 家族（存檔漏存欄位）：saveQuery 完全沒存 consult、loadRecord 還把 consult 清成 `{}`。修法：saveQuery 加 `consult:{...S.consult}`（深拷貝）、loadRecord 改 `consult:{...(rec.consult||{})}`。載入後 showPage(5)→renderSummary→renderTeam 依 S.consult 重繪選中醫師。fake-indexeddb 測存含三科醫師→讀出三科都還原 BUG-53 |
@@ -236,7 +237,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V3.2.0 | V1.12.0 | 2026-07-02 | 民眾版加查詢紀錄 + 統計（Sela 定方向「主要給病人看自己的歷史，個管師可統計給哪些病人看/做過哪些資料」）。民眾版原本是無狀態查詢工具（走完就沒），現在加 IndexedDB（dbName `'LungNavPatient'` 刻意不同於醫護版 `'LungNav'`，同 origin 不同路徑避免撞資料）。總覽頁加「儲存這次查詢」；topbar 加「紀錄」入口 → `p-records` 頁：上半統計卡（總查詢數 + 型態/分期分布長條 + 有填識別筆數，個管師參考）、下半歷次查詢卡片列表（病人看自己的）、底部「清除本機紀錄」（公用裝置隱私）。識別用 Q1 既有的選填 code/name。fake-indexeddb 端到端測存取/統計/清除全綠 BUG-49 |
 | V3.1.4 | V1.11.13 | 2026-07-02 | Sela 實機試用發現「電腦版民眾版解析度略下降」→ 確認是 V3.1.0 換的 Noto Sans TC webfont：Windows 上 Noto CJK 的 hinting 不如系統原生 JhengHei 銳利，中文字顯柔（民眾版大字給長者更明顯）。修法：7 頁 font-family 退回 JhengHei 優先、Noto 降為 fallback（`'Microsoft JhengHei','微軟正黑體','Noto Sans TC'`）。**webfont link 保留不移除** — Windows 第一位命中 JhengHei 用原生銳利字體且不下載 Noto，Mac/iPhone 沒 JhengHei 才 fallback 到 Noto，兩全。不動 A 級無障礙（focus/reduced-motion/觸控與字體無關）BUG-48 |
 | V3.1.3 | V1.11.12 | 2026-07-01 | 個管師摩擦報告第二批「時效管理」#4+#5+#6（同組需求一起設計）：核心是共用函式 `calcTimeliness(d)`（時效狀態單一真相，呼應 BUG-46 避免多處分叉）。(#4) 紀錄清單每列加 3 個 KPI 色點（收案→確診/首治/MDT，綠 pass /黃 warn /紅 fail /灰 na） (#5) **主動預警** — 原本 KPI 是「確診後算超沒超」的事後檢核，新增「已收案 N 天還沒確診」的倒數：收案 ≥12 天未確診 → 黃、>14 天 → 紅；首治 ≥35 天 → 黃、>42 → 紅 (#6) 新增「待辦」分頁 — `collectAllAlerts()` 彙整所有病人的 alerts，fail 逾期在前、warn 快到期在後，點任一筆直接開該病人；sidebar nav 帶未處理數 badge。7 情境驗證全綠 BUG-47 |
-| V3.1.2 | V1.11.11 | 2026-07-01 | 個管師操作醫護版摩擦報告後動手做「資料安全三修」（Sela 挑第一批 1+2+3）：(1) 編輯舊病人在「病人」分頁改基本資料切到總覽/手冊時漏存 — root cause 比表面深：`autoUpdateRecord` 不只觸發條件窄（只認 basicck/checklist/decision/pathway），連 `Object.assign` 欄位也不完整（缺 type/stage/mutation 等分期欄位），跟 `save()` 欄位集各寫一份會分叉。抽共用函式 `collectStateFields()`（完整 33 欄位），save + autoUpdate 都用它永不分叉 + go() 放寬到所有分頁都 autoUpdate (2) 無未儲存離開提醒 — 加 `_dirty` 旗標（input 委派設 true、save/autoUpdate/saveDraft/load/newPatient 清 false）+ `beforeunload` 攔截，防「當前分頁改了沒切走就關」遺失 (3) 刪除確認「確定刪除？」沒帶病人識別 → 改「確定刪除『A0012 王小明』的紀錄？」，管幾百病人不刪錯 BUG-46 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -832,6 +832,14 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**「在哪一層擋」要順著使用者的心智流**。Sela 說「點醫護版就確認」— 攔截點該在「做出選擇的那個動作」（portal 點卡片），不是「到達目的地之後」（lung 載入）。安全閘門放在決策點比放在目的地更符合直覺，也少一次「都進來了才被擋」的困惑
 - 註：純前端密碼 + sessionStorage 守衛擋得住「不小心點進來的人」，擋不住「會看原始碼或直接改 sessionStorage 的人」。Sela 認知這是「一道門」不是「保險箱」
 
+### #56 (lung V1.14.2 / V3.4.2)：edu-patient QR 衛教頁同步 PD-L1（了結 V3.4.0 待辦）
+- 背景：V3.4.0 把 patient.html 的 Q4 拆成驅動基因 / PD-L1 兩維度，但 edu-patient（掃 QR 的唯讀衛教頁）沒同步 — 還是舊的 PDL1_HIGH/LOW 單維邏輯，且 QR payload 沒帶 pdl1。掃 QR 看到的路徑會跟查詢工具不一致
+- 做法：兩處對齊 —（送）patient.html `buildEduPayload` 加 `pd:S.pdl1`；（收）edu-patient `buildPathRawCoreFromData` 讀 `d.pd`，META 的 PDL1_HIGH/LOW 舊分支改成「無 driver 看 pdl1 的 HIGH/LOW/未驗」+ driver+PD-L1高的標靶優先 warn，mutDisplay 拿掉 PDL1_* 改用 pdl1Display，meta 顯示加 PD-L1
+- **舊 QR 相容**：payload 缺 `pd` 時（V3.4.2 前印的 QR）→ `d.pd||''` 為空 → 走「未驗」分支（NONE→先檢測、有 driver 仍走標靶）。不會壞舊 QR，只是看不到 PD-L1 那段（本來舊 QR 也沒這資訊）
+- 驗證：edu 6 組合分流 + 2 個舊 QR 相容情境，全部與 patient.html 一致
+- 教訓：**雙人口資料源（patient / edu-patient）改一邊，另一邊是「已知的待辦」不是「忘記的 bug」**。BUG-41 就踩過醫護版 / 民眾版醫師名單不同步。這次 V3.4.0 動 patient.html 時就當場把 edu 同步列進下版 #1，V3.4.2 補上 — 有意識地延後 + 記錄，比默默漏掉好。但根本解仍是下版候選的「抽 lung/_path.js 共用」（patient / edu 兩份 buildPath 平行維護的負擔，改一次要動兩處臨床邏輯，風險高）
+- 教訓：**payload 加欄位天然要考慮舊資料相容**。QR 碼印出去就固定了，新增欄位一定要「缺省時有合理行為」。這裡 `d.pd||''`→未驗 是安全缺省。任何「已經發出去、收不回來」的資料格式（QR、URL、存檔），加欄位都要問「舊的沒這欄位會怎樣」
+
 ---
 
 ## 七、擴充新癌別
@@ -849,11 +857,10 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **edu-patient QR 衛教頁同步 PD-L1**（V3.4.0 直接產生的待辦）— 民眾版 patient.html 已拆驅動基因 / PD-L1 兩維度，但 edu-patient.html 的 buildPathFromData 還是舊的 PDL1_HIGH/LOW 單維邏輯，且 QR payload（buildEduURL）沒帶 pdl1。掃 QR 看到的路徑會跟查詢工具不一致。要同步兩處（雙人口資料源，BUG-41 家族）+ QR payload 加 pdl1 參數（注意舊 QR 相容：pdl1 缺省時走「未驗」）
-2. **完整實機驗證 V3.0.1~V3.4.1** — **累積多版沒完整上真機**。(a) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (b) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
-3. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
-4. **民眾版抽 `collectQueryFields()` 單一真相**（BUG-53 指向的根治）— saveQuery 已經漏存兩次（t/n/m、consult），欄位散在 saveQuery/loadRecord/restart 三處手動列。學醫護版 BUG-46 的 collectStateFields 作法，抽一個回傳完整欄位物件的函式，三處共用一份清單，之後加欄位不會再漏。目前 ~17 欄手動列還能忍，但已漏兩次，該做
-5. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
+1. **完整實機驗證 V3.0.1~V3.4.2** — **累積多版沒完整上真機**。(a) V3.4.2 QR 掃描：民眾版存查詢→產生 QR→手機掃→衛教頁 PD-L1 顯示且治療分流跟查詢工具一致；舊 QR（V3.4.2 前）掃描不會壞 (b) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (c) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
+2. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
+3. **民眾版抽 `collectQueryFields()` 單一真相**（BUG-53 指向的根治）— saveQuery 已經漏存兩次（t/n/m、consult），欄位散在 saveQuery/loadRecord/restart 三處手動列。學醫護版 BUG-46 的 collectStateFields 作法，抽一個回傳完整欄位物件的函式，三處共用一份清單，之後加欄位不會再漏。目前 ~17 欄手動列還能忍，但已漏兩次，該做
+4. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
    - 🟡 #2 紀錄列表頁加 3 個 KPI 色點（30 分）
    - 🟡 #3「我的待辦 / 即將超期」清單分頁（2 小時，大功能）
@@ -861,18 +868,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
    - 🟡 #5「實際治療」勾選加治療日期欄位（1 小時）
    - 🟢 #6 副作用追蹤系統 CTCAE 分級（半天起跳）
    - 🟢 #7 個管師名字改設定（15 分）
-6. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
-7. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
-8. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
-9. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
-10. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
-11. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
-12. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
-13. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-14. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
+5. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
+6. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
+7. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
+8. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
+9. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
+10. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
+11. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
+12. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+13. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V3.4.1 修 V3.4.0 密碼 4 問題（Sela 回報）：輸對進不去（疑 type=password 招來密碼管理員自動填）、密碼該在 portal 點醫護版時確認、明碼不遮蔽、密碼 cbshow。整個密碼機制從 lung 搬到 portal：點醫護版癌別卡片 → requireProAuth 彈明碼 modal（type=text + trim）→ 對 → sessionStorage + 跳轉；lung 改 proGuard 守衛（沒驗證直接輸網址踢回 portal）。node 模擬 4 情境全綠。BUG-55 教訓：純前端密碼別用 type=password（招密碼管理員自動填干擾）、「在哪一層擋」要順使用者心智流（攔在做選擇的動作點、非到達目的地後）。下版第一優先仍是**edu-patient QR 衛教頁同步 PD-L1**（V3.4.0 拆了驅動基因/PD-L1 兩維度，edu-patient 還是舊單維 + QR payload 沒帶 pdl1，掃 QR 會不一致，BUG-41 家族）；第 2 是完整實機驗證 V3.0.1~V3.4.1（尤其密碼流程：點醫護版彈框、輸 cbshow 進、直接輸 lung 網址踢回 portal；Q4 兩區併存）；第 3 是民眾版抽 collectQueryFields() 根治存檔漏欄位。
+V3.4.2 Sela 交辦 2 事：(1) edu-patient QR 衛教頁同步 PD-L1（了結 V3.4.0 待辦）— patient.html QR payload 加 pd 欄位、edu-patient buildPath 同步兩維度（driver 優先、無 driver 看 pdl1），舊 QR 無 pd 時走「未驗」相容。edu 6 組合 + 舊 QR 相容全綠，與 patient.html 對齊 (2) 驅動基因 label 改「通常擇一，彼此多為互斥」。BUG-56 教訓：雙人口資料源改一邊、另一邊是「已知待辦」非「忘記的 bug」（V3.4.0 就列進下版 #1、V3.4.2 補上）；payload 加欄位天然要考慮舊資料相容（QR 印出去收不回，缺省要有合理行為）。至此 V3.4.x 的基因/免疫併存功能（查詢工具 + QR 衛教頁）完整對齊。下版第一優先：**完整實機驗證 V3.0.1~V3.4.2**（累積十多版沒完整上真機，密碼流程/Q4 兩區併存/QR 掃描 PD-L1 顯示/載入返回團隊還原都要真機確認）；第 2 是民眾版抽 collectQueryFields() 根治存檔漏欄位；第 3 是抽 lung/_path.js 讓 patient/edu 共用 buildPath（消除雙份平行維護）。

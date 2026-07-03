@@ -1008,7 +1008,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     </div>
 
     <!-- NSCLC: ① 驅動基因（單選，必填） -->
-    <div class="q4-sec-label" id="q4-lbl-mut">① 驅動基因（擇一）</div>
+    <div class="q4-sec-label" id="q4-lbl-mut">① 驅動基因<span class="q4-sec-opt">　通常擇一，彼此多為互斥</span></div>
     <div class="mut-grid" id="opt-mut">
       <button type="button" class="mut-btn" data-val="EGFR" onclick="pickMut(this)">
         <span class="mut-tag">EGFR</span>
@@ -2474,6 +2474,7 @@ function buildEduPayload(){
     t: typeCode,
     s: S.stage || (isSCLC() ? (S.stageCat==='META'?'Extensive':'Limited') : ''),
     m: S.mut || '',
+    pd: S.pdl1 || '',             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
     b: S.brainMet || '',          // SCLC 腦/脊髓轉移
     a: S.age || '',                // V2.9.0: 年齡 lt70/ge70
     e: S.ecog || '',               // V2.9.0: ECOG 01/2/34
