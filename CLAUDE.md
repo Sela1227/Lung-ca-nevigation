@@ -227,6 +227,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.4.3 | V1.14.3 | 2026-07-03 | 加入 app logo（依 SELA-Starter-Kit V1.21.0 §17 工作流）。**不用 SELA 主 logo、只做 app 子 logo**（SELA 決定）。先依 §17 產 `SELA-logo-prompt.md`（範本 B 醫療專業、壁虎不繼承、底色 #5B8FB9），SELA 用 Gemini 生圖（白色蜿蜒路徑+節點+右上箭頭，呼應臨床路徑導航），Claude 走 §10.2 四步優化：floodfill 外圍白底 + 抽白色主體 mask 重新合成 → 底色從 Gemini 的 #4780AD 校正回專案主色 #5B8FB9 + 抹除右下 Gemini 浮水印。生多解析度套組（16~1024 + favicon.ico + apple-touch-icon + android-chrome + site.webmanifest）放專案根目錄 `favicon/`，7 個 HTML `<head>` 加引用（portal 用 `favicon/`、lung/ 用 `../favicon/` 相對路徑，GitHub Pages 子路徑安全）BUG-57 |
 | V3.4.2 | V1.14.2 | 2026-07-03 | Sela 交辦 2 事：(1) **edu-patient QR 衛教頁同步 PD-L1**（V3.4.0 留的待辦）— patient.html buildEduPayload 加 `pd` 欄位（QR 帶 pdl1）；edu-patient buildPathRawCoreFromData 同步成兩維度（讀 `d.pd`，PDL1_HIGH/LOW 舊分支 → 無 driver 看 pdl1 的 HIGH/LOW/未驗），加 driver+ 且 PD-L1 高的標靶優先 warn，mutDisplay 拿掉 PDL1_* + 加 pdl1Display + meta 顯示。**舊 QR 相容**：無 pd 欄位時走「未驗」（NONE→先檢測、driver 仍標靶）(2) 文字修正：驅動基因 label 加「通常擇一，彼此多為互斥」。edu 6 組合分流 + 舊 QR 相容測試全綠，與 patient.html 對齊 BUG-56 |
 | V3.4.1 | V1.14.1 | 2026-07-02 | 修 V3.4.0 密碼 4 問題（Sela 回報）：(1) 輸對密碼進不去 — 疑似 `type=password` 觸發瀏覽器密碼管理員自動填干擾 value；(2) 密碼該在 portal 點醫護版時確認、非進到 lung 才確認；(3) 明碼不遮蔽；(4) 密碼 cbshow。**整個密碼機制從 lung/index.html 搬到 portal**：portal 點醫護版癌別卡片 → `requireProAuth` 彈明碼 modal（`type=text` + trim 比對）→ 對 → `sessionStorage('pro_auth')` + 跳轉；同 session 再點免重輸。lung/index.html 移除原 auth-gate，改輕量 `proGuard`（沒驗證過直接輸網址 → `location.replace('../')` 踢回 portal）。node 模擬 4 情境（彈框/輸錯擋/輸對進/免重輸）全綠 BUG-55 |
 | V3.4.0 | V1.14.0 | 2026-07-02 | Sela 交辦 2 事：(1) **醫護版加進入密碼**「cbshow」— 全屏 auth-gate overlay（z:9999），輸入正確存 sessionStorage（同 session 免再輸），純前端明碼擋非醫護人員（非高強度安全）(2) **民眾版基因檢測與免疫檢測併存** — 原本 Q4 驅動基因（EGFR/ALK/ROS1/BRAF/MET/KRAS）跟 PD-L1（HIGH/LOW）擠在同一組單選互斥，病人有 EGFR+ 且 PD-L1 高時只能選一個。拆成兩區：驅動基因（S.mut，必選）+ PD-L1 免疫指標（S.pdl1 新欄位，選填）各自單選。buildPath 改「driver 優先，無 driver 才看 pdl1」：有驅動基因→標靶（PD-L1 高也提醒仍標靶優先，因免疫對 driver+ 效果差）、無驅動+PD-L1高→免疫單藥、無驅動+PD-L1低→化療+免疫。pdl1 一併加進 saveQuery/loadRecord/restoreAllUI/restart（記取 BUG-53）。6 組合分流驗證全綠。⚠️ edu-patient QR 衛教頁的 PD-L1 同步未做（列待辦）BUG-54 |
@@ -236,7 +237,6 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 | V3.2.1 | V1.12.1 | 2026-07-02 | Sela 截圖回報 V3.2.0 紀錄頁「跟病人流程混在一起」— 紀錄頁做成 `.page` 寄生在查詢流程容器裡，底部殘留「上一題/下一題」actbar、頂部殘留查詢進度點。修法：紀錄頁改「全屏獨立 overlay」（`position:fixed;inset:0;z-index:200` 蓋過 topbar+actbar，比照 qr-modal 作法），有自己的返回 header。openRecords 加 `.open` + 鎖背景捲動，closeRecords 只關 overlay 不再 `showPage(0)` 硬回 Q1（底下查詢流程維持原狀）BUG-50 |
 | V3.2.0 | V1.12.0 | 2026-07-02 | 民眾版加查詢紀錄 + 統計（Sela 定方向「主要給病人看自己的歷史，個管師可統計給哪些病人看/做過哪些資料」）。民眾版原本是無狀態查詢工具（走完就沒），現在加 IndexedDB（dbName `'LungNavPatient'` 刻意不同於醫護版 `'LungNav'`，同 origin 不同路徑避免撞資料）。總覽頁加「儲存這次查詢」；topbar 加「紀錄」入口 → `p-records` 頁：上半統計卡（總查詢數 + 型態/分期分布長條 + 有填識別筆數，個管師參考）、下半歷次查詢卡片列表（病人看自己的）、底部「清除本機紀錄」（公用裝置隱私）。識別用 Q1 既有的選填 code/name。fake-indexeddb 端到端測存取/統計/清除全綠 BUG-49 |
 | V3.1.4 | V1.11.13 | 2026-07-02 | Sela 實機試用發現「電腦版民眾版解析度略下降」→ 確認是 V3.1.0 換的 Noto Sans TC webfont：Windows 上 Noto CJK 的 hinting 不如系統原生 JhengHei 銳利，中文字顯柔（民眾版大字給長者更明顯）。修法：7 頁 font-family 退回 JhengHei 優先、Noto 降為 fallback（`'Microsoft JhengHei','微軟正黑體','Noto Sans TC'`）。**webfont link 保留不移除** — Windows 第一位命中 JhengHei 用原生銳利字體且不下載 Noto，Mac/iPhone 沒 JhengHei 才 fallback 到 Noto，兩全。不動 A 級無障礙（focus/reduced-motion/觸控與字體無關）BUG-48 |
-| V3.1.3 | V1.11.12 | 2026-07-01 | 個管師摩擦報告第二批「時效管理」#4+#5+#6（同組需求一起設計）：核心是共用函式 `calcTimeliness(d)`（時效狀態單一真相，呼應 BUG-46 避免多處分叉）。(#4) 紀錄清單每列加 3 個 KPI 色點（收案→確診/首治/MDT，綠 pass /黃 warn /紅 fail /灰 na） (#5) **主動預警** — 原本 KPI 是「確診後算超沒超」的事後檢核，新增「已收案 N 天還沒確診」的倒數：收案 ≥12 天未確診 → 黃、>14 天 → 紅；首治 ≥35 天 → 黃、>42 → 紅 (#6) 新增「待辦」分頁 — `collectAllAlerts()` 彙整所有病人的 alerts，fail 逾期在前、warn 快到期在後，點任一筆直接開該病人；sidebar nav 帶未處理數 badge。7 情境驗證全綠 BUG-47 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -840,6 +840,15 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**雙人口資料源（patient / edu-patient）改一邊，另一邊是「已知的待辦」不是「忘記的 bug」**。BUG-41 就踩過醫護版 / 民眾版醫師名單不同步。這次 V3.4.0 動 patient.html 時就當場把 edu 同步列進下版 #1，V3.4.2 補上 — 有意識地延後 + 記錄，比默默漏掉好。但根本解仍是下版候選的「抽 lung/_path.js 共用」（patient / edu 兩份 buildPath 平行維護的負擔，改一次要動兩處臨床邏輯，風險高）
 - 教訓：**payload 加欄位天然要考慮舊資料相容**。QR 碼印出去就固定了，新增欄位一定要「缺省時有合理行為」。這裡 `d.pd||''`→未驗 是安全缺省。任何「已經發出去、收不回來」的資料格式（QR、URL、存檔），加欄位都要問「舊的沒這欄位會怎樣」
 
+### #57 (lung V1.14.3 / V3.4.3)：app logo 整合（走 SELA Kit §17 + §10.2 工作流）
+- **App logo 來源記錄（Kit §10.2 step5 要求）：** app logo = 白色蜿蜒路徑 + 節點 + 右上箭頭（呼應臨床路徑導航「從分期到治療每一步」）；設計來源 = SELA 用 Gemini 生成 + Claude 依 §10.2 優化轉檔；**本專案不使用 SELA 主 logo（SELA 決定），只有 app 子 logo**，故無 SELA 品牌歸屬微標
+- 流程：先依 Kit §17 自動工作流產 `SELA-logo-prompt.md`（範本 B 醫療專業型、壁虎不繼承依 §13.2 明列、底色 #5B8FB9 因「配色不改」用專案主色）→ SELA 用 Gemini 生圖 → Claude 走 §10.2 四步優化
+- §10.2 優化做法（這次的具體處理）：Gemini 給 1024² RGB 白底圖，實際底色是 #4780AD（比目標 #5B8FB9 深）+ 右下角有 Gemini 浮水印。用「floodfill 四角外圍白 → 抽白色主體 mask（min RGB>200）→ 用純 #5B8FB9 底重新合成」一套到位：同時完成白底轉滿版、底色校正 #4780AD→#5B8FB9、抹除浮水印（浮水印非主體白 → 併入底色）、邊緣羽化。母圖滿版不做圓角（§10.2 圓角交顯示端）
+- 套組（§10.4）：Pillow 從母圖生 16~1024 多解析度 + favicon.ico（16/32/48 內嵌）+ apple-touch-icon 180 + android-chrome 192/512 + site.webmanifest（客製 name「癌症臨床路徑導航」+ theme_color #5B8FB9）。放專案根目錄 `favicon/`，7 個 HTML `<head>` 加引用
+- **路徑相容坑**：GitHub Pages 子路徑部署，favicon 用相對路徑 — portal（根目錄）`favicon/`、lung/ 底下 `../favicon/`。絕對路徑 `/favicon/` 在 `sela1227.github.io/Lung-ca-nevigation/` 子路徑會 404（呼應 Kit 坑 #39）
+- 各頁既有 `theme-color`（portal #37516b、民眾版 #0d9488）**不動** — 那是各頁介面色（§4.1.1「品牌色 vs 介面色」兩概念），webmanifest theme_color 才用 logo 主題色 #5B8FB9
+- 教訓：**生圖 AI 給的底色會偏、要校回專案色票**。Gemini 給 #4780AD、prompt 明明指定 #5B8FB9 — 擴散模型對精確 hex 不可靠。「配色不改」的專案，logo 底色一定要在後製校正回 UI 用的那個 hex，否則 favicon 跟介面主色對不齊，並排看得出色差
+
 ---
 
 ## 七、擴充新癌別
@@ -857,7 +866,7 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **完整實機驗證 V3.0.1~V3.4.2** — **累積多版沒完整上真機**。(a) V3.4.2 QR 掃描：民眾版存查詢→產生 QR→手機掃→衛教頁 PD-L1 顯示且治療分流跟查詢工具一致；舊 QR（V3.4.2 前）掃描不會壞 (b) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (c) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
+1. **完整實機驗證 V3.0.1~V3.4.3** — **累積多版沒完整上真機**。(a) V3.4.3 favicon：各頁分頁圖示顯示新 app logo（藍底白路徑）、portal 跟 lung/ 子頁都對、手機加到主畫面圖示對 (b) V3.4.2 QR 掃描：民眾版存查詢→產生 QR→手機掃→衛教頁 PD-L1 顯示且治療分流跟查詢工具一致；舊 QR（V3.4.2 前）掃描不會壞 (b) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (c) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
 2. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
 3. **民眾版抽 `collectQueryFields()` 單一真相**（BUG-53 指向的根治）— saveQuery 已經漏存兩次（t/n/m、consult），欄位散在 saveQuery/loadRecord/restart 三處手動列。學醫護版 BUG-46 的 collectStateFields 作法，抽一個回傳完整欄位物件的函式，三處共用一份清單，之後加欄位不會再漏。目前 ~17 欄手動列還能忍，但已漏兩次，該做
 4. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
@@ -882,4 +891,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V3.4.2 Sela 交辦 2 事：(1) edu-patient QR 衛教頁同步 PD-L1（了結 V3.4.0 待辦）— patient.html QR payload 加 pd 欄位、edu-patient buildPath 同步兩維度（driver 優先、無 driver 看 pdl1），舊 QR 無 pd 時走「未驗」相容。edu 6 組合 + 舊 QR 相容全綠，與 patient.html 對齊 (2) 驅動基因 label 改「通常擇一，彼此多為互斥」。BUG-56 教訓：雙人口資料源改一邊、另一邊是「已知待辦」非「忘記的 bug」（V3.4.0 就列進下版 #1、V3.4.2 補上）；payload 加欄位天然要考慮舊資料相容（QR 印出去收不回，缺省要有合理行為）。至此 V3.4.x 的基因/免疫併存功能（查詢工具 + QR 衛教頁）完整對齊。下版第一優先：**完整實機驗證 V3.0.1~V3.4.2**（累積十多版沒完整上真機，密碼流程/Q4 兩區併存/QR 掃描 PD-L1 顯示/載入返回團隊還原都要真機確認）；第 2 是民眾版抽 collectQueryFields() 根治存檔漏欄位；第 3 是抽 lung/_path.js 讓 patient/edu 共用 buildPath（消除雙份平行維護）。
+V3.4.3 加入 app logo（走 SELA Kit §17 產 prompt + §10.2 優化轉檔）。不用 SELA 主 logo、只做 app 子 logo（SELA 決定）：白色蜿蜒路徑+節點+右上箭頭呼應臨床路徑導航，底色校正回專案主色 #5B8FB9。生完整 favicon 套組放根目錄 favicon/，7 頁 head 加相對路徑引用。BUG-57 教訓：生圖 AI 給的底色會偏（Gemini 給 #4780AD 而非指定的 #5B8FB9）要後製校回專案色票、GitHub Pages 子路徑 favicon 要用相對路徑。下版第一優先仍是**完整實機驗證 V3.0.1~V3.4.3**（累積十多版沒完整上真機，密碼流程/Q4 兩區併存/QR 掃描 PD-L1/載入返回團隊還原/新 favicon 各頁顯示都要真機確認）；第 2 是民眾版抽 collectQueryFields() 根治存檔漏欄位；第 3 是抽 lung/_path.js 讓 patient/edu 共用 buildPath。

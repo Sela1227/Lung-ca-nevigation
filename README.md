@@ -1,4 +1,36 @@
-# Cancer Navigation V3.4.2 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.4.3 — 彰濱秀傳癌症中心
+
+## V3.4.3 — 2026-07-03
+**加入 app logo**(SELA Kit §17 + §10.2 工作流)
+
+不用 SELA 主 logo,只做 app 子 logo(SELA 決定)。
+
+### 流程
+
+1. 依 Kit §17 自動工作流產 `SELA-logo-prompt.md`(範本 B 醫療專業、壁虎不繼承、底色 #5B8FB9)
+2. SELA 用 Gemini 生圖:白色蜿蜒路徑 + 節點 + 右上箭頭,呼應「臨床路徑導航,從分期到治療的每一步」
+3. Claude 走 §10.2 四步優化轉檔
+
+### §10.2 優化
+
+Gemini 給的是 1024² 白底圖,實際底色 `#4780AD`(比目標深)+ 右下角有浮水印。用「floodfill 四角白底 → 抽白色主體 mask → 純 `#5B8FB9` 底重新合成」一套到位:白底轉滿版 + 底色校正回專案主色 `#5B8FB9` + 抹除浮水印 + 邊緣羽化。
+
+### 套組
+
+多解析度 16~1024 + favicon.ico + apple-touch-icon + android-chrome + site.webmanifest,放專案根目錄 `favicon/`,7 個 HTML `<head>` 加引用(相對路徑,GitHub Pages 子路徑安全)。
+
+### 兩條教訓(BUG-57)
+
+1. **生圖 AI 給的底色會偏,要校回專案色票** — Gemini 給 `#4780AD` 而非指定的 `#5B8FB9`,擴散模型對精確 hex 不可靠。「配色不改」的專案 logo 底色一定要後製校正。
+2. **GitHub Pages 子路徑 favicon 要用相對路徑** — 絕對路徑 `/favicon/` 在子路徑會 404。
+
+### 模組版號
+
+lung **V1.14.2 → V1.14.3**,系統版 V3.4.2 → V3.4.3。
+
+⚠️ **實機驗證**:各頁分頁圖示顯示新 logo、手機加到主畫面圖示對。
+
+---
 
 ## V3.4.2 — 2026-07-03
 **edu-patient QR 衛教頁同步 PD-L1 + 文字修正**
