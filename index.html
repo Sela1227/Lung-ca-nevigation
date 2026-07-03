@@ -11,6 +11,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* V3.4.1: 醫護版密碼 modal（明碼） */
+.pro-auth{position:fixed;inset:0;z-index:9999;background:rgba(23,40,58,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:24px}
+.pro-auth.show{display:flex}
+.pro-auth .pa-box{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:340px;box-shadow:0 16px 48px rgba(0,0,0,.3);text-align:center;animation:paIn .18s ease}
+@keyframes paIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.pro-auth .pa-logo{width:52px;height:52px;margin:0 auto 14px;border-radius:13px;background:linear-gradient(160deg,#37516b,#5B8FB9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900}
+.pro-auth .pa-title{font-size:18px;font-weight:900;color:#2C3E50}
+.pro-auth .pa-sub{font-size:13px;color:#8A9BAA;margin-top:4px;margin-bottom:20px}
+.pro-auth .pa-input{width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid #D8E5E4;border-radius:10px;font-size:17px;font-family:inherit;text-align:center;letter-spacing:3px}
+.pro-auth .pa-input:focus{outline:none;border-color:#5B8FB9}
+.pro-auth .pa-actions{display:flex;gap:10px;margin-top:14px}
+.pro-auth .pa-cancel,.pro-auth .pa-ok{flex:1;padding:12px;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;min-height:46px;border:none}
+.pro-auth .pa-cancel{background:#F0F4F7;color:#5A6B7C}
+.pro-auth .pa-ok{background:#5B8FB9;color:#fff}
+.pro-auth .pa-ok:active{background:#4a7ba5}
+.pro-auth .pa-err{margin-top:10px;font-size:13px;color:#dc2626;min-height:18px}
 /* A11y: 鍵盤 focus 環 */
 :focus-visible{outline:2.5px solid var(--primary);outline-offset:2px;border-radius:5px}
 /* A11y: 尊重減少動態偏好 */
@@ -138,6 +154,20 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
 </style>
 </head>
 <body>
+<!-- V3.4.1: 醫護版進入密碼（明碼顯示，純前端擋非醫護；非高強度安全） -->
+<div id="pro-auth" class="pro-auth">
+  <div class="pa-box">
+    <div class="pa-logo">秀</div>
+    <div class="pa-title">醫護專業版</div>
+    <div class="pa-sub">請輸入進入密碼</div>
+    <input type="text" id="pa-input" class="pa-input" placeholder="密碼" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')submitProAuth()">
+    <div class="pa-actions">
+      <button type="button" class="pa-cancel" onclick="closeProAuth()">取消</button>
+      <button type="button" class="pa-ok" onclick="submitProAuth()">進入</button>
+    </div>
+    <div id="pa-err" class="pa-err"></div>
+  </div>
+</div>
 
 <div class="header">
   <div class="hdr-inner">
@@ -218,7 +248,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
 <div class="footer">
   <strong>彰濱秀傳紀念醫院 癌症中心</strong>
   <span class="sep">·</span>
-  Cancer Navigation V3.4.0
+  Cancer Navigation V3.4.1
   <span class="sep">·</span>
   僅供院內臨床人員使用
 </div>
@@ -263,7 +293,10 @@ function buildGrid(gridId, mode){
     const isActive = c.active;
     const card = document.createElement('div');
     card.className = `card ${isActive?'active':'wip'}${isPat?' pat-card':''}`;
-    if(isActive) card.onclick = () => location.href = isPat ? c.patUrl : c.proUrl;
+    if(isActive) card.onclick = () => {
+      if(isPat){ location.href = c.patUrl; }
+      else { requireProAuth(() => location.href = c.proUrl); }  // V3.4.1: 醫護版點入需密碼
+    };
     const checkSvg = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L20 7"/></svg>`;
     const hammerSvg = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 7L4 14l3 3 7-7"/></svg>`;
     card.innerHTML = `
@@ -277,6 +310,38 @@ function buildGrid(gridId, mode){
     `;
     grid.appendChild(card);
   });
+}
+
+// V3.4.1: 醫護版進入密碼（明碼；純前端擋非醫護，非高強度安全）
+const PRO_PASS = 'cbshow';
+let _proAuthCb = null;
+function requireProAuth(cb){
+  // 同一次瀏覽 session 驗證過就直接放行
+  let ok = false;
+  try{ ok = sessionStorage.getItem('pro_auth') === '1'; }catch(e){}
+  if(ok){ cb(); return; }
+  _proAuthCb = cb;
+  const err = document.getElementById('pa-err'); if(err) err.textContent = '';
+  const inp = document.getElementById('pa-input'); if(inp) inp.value = '';
+  document.getElementById('pro-auth').classList.add('show');
+  setTimeout(()=>{ if(inp) inp.focus(); }, 60);
+}
+function submitProAuth(){
+  const inp = document.getElementById('pa-input');
+  const err = document.getElementById('pa-err');
+  if(inp && inp.value.trim() === PRO_PASS){
+    try{ sessionStorage.setItem('pro_auth','1'); }catch(e){}
+    document.getElementById('pro-auth').classList.remove('show');
+    const cb = _proAuthCb; _proAuthCb = null;
+    if(cb) cb();
+  } else {
+    if(err) err.textContent = '密碼錯誤，請再試一次';
+    if(inp){ inp.value=''; inp.focus(); }
+  }
+}
+function closeProAuth(){
+  document.getElementById('pro-auth').classList.remove('show');
+  _proAuthCb = null;
 }
 
 buildGrid('grid-pro', 'pro');

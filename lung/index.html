@@ -45,18 +45,6 @@
 }
 html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui,sans-serif;color:var(--text);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
-/* V3.4.0: 進入密碼閘門 */
-#auth-gate{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#37516b,#5B8FB9);display:flex;align-items:center;justify-content:center;padding:24px}
-#auth-gate.hidden{display:none}
-#auth-gate .auth-box{background:#fff;border-radius:16px;padding:36px 32px;width:100%;max-width:360px;box-shadow:0 12px 48px rgba(0,0,0,.28);text-align:center}
-#auth-gate .auth-logo{width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:linear-gradient(160deg,#37516b,#5B8FB9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900}
-#auth-gate .auth-title{font-size:19px;font-weight:900;color:#2C3E50}
-#auth-gate .auth-sub{font-size:13px;color:#8A9BAA;margin-top:4px;margin-bottom:24px}
-#auth-gate .auth-input{width:100%;box-sizing:border-box;padding:13px 14px;border:1.5px solid #D8E5E4;border-radius:10px;font-size:16px;font-family:inherit;text-align:center;letter-spacing:2px}
-#auth-gate .auth-input:focus{outline:none;border-color:#5B8FB9}
-#auth-gate .auth-btn{width:100%;margin-top:14px;padding:13px;background:#5B8FB9;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;min-height:48px}
-#auth-gate .auth-btn:active{background:#4a7ba5}
-#auth-gate .auth-err{margin-top:12px;font-size:13px;color:#dc2626;min-height:18px}
 button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit;color:inherit}
 input,textarea,select{font-family:inherit;font-size:inherit}
 
@@ -697,17 +685,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </style>
 </head>
 <body>
-<!-- V3.4.0: 進入密碼閘門（純前端，擋非醫護人員；非高強度安全） -->
-<div id="auth-gate">
-  <div class="auth-box">
-    <div class="auth-logo">秀</div>
-    <div class="auth-title">彰濱秀傳癌症中心</div>
-    <div class="auth-sub">肺癌臨床路徑導航系統</div>
-    <input type="password" id="auth-input" class="auth-input" placeholder="請輸入進入密碼" autocomplete="off" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button type="button" class="auth-btn" onclick="checkAuth()">進入系統</button>
-    <div id="auth-err" class="auth-err"></div>
-  </div>
-</div>
 <div class="app">
   <nav class="sidebar">
     <div class="logo" title="彰濱秀傳癌症中心">秀</div>
@@ -1233,8 +1210,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.14.0';
-const SYSTEM_VERSION = 'V3.4.0';
+const MODULE_VERSION = 'V1.14.1';
+const SYSTEM_VERSION = 'V3.4.1';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -4042,24 +4019,12 @@ document.querySelector('.content').addEventListener('touchstart',e=>{tx=e.touche
 document.querySelector('.content').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>80&&Math.abs(dx)>Math.abs(dy)*1.5){const i=PANELS.indexOf(cur);if(dx>0&&i>0)A.go(PANELS[i-1]);if(dx<0&&i<PANELS.length-1)A.go(PANELS[i+1]);}},{passive:true});
 
 // ── Init ──
-// V3.4.0: 進入密碼閘門（純前端，擋非醫護；密碼明碼於此，非高強度安全）
-const AUTH_PASS = 'cbshow';
-function checkAuth(){
-  const inp = document.getElementById('auth-input');
-  const err = document.getElementById('auth-err');
-  if(inp.value === AUTH_PASS){
-    try{ sessionStorage.setItem('lungnav_auth','1'); }catch(e){}
-    document.getElementById('auth-gate').classList.add('hidden');
-  } else {
-    err.textContent = '密碼錯誤，請再試一次';
-    inp.value = ''; inp.focus();
-  }
-}
-(function initAuthGate(){
+// V3.4.1: 進入守衛 — 醫護版密碼在 portal 點入時驗證，這裡只確認驗證過（sessionStorage）
+// 直接輸入 lung/ 網址而未經 portal 驗證 → 踢回 portal
+(function proGuard(){
   let ok = false;
-  try{ ok = sessionStorage.getItem('lungnav_auth') === '1'; }catch(e){}
-  if(ok){ document.getElementById('auth-gate').classList.add('hidden'); }
-  else { const inp=document.getElementById('auth-input'); if(inp) setTimeout(()=>inp.focus(), 100); }
+  try{ ok = sessionStorage.getItem('pro_auth') === '1'; }catch(e){ ok = true; } // sessionStorage 不可用時放行，不擋死
+  if(!ok){ location.replace('../'); }
 })();
 
 async function boot(){
