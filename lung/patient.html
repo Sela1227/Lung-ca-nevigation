@@ -1385,6 +1385,11 @@ let pdbEditId = null;
 
 // 走完流程存一筆（總覽頁「儲存這次查詢」）；有 pdbEditId 則更新該筆
 async function saveQuery(){
+  // V3.4.4: 至少要有病歷號或姓名其中一項才能存（無識別的紀錄個管師無法辨認、統計也沒意義）
+  if(!(S.code||'').trim() && !(S.name||'').trim()){
+    alert('儲存前請至少填寫「病歷號」或「姓名」其中一項。\n\n可回到第 1 頁補填，方便日後查閱與辨認這筆紀錄。');
+    return;
+  }
   const isUpdate = (pdbEditId != null);
   const rec = {
     code:S.code||'', name:(S.name||'').slice(0,8),
