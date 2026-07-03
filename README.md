@@ -1,4 +1,25 @@
-# Cancer Navigation V3.4.4 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.4.5 — 彰濱秀傳癌症中心
+
+## V3.4.5 — 2026-07-03
+**修 GitHub Pages 部署持續失敗 + 加可控部署 workflow**
+
+排查確認**非程式碼問題**：build job 綠、artifact 成功產生 = 檔案完全 OK。卡在 deploy 上線階段的「Deployment failed, try again later.」是 GitHub 服務端問題（actions/deploy-pages issue #418 仍 Open 無解）。最可能是密集 push 觸發部署 pipeline 卡住、鎖沒釋放。
+
+### 根治
+
+加 `.github/workflows/deploy.yml`：`upload-pages-artifact` + `deploy-pages` + **`concurrency: cancel-in-progress: true`**（新部署自動取消排隊中的舊部署，不再堆積卡死）+ `.nojekyll`（純靜態跳過 Jekyll）。
+
+**啟用**：Settings → Pages → Source 改成「GitHub Actions」。
+
+### 也可先試（不改檔）
+
+Settings → Pages → Source 切換一下重置 pipeline；或 Settings → Environments → github-pages 取消卡住的部署 + Actions 取消多餘排隊 run。
+
+### 模組版號
+
+lung **V1.14.4 → V1.14.5**，系統版 V3.4.4 → V3.4.5。
+
+---
 
 ## V3.4.4 — 2026-07-03
 **民眾版儲存查詢加識別防呆**
