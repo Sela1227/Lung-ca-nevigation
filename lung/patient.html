@@ -1742,12 +1742,13 @@ function buildGeneTestAdvice(){
     foot = `以您的分期，<b>PD-L1 健保有給付</b>；EGFR、ALK 在鱗狀肺癌屬自費項目，是否加驗由醫師依您的狀況評估。`;
   } else {
     // 早期 → 健保多不給付
-    subtitle = `以您的分期（${stageTxt}、早期），基因檢測多為自費`;
+    subtitle = `以您的分期（${stageTxt}、早期），部分僅需材料費、部分自費`;
     items = [
       {tag:'材料費', self:true, name:'PD-L1 免疫指標', why:'若未來需要免疫治療評估時可參考'},
-      {tag:'自費', self:true, name:'EGFR / ALK / ROS1', why:'早期以手術為主，由醫師評估是否需要'},
+      {tag:'材料費', self:true, name:'ROS1 基因檢測', why:'費用約數百元，若為陽性有對應的標靶藥'},
+      {tag:'自費', self:true, name:'EGFR / ALK 檢測', why:'早期以手術為主，由醫師評估是否需要'},
     ];
-    foot = `早期肺癌以手術為主，<b>健保多不給付</b>基因檢測（PD-L1 僅需材料費，其他多為自費）。是否檢測，由醫師依您的期別與手術結果評估。`;
+    foot = `早期肺癌以手術為主。<b>PD-L1、ROS1 僅需材料費</b>（約數百元），EGFR、ALK 屬自費。是否檢測，由醫師依您的期別與手術結果評估。`;
   }
 
   if(alreadyTyped) subtitle = '您已有部分檢測結果，以下供參考';
@@ -2483,6 +2484,7 @@ function buildEduPayload(){
     n: (S.name||'').slice(0,8),    // 姓名（限 8 字以內隱私）
     t: typeCode,
     s: S.stage || (isSCLC() ? (S.stageCat==='META'?'Extensive':'Limited') : ''),
+    sc: S.stageCat || '',         // V3.5.3: 直接帶 stageCat，edu 不再從 stage 反推（反推≠實際會導致掃出來不一樣）
     m: S.mut || '',
     pd: S.pdl1 || '',             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
     b: S.brainMet || '',          // SCLC 腦/脊髓轉移

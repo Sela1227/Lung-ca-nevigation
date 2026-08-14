@@ -797,7 +797,7 @@ function renderTreatmentSteps3Section(steps, txProgress){
 
 function render(d){
   d._type = TYPE_CODE_TO_FULL[d.t] || d.t || '';
-  d._stageCat = deriveStageCat(d);
+  d._stageCat = d.sc || deriveStageCat(d);  // V3.5.3: 優先用 patient 直接帶來的 stageCat；舊 QR 無 sc 才反推
   const r = buildPathFromData(d);
 
   let h = '<div class="hdr"><h1>';

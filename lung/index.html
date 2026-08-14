@@ -56,11 +56,11 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .app{display:flex;height:100vh;height:100dvh}
 
 /* Sidebar */
-.sidebar{width:72px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;z-index:100;flex-shrink:0}
-.sidebar .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#7BA5C4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;letter-spacing:-1px}
-.sidebar .nav-item{width:52px;height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sidebar-text);transition:var(--transition);gap:3px;position:relative}
-.sidebar .nav-item i{font-size:17px;transition:var(--transition)}
-.sidebar .nav-item span{font-size:9px;font-weight:500;opacity:.8;line-height:1}
+.sidebar{width:96px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:6px;z-index:100;flex-shrink:0}
+.sidebar .logo{width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,var(--primary),#7BA5C4);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;color:#fff;margin-bottom:18px;letter-spacing:-1px}
+.sidebar .nav-item{width:74px;height:64px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sidebar-text);transition:var(--transition);gap:5px;position:relative}
+.sidebar .nav-item i{font-size:22px;transition:var(--transition)}
+.sidebar .nav-item span{font-size:12px;font-weight:500;opacity:.85;line-height:1}
 .sidebar .nav-item:hover{background:rgba(255,255,255,.06)}
 .sidebar .nav-item.active{color:#fff;background:rgba(91,143,185,.15)}
 .sidebar .nav-item.active::before{content:'';position:absolute;left:-2px;top:50%;transform:translateY(-50%);width:4px;height:24px;border-radius:0 4px 4px 0;background:var(--sidebar-active)}
@@ -114,6 +114,13 @@ input,textarea,select{font-family:inherit;font-size:inherit}
 .badge.info{background:var(--accent-light);color:var(--accent);border:1px solid #bfdbfe}
 .badge.warn{background:var(--amber-light);color:var(--amber);border:1px solid var(--amber-border)}
 .tx-box{padding:14px 18px;border-radius:var(--radius);margin-bottom:8px}
+/* V3.4.9: 建議檢測組套 + 醫令碼 toggle（醫令碼平常隱藏） */
+.gp-list .gp-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid #E8EEF3}
+.gp-list .gp-name{flex:0 0 96px;font-weight:700;font-size:13px;color:var(--primary-dark)}
+.gp-code{display:none;font-size:12px;color:var(--primary-dark);font-family:'Courier New',monospace;margin-left:auto}
+.tx-box.show-codes .gp-code{display:inline}
+.gp-toggle{font-size:11px;padding:3px 10px;border:1px solid var(--primary);background:#fff;color:var(--primary);border-radius:6px;cursor:pointer;font-weight:700;white-space:nowrap}
+.gp-toggle:hover{background:var(--primary);color:#fff}
 .tx-box.green{background:var(--primary-light);border:1px solid #BFD6E8}
 .tx-box.blue{background:var(--accent-light);border:1px solid #bfdbfe}
 .tx-box.amber{background:var(--amber-light);border:1px solid var(--amber-border)}
@@ -1215,8 +1222,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.14.5';
-const SYSTEM_VERSION = 'V3.4.5';
+const MODULE_VERSION = 'V1.15.3';
+const SYSTEM_VERSION = 'V3.5.3';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -2128,7 +2135,7 @@ function renderPW(){
   const fn = PW[S.type]?.[grp];
   if(fn){
     const result = fn(S);
-    document.getElementById('pw-content').innerHTML = `<div class="card">${result.tx}</div>`;
+    document.getElementById('pw-content').innerHTML = `<div class="card">${result.tx}${_genePanelHTML(S)}</div>`;
     let costH = '<div class="pw-cost-title"><i class="fa-solid fa-coins" style="color:var(--amber)"></i> <i class="fa-solid fa-coins" style="color:var(--text3);margin-right:4px"></i> 費用概估</div>';
     (result.cost||[]).forEach(c=>{ costH += `<div class="pw-cost-row"><span class="l">${c.l}</span><span class="v">${c.v}</span></div>`; });
     document.getElementById('pw-cost-inner').innerHTML = costH;
@@ -2419,9 +2426,12 @@ const _NSCLC = {
   },
 
   'N2': s => {
-    const isT3N2 = s.tstage==='T3';
+    // V3.4.6 臨床安全修正：依「實際 AJCC 9th 分期」分路，不能只看 tstage==='T3'。
+    // N2a/N2b 讓同樣 T 期落在不同 stage：T3N2a=IIIA（可手術評估）、T2N2b=IIIB（新輔助）。
+    // 舊版只看 T3 → 會把 T3N2a(實際 IIIA) 誤標「Stage IIIB」、把 T2N2b(實際 IIIB) 誤走 IIIA 路線。
+    const isIIIB = s.stage==='IIIB';
     let tx = _hdr(s,'fa-radiation');
-    if(!isT3N2){
+    if(!isIIIB){
       tx += `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> 路線 A — 合併化放療 / 化療 / 免疫</h4>
         <p>合併化放療（CCRT）或 化療 或 免疫治療（自費）</p><p style="font-size:12px;color:var(--text3)">年齡 >70 歲 or PS >1：CCRT 可改 Sequential（先化療後接放療）</p>
         <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">免疫自費</span></div></div>`;
@@ -2432,8 +2442,8 @@ const _NSCLC = {
         <p><b>惡化（局部）：</b>放療（若未接受過）± 化療</p>
         <p><b>惡化（系統性）：</b>參閱 M1 疾病初步治療</p></div>`;
     }
-    if(isT3N2){
-      tx += `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> Stage IIIB (T3, N2) — 新輔助治療</h4>
+    if(isIIIB){
+      tx += `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> Stage ${s.stage}（${s.tstage}${s.nstage}）— 新輔助治療</h4>
         <p><b>新輔助：</b>① 免疫 + 化療 ② 化療或同步化療 + 放療</p>
         <p>→ 再次手術評估後進行手術 → 依病理分期輔助治療</p></div>`;
       tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> 基因檢測後系統治療</h4>
@@ -2461,6 +2471,8 @@ const _NSCLC = {
 
   'M1a': s => ({
     tx: _hdr(s,'fa-droplet') +
+      `<div class="tx-box amber" style="margin-bottom:8px"><h4><i class="fa-solid fa-circle-info" style="color:var(--text3);margin-right:4px"></i> M1a = 胸腔內轉移（Stage IVA）</h4>
+        <p style="font-size:12px;color:var(--text3)">含：對側肺葉結節、惡性肋膜/心包積液或結節。對側肺結節依轉移性疾病路徑全身治療；積液先判斷惡性（下方）</p></div>` +
       `<div class="tx-box amber"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> 肋膜/心包膜積水 — 先判斷惡性</h4>
         <p><b>非惡性：</b>依原腫瘤分期處理（回到對應期別路徑）</p>
         <p><b>惡性：</b>先局部治療 → 再全身治療</p></div>` +
@@ -2473,10 +2485,11 @@ const _NSCLC = {
 
   'M1b': s => ({
     tx: _hdr(s,'fa-bullseye') +
-      `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> PS 0-2：積極治療</h4>
-        <p><b>局部晚期 — 腦部轉移：</b>切除腦部病灶 / 全腦放射 / 伽瑪刀 → 化療或標靶或免疫（依健保規範）</p>
-        <p><b>局部晚期 — 其他部位：</b>依轉移性疾病路徑治療</p>
-        <p><b>多處轉移：</b>依轉移性疾病路徑治療</p></div>` +
+      `<div class="tx-box amber" style="margin-bottom:8px"><h4><i class="fa-solid fa-circle-info" style="color:var(--text3);margin-right:4px"></i> M1b = 單一胸腔外轉移（寡轉移 / Oligometastatic，Stage IVA）</h4>
+        <p style="font-size:12px;color:var(--text3)">單一遠端轉移灶，部分病人可局部根治性治療 + 全身治療，預後優於多發轉移（M1c）</p></div>` +
+      `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> PS 0-2：積極治療（寡轉移可局部根治）</h4>
+        <p><b>單一轉移 — 腦部：</b>切除腦部病灶 / 全腦放射 / 伽瑪刀（SRS）→ 化療或標靶或免疫（依健保規範）</p>
+        <p><b>單一轉移 — 其他部位：</b>局部治療（手術 / 放療）控制轉移灶 → 依轉移性疾病路徑進行全身治療</p></div>` +
       `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> PS 3-4</h4>
         <p><b>PS 3：</b>如符合標靶或免疫治療者仍可使用</p>
         <p><b>PS 4：</b>最佳支持性治療（心理治療或臨終關懷）</p></div>`,
@@ -2484,31 +2497,106 @@ const _NSCLC = {
   }),
 };
 
+// V3.4.8: 基因/免疫檢測建議 → 對應藥物對照（藥名與健保對齊 drugs-pro 藥物庫，單一真相）
+const _BIOMARKER_TABLE = [
+  {t:'EGFR', d:'ex19del / L858R → Osimertinib 泰格莎、Afatinib 妥復克、Gefitinib 艾瑞莎、Dacomitinib 肺欣妥（擇一不互換）；exon20ins → Amivantamab 瑞普替', n:'NHI 一線'},
+  {t:'ALK', d:'Alectinib 安立適、Brigatinib 癌倍利、Lorlatinib 瘤利欣、Ceritinib 立克癌、Crizotinib 截克瘤', n:'NHI 一線'},
+  {t:'ROS1', d:'Entrectinib 羅思克、Crizotinib 截克瘤', n:'NHI 一線'},
+  {t:'BRAF V600E', d:'Dabrafenib + Trametinib 泰伏樂 + 麥欣寧', n:'NHI 二線'},
+  {t:'MET ex14', d:'Tepotinib 特癌適（MET exon14 skipping）', n:'NHI 不分線'},
+  {t:'KRAS G12C', d:'Sotorasib 魯瑪克拉斯', n:'自費 二線'},
+  {t:'PD-L1', d:'≥50% 免疫單藥；<50% 免疫 + 化療 — Pembrolizumab 吉舒達、Atezolizumab 癌自禦、Nivolumab 保疾伏、Durvalumab 抑癌寧', n:'依健保規範'},
+];
+function _biomarkerHTML(){
+  const rows = _BIOMARKER_TABLE.map(r=>
+    `<div style="display:flex;gap:8px;padding:6px 0;border-top:1px solid #E8EEF3;align-items:flex-start">
+      <div style="flex:0 0 78px;font-weight:800;color:var(--primary-dark);font-size:13px">${r.t}</div>
+      <div style="flex:1;font-size:12.5px;line-height:1.5">${r.d}</div>
+      <div style="flex:0 0 auto"><span class="badge ${r.n.includes('自費')?'self':'nhi'}">${r.n}</span></div>
+    </div>`).join('');
+  return `<div class="tx-box blue" style="margin-top:8px"><h4><i class="fa-solid fa-dna" style="color:var(--primary);margin-right:4px"></i> 基因 / 免疫檢測建議 → 對應藥物</h4>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:2px">晚期 NSCLC 建議完整檢測以下項目（NGS 可一次涵蓋），依陽性結果選藥：</p>
+    ${rows}
+    <p style="font-size:11px;color:var(--text3);margin-top:6px">※ 完整健保規範、線數與用法見「藥物查詢」。RET / NTRK / HER2 陽性另有對應藥物（NGS 涵蓋）。</p></div>`;
+}
+
+// V3.5.0: 肺癌基因檢測開單速查表 — 來源：彰濱秀傳院內開單速查表 2025/06
+// ⚠️ 醫令碼與費用「依分期/組織型態不同」：同一檢測在不同組別碼不同（如 EGFR 非鱗晚期 30101B 健保 / 鱗狀早期 L09010A 自費）
+const GENE_PANEL_DATA = {
+  // ① 非鱗狀 + 復發/轉移 或 IIIB 以上
+  ns_adv: { tip:'5 項一起開（3 項健保 + 2 項材料費）', items:[
+    {n:'EGFR 基因檢測', code:'30101B', fee:'健保 0 元', nhi:true},
+    {n:'ALK (IHC) 檢測', code:'30105B', fee:'健保 0 元', nhi:true},
+    {n:'PD-L1 (IHC) + 分子檢測（綁一起）', code:'30103B + L09017A', fee:'健保 0 + 材料費 300 元', nhi:true},
+    {n:'ROS1 基因檢測', code:'L09021', fee:'材料費 300 元', nhi:false},
+  ]},
+  // ② 鱗狀 + IIIB 以上
+  sq_adv: { tip:'先開 PD-L1（綁一起），再依需要開 EGFR、ALK（自費）與 ROS1', items:[
+    {n:'PD-L1 (IHC) + 分子檢測（綁一起）', code:'30103B + L09017A', fee:'健保 0 + 材料費 300 元', nhi:true},
+    {n:'EGFR 基因檢測', code:'L09010A', fee:'自費 10,000 元', nhi:false},
+    {n:'ALK (IHC) 檢測', code:'30105B（勾選自費）', fee:'自費 9,482 元', nhi:false},
+    {n:'ROS1 基因檢測', code:'L09021', fee:'材料費 300 元', nhi:false},
+  ]},
+  // ③ IIIB 以前（早期）
+  early: { tip:'開 PD-L1 分子檢測 + 其他視需要（大多自費或專案）', items:[
+    {n:'PD-L1 分子檢測', code:'L09017A', fee:'材料費 300 元', nhi:false},
+    {n:'EGFR 基因檢測', code:'L09010A', fee:'自費 10,000 元', nhi:false},
+    {n:'ALK (IHC) 檢測', code:'30105B（勾選自費）', fee:'自費 9,482 元', nhi:false},
+    {n:'ROS1 基因檢測', code:'L09021', fee:'材料費 300 元', nhi:false},
+  ]},
+};
+// 建議檢測組套 + 開單醫令碼（依分期/組織型態選組別，對應民眾版組套建議）
+function _genePanelHTML(s){
+  if(s.type==='SCLC') return '';  // SCLC 不做驅動基因檢測
+  const isSq = s.type==='NSCLC_SQ';
+  const adv = /^(IIIB|IIIC|IVA|IVB)/.test(s.stage||'');
+  const key = !adv ? 'early' : (isSq ? 'sq_adv' : 'ns_adv');
+  const label = key==='ns_adv' ? '非鱗狀 · 復發/轉移 或 IIIB 期以上'
+              : key==='sq_adv' ? '鱗狀 · IIIB 期以上'
+              : 'IIIB 期以前（早期肺癌）';
+  const grp = GENE_PANEL_DATA[key];
+  const rows = grp.items.map(it=>
+    `<div class="gp-row"><span class="gp-name">${it.n}</span><span class="badge ${it.nhi?'nhi':'self'}">${it.fee}</span><span class="gp-code">醫令碼：<b>${it.code}</b></span></div>`
+  ).join('');
+  return `<div class="tx-box blue" style="margin-top:8px">
+    <h4 style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span><i class="fa-solid fa-flask" style="color:var(--primary);margin-right:4px"></i> 基因檢測開單速查（${label}）</span><button type="button" class="gp-toggle" onclick="toggleOrderCodes(this)">顯示醫令碼</button></h4>
+    <div class="alert-box warn" style="margin:4px 0 8px"><i class="fa-solid fa-circle-exclamation"></i><div>建議一次開齊：PD-L1（IHC + 分子）綁一起驗，其他材料費項目也建議一起驗</div></div>
+    <div class="gp-list">${rows}</div>
+    <p style="font-size:11px;color:var(--text3);margin-top:6px">${grp.tip}。BRAF / MET / KRAS / RET / NTRK / HER2 經 NGS 廣泛檢測（速查表未列單獨碼，依院內 NGS 流程）。來源：院內開單速查表 2025/06</p></div>`;
+}
+function toggleOrderCodes(btn){
+  const box = btn.closest('.tx-box');
+  const on = box.classList.toggle('show-codes');
+  btn.textContent = on ? '隱藏醫令碼' : '顯示醫令碼';
+}
+
 function _M1c_NS(s){
   let tx = _hdr(s,'fa-bullseye');
   const mut = s.mutation||'PENDING';
   if(mut==='EGFR'){
     tx += `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> EGFR 突變陽性 — 標靶藥物</h4>
-      <p>依 EGFR 突變類型選擇對應標靶藥物</p>
+      <p><b>ex19del / L858R：</b>Osimertinib 泰格莎、Afatinib 妥復克、Gefitinib 艾瑞莎、Dacomitinib 肺欣妥（擇一不互換）</p>
+      <p><b>exon20 insertion：</b>Amivantamab 瑞普替</p>
       <div class="row"><span></span><span class="badge nhi">健保一線</span></div></div>`;
   } else if(mut==='ALK'){
     tx += `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> ALK 融合陽性 — 標靶藥物</h4>
-      <p>依 ALK 融合選擇對應 ALK 標靶藥物</p>
+      <p>Alectinib 安立適、Brigatinib 癌倍利、Lorlatinib 瘤利欣、Ceritinib 立克癌、Crizotinib 截克瘤</p>
       <div class="row"><span></span><span class="badge nhi">健保一線</span></div></div>`;
   } else if(mut==='OTHER_TKI'){
     tx += `<div class="tx-box blue"><h4><i class="fa-solid fa-bullseye" style="color:var(--primary);margin-right:4px"></i> 其他可標靶驅動基因</h4>
-      <p><b>ROS1(+)：</b>對應標靶藥物</p>
-      <p><b>BRAF(+)：</b>雙標靶藥物</p>
-      <p><b>KRAS G12C：</b>對應標靶藥物</p>
-      <p><b>MET EXON-14：</b>對應標靶藥物</p>
-      <div class="row"><span></span><span class="badge self">健保申請/自費</span></div></div>`;
+      <p><b>ROS1(+)：</b>Entrectinib 羅思克、Crizotinib 截克瘤<span class="badge nhi" style="margin-left:4px">健保一線</span></p>
+      <p><b>BRAF V600E：</b>Dabrafenib + Trametinib 泰伏樂 + 麥欣寧<span class="badge nhi" style="margin-left:4px">健保二線</span></p>
+      <p><b>MET ex14：</b>Tepotinib 特癌適<span class="badge nhi" style="margin-left:4px">健保不分線</span></p>
+      <p><b>KRAS G12C：</b>Sotorasib 魯瑪克拉斯<span class="badge self" style="margin-left:4px">自費二線</span></p></div>`;
   } else if(mut==='PDL1_HIGH'||mut==='PDL1_LOW'||mut==='PDL1_NEG'){
     tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> 無驅動基因突變 — 免疫 ± 化療</h4>
-      <p>免疫治療（依健保規範）± 化學治療</p>
+      <p><b>PD-L1 ≥50%：</b>免疫單藥（Pembrolizumab 吉舒達 等，依健保規範）</p>
+      <p><b>PD-L1 &lt;50%：</b>免疫 + 化學治療</p>
       <div class="row"><span></span><span class="badge nhi">依健保規範</span></div></div>`;
   } else {
     tx += `<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 建議等待基因檢測結果。PS 良好可先以化療起步。</div></div>`;
   }
+  tx += _biomarkerHTML();
   return { tx, cost:[{l:'標靶藥物',v:'健保一線/申請'},{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'}] };
 }
 
@@ -2517,11 +2605,11 @@ function _M1c_SQ(s){
   const mut = s.mutation||'PENDING';
   if(mut==='EGFR'||mut==='ALK'||mut==='OTHER_TKI'){
     tx += `<div class="tx-box green" style="border:2px solid #BFD6E8"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> 驅動基因陽性 — 標靶治療</h4>
-      <p>鱗狀細胞癌中驅動基因陽性較罕見但應依結果治療</p>
+      <p>鱗狀細胞癌驅動基因陽性較罕見，但應依結果治療：EGFR → Osimertinib 泰格莎 等；ALK → Alectinib 安立適 等；ROS1 → Entrectinib 羅思克（詳見下方對照）</p>
       <div class="row"><span></span><span class="badge nhi">健保申請</span></div></div>`;
   } else if(mut==='PDL1_HIGH'){
     tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> EGFR(−) ALK(−) PD-L1 ≥50% — 免疫 ± 化療</h4>
-      <p>免疫治療（依健保規範）± 化學治療</p>
+      <p>免疫單藥或免疫 + 化療（Pembrolizumab 吉舒達、Atezolizumab 癌自禦 等，依健保規範）</p>
       <div class="row"><span></span><span class="badge nhi">依健保規範</span></div></div>`;
   } else if(mut==='PDL1_LOW'||mut==='PDL1_NEG'){
     tx += `<div class="tx-box amber"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> PD-L1 <50%</h4>
@@ -2533,6 +2621,7 @@ function _M1c_SQ(s){
     tx += `<div class="alert-box warn"><i class="fa-solid fa-clock"></i><div><b>等報告中</b> — 可先以化療起步。</div></div>`;
   }
   tx += `<div class="alert-box warn" style="margin-top:8px"><i class="fa-solid fa-triangle-exclamation"></i><div><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);margin-right:4px"></i> 鱗狀細胞癌不使用 Pemetrexed 及 Bevacizumab</div></div>`;
+  tx += _biomarkerHTML();
   return { tx, cost:[{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'},{l:'標靶(如適用)',v:'健保申請'}] };
 }
 
@@ -2612,8 +2701,8 @@ const _NSCLC_GOALS = {
     boxes:[{title:'可手術三策略',color:'blue',badge:'多模態',list:['①直接手術','②前導同步化放療→手術','③前導化療→手術']},{title:'無法手術',color:'orange',badge:'T4 Unresectable',list:['合併化放療(CCRT)','高齡可改Sequential','PS差考慮支持性治療']}],
     footer:'前導治療後須再次影像評估手術可行性。'},
   N2: {goal:'【多模態策略】N2淋巴結轉移可嘗試引導化療後手術或直接化放療。', mechanism:'合併化放療 / 引導化療±放療或免疫(自費) ➜ 依反應決定手術或系統治療。',
-    boxes:[{title:'IIIA (T1-2,N2)',color:'blue',badge:'兩條路線',list:['路線A：合併化放療/化療/免疫(自費)','路線B：引導化療±放療/免疫→評估反應','無惡化→手術±放療 / 惡化→M1路徑']},{title:'IIIB (T3,N2)',color:'orange',badge:'新輔助',list:['新輔助：免疫+化療 or 化療/CCRT','→再評估→手術→輔助治療','不手術：CCRT或標靶/免疫']}],
-    footer:'基因檢測：先EGFR/PD-L1，陰性可加驗ALK或健保部分給付NGS。'},
+    boxes:[{title:'IIIA（N2，可手術評估）',color:'blue',badge:'兩條路線',list:['路線A：合併化放療/化療/免疫(自費)','路線B：引導化療±放療/免疫→評估反應','無惡化→手術±放療 / 惡化→M1路徑']},{title:'IIIB（N2，新輔助為主）',color:'orange',badge:'新輔助',list:['新輔助：免疫+化療 or 化療/CCRT','→再評估→手術→輔助治療','不手術：CCRT或標靶/免疫']}],
+    footer:'※ IIIA/IIIB 之分依 N2a(單站)/N2b(多站)判定，非依 T 期 — 以上方病人實際分期為準（如 T3N2a=IIIA、T2N2b=IIIB）。基因檢測：先EGFR/PD-L1，陰性可加驗ALK或健保部分給付NGS。'},
   N3: {goal:'【化放療為主】N3淋巴結轉移以同步化放療為核心治療。', mechanism:'CCRT/標靶/免疫治療（依健保規範）。',
     boxes:[{title:'核心治療',color:'blue',badge:'CCRT',list:['同步化放療為主要選擇','可合併標靶或免疫治療','高齡/PS差改Sequential']},{title:'注意事項',color:'orange',badge:'追蹤',list:['需排除遠端轉移','基因檢測指引用藥','定期影像追蹤']}],
     footer:'遠端轉移確認後轉入M1路徑。'},

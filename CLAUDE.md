@@ -227,16 +227,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.5.3 | V1.15.3 | 2026-07-04 | 個管師反應「QR 掃出來跟畫面原本內容不一樣」。查出雙人口資料源分叉：QR payload 只送 stage 不送 stageCat，edu 用 `deriveStageCat(d.s)` 從 stage 字串反推。**簡易模式（病人只選早期/局部/轉移、沒選 TNM）時 S.stage 是空字串** → edu 反推回空 → 走不到 EARLY/LOCAL/META 分支 → 掃 QR 顯示不對。而 patient 畫面用 S.stageCat（病人直接選的）。修：payload 加 `sc:S.stageCat`、edu 改 `d._stageCat = d.sc || deriveStageCat(d)`（舊 QR 無 sc 才反推、相容）。vm 對照 harness 8 組（簡易 3 + 進階 + 鱗狀 + SCLC 2）patient 畫面 vs edu 掃 QR 全一致 BUG-67 |
+| V3.5.2 | V1.15.2 | 2026-07-04 | Sela 截圖回報醫護版電腦版左側導航列太小（寬螢幕上圖示/文字顯小難點）。桌面版 sidebar 放大：寬 72→96px、logo 44→50、nav-item 52²→74×64、圖示 17→22px、**文字 9→12px**（原本 9px 太小是主因）。手機版 bottom bar（@media）不動。`.app` flex 自適應、無 hardcode 72px 依賴，主內容自動縮 BUG-66 |
+| V3.5.1 | V1.15.1 | 2026-07-03 | 用 V3.5.0 拿到的真實速查表反向驗證民眾版 buildGeneTestAdvice（民眾版是醫護版簡化、無醫令碼、引導接受不推銷）。三組逐項對照，抓到 **早期組 ROS1 標錯**：原本「EGFR/ALK/ROS1」綁一起標自費，但速查表 ROS1 全組別都是材料費 300（非萬元自費）。這錯正好違背「引導接受」— 病人看 ROS1「自費」以為要上萬而卻步，實際只要 300。修：早期 ROS1 拆出改「材料費」、材料費項目排前面（PD-L1/ROS1）自費排後（EGFR/ALK）、subtitle/foot 更新。①非鱗晚期②鱗狀晚期本就對齊。三組×4 項 + 引導不推銷語氣驗證全綠 BUG-65 |
+| V3.5.0 | V1.15.0 | 2026-07-03 | Sela 提供彰濱秀傳「肺癌基因檢測開單速查表 2025/06」→ 把 V3.4.9 的醫令碼 placeholder 換成真實資料。**關鍵發現：醫令碼與費用「依分期/組織型態不同」**（同一 EGFR：非鱗晚期 30101B 健保 / 鱗狀或早期 L09010A 自費 10000；ALK：非鱗晚期 30105B 健保 / 其他 30105B 勾選自費 9482）。V3.4.9 單一 ORDER_CODES 架構不夠 → 重構成 `GENE_PANEL_DATA` 三組（ns_adv / sq_adv / early），每項真實醫令碼 + 費用。決策頁依 type+stage 選組別顯示，費用當 badge 平常可見、醫令碼 toggle 隱藏，加「一次開齊 PD-L1 綁定」提醒。三組 × 4 項對照速查表全綠 BUG-64 |
+| V3.4.9 | V1.14.9 | 2026-07-03 | 民眾版基因檢測組套建議做進醫護版 + 醫令碼 toggle（Sela 交辦）：`_genePanelHTML(s)` 對應民眾版 `buildGeneTestAdvice` 的依分期組套邏輯（非鱗晚期 EGFR/ALK/PD-L1 健保+ROS1 材料費+NGS 廣泛、鱗狀晚期 PD-L1 健保+EGFR/ALK 自費、早期多自費），但醫護版更完整（10 項含 BRAF/MET/KRAS/RET/NTRK/HER2）。決策頁 pw-content 的 tx 後 append（SCLC 不顯示）。每項掛醫令碼、預設隱藏（`.gp-code{display:none}`），標題「顯示/隱藏醫令碼」按鈕 toggle `.show-codes`。**⚠️ 醫令碼 Claude 不捏造**（填錯會開錯單）→ `ORDER_CODES` 各欄留空、UI 顯示「（待院方填入）」，待 Sela 填彰濱秀傳真實檢驗醫令碼 BUG-63 |
+| V3.4.8 | V1.14.8 | 2026-07-03 | 補基因/免疫檢測建議項目 + 對應藥物（Sela 交辦）：醫護版 M1c 轉移期原本給藥是泛稱（「依 EGFR 突變類型選擇對應標靶藥物」無具體藥名）。建 `_BIOMARKER_TABLE` + `_biomarkerHTML()`（7 項檢測 EGFR/ALK/ROS1/BRAF/MET/KRAS/PD-L1 → 對應藥物 + 健保 tag），**藥名與健保狀態全對齊 drugs-pro 藥物庫當單一真相**（KRAS Sotorasib 是自費、其餘 NHI）。在 _M1c_NS / _M1c_SQ 結尾插入對照卡，各 mutation 泛稱補具體藥名（EGFR→泰格莎/妥復克等、ALK→安立適等、ROS1→羅思克、BRAF→泰伏樂+麥欣寧、MET→特癌適、KRAS→魯瑪克拉斯自費）。渲染 + 藥名對齊測試全綠 BUG-62 |
+| V3.4.7 | V1.14.7 | 2026-07-03 | **臨床安全審查續**（Sela 交辦查其他期別，尤其 T4、M1a/b/c）：T4 與 M1 的 stage 推算 + 路由 + 治療分支性質全部核對相符（T4N0/N1=IIIA→resect_adv 可切評估、T4N2/N3=IIIB/C→T4N2N3 CCRT、M1a/b→IVA、M1c1/c2→IVB），無分期↔治療錯配。發現並修 **M1b 分期用詞錯誤**：M1b（單一胸腔外轉移=IVA 寡轉移）內文卻寫「局部晚期」（locally advanced 是 stage III 稱呼，與 _hdr 顯示的 Stage IVA 自相矛盾），且混入不屬於 M1b 的「多處轉移」（那是 M1c）→ 改「寡轉移/單一轉移」、加 M1b 定義 box、移除多處轉移。M1a 補對側肺結節（M1a 不只積液還含對側肺葉結節），與 M1b 對稱加定義 box BUG-61 |
+| V3.4.6 | V1.14.6 | 2026-07-03 | **臨床安全修正**（Sela 交辦逐條檢查醫護版路徑抉擇、防「IIIA 卻做 IIIB 建議」）：醫護版治療決策 `'N2'` 分支原本用 `s.tstage==='T3'` 分「路線A/B vs 新輔助IIIB」，完全沒看 N2a/N2b — 但 AJCC 9th 下 T3N2a=IIIA、T2N2b=IIIB，導致 **T3N2a(實際IIIA)被標「Stage IIIB」、T2N2b(實際IIIB)被走 IIIA 路線**。改用 `s.stage==='IIIB'` 分路（實際分期是算好的、決策物件本就有 s.stage），標籤動態顯示實際 stage。N2 教學卡標題也拿掉誤導的「(T1-2,N2)=IIIA/(T3,N2)=IIIB」T 綁定，footer 註明 IIIA/IIIB 依 N2a/N2b 判定。TNM→stage 推算本身逐條核對 AJCC 9th 全正確。6 組 N2 分流驗證與實際分期一致 BUG-60 |
 | V3.4.5 | V1.14.5 | 2026-07-03 | 修 GitHub Pages 部署持續失敗（"Deployment failed, try again later."）。排查確認非程式碼問題：build 綠 + artifact 成功 = 檔案 OK，卡在 deploy 上線階段是 GitHub 服務端（issue #418 仍 Open）。最可能密集 push 觸發部署鎖卡住。根治：加 `.github/workflows/deploy.yml`（upload-pages-artifact + deploy-pages + `concurrency cancel-in-progress`，新部署自動取代排隊舊部署）+ `.nojekyll`（純靜態跳過 Jekyll）。要 Settings→Pages→Source 改「GitHub Actions」生效 BUG-59 |
 | V3.4.4 | V1.14.4 | 2026-07-03 | 民眾版儲存查詢加識別防呆（Sela 交辦）：`saveQuery` 開頭檢查 `S.code` / `S.name`，兩者 trim 後都空 → alert 提醒「至少填病歷號或姓名其中一項」並 return 不存。理由：無識別的紀錄個管師無法辨認、統計也沒意義（呼應 V3.2.0 統計 / V3.3.0 載入都靠 code/name）。fake-indexeddb 測都沒填擋下、只空白也擋下（trim）、有填放行全綠 BUG-58 |
-| V3.4.3 | V1.14.3 | 2026-07-03 | 加入 app logo（依 SELA-Starter-Kit V1.21.0 §17 工作流）。**不用 SELA 主 logo、只做 app 子 logo**（SELA 決定）。先依 §17 產 `SELA-logo-prompt.md`（範本 B 醫療專業、壁虎不繼承、底色 #5B8FB9），SELA 用 Gemini 生圖（白色蜿蜒路徑+節點+右上箭頭，呼應臨床路徑導航），Claude 走 §10.2 四步優化：floodfill 外圍白底 + 抽白色主體 mask 重新合成 → 底色從 Gemini 的 #4780AD 校正回專案主色 #5B8FB9 + 抹除右下 Gemini 浮水印。生多解析度套組（16~1024 + favicon.ico + apple-touch-icon + android-chrome + site.webmanifest）放專案根目錄 `favicon/`，7 個 HTML `<head>` 加引用（portal 用 `favicon/`、lung/ 用 `../favicon/` 相對路徑，GitHub Pages 子路徑安全）BUG-57 |
-| V3.4.2 | V1.14.2 | 2026-07-03 | Sela 交辦 2 事：(1) **edu-patient QR 衛教頁同步 PD-L1**（V3.4.0 留的待辦）— patient.html buildEduPayload 加 `pd` 欄位（QR 帶 pdl1）；edu-patient buildPathRawCoreFromData 同步成兩維度（讀 `d.pd`，PDL1_HIGH/LOW 舊分支 → 無 driver 看 pdl1 的 HIGH/LOW/未驗），加 driver+ 且 PD-L1 高的標靶優先 warn，mutDisplay 拿掉 PDL1_* + 加 pdl1Display + meta 顯示。**舊 QR 相容**：無 pd 欄位時走「未驗」（NONE→先檢測、driver 仍標靶）(2) 文字修正：驅動基因 label 加「通常擇一，彼此多為互斥」。edu 6 組合分流 + 舊 QR 相容測試全綠，與 patient.html 對齊 BUG-56 |
-| V3.4.1 | V1.14.1 | 2026-07-02 | 修 V3.4.0 密碼 4 問題（Sela 回報）：(1) 輸對密碼進不去 — 疑似 `type=password` 觸發瀏覽器密碼管理員自動填干擾 value；(2) 密碼該在 portal 點醫護版時確認、非進到 lung 才確認；(3) 明碼不遮蔽；(4) 密碼 cbshow。**整個密碼機制從 lung/index.html 搬到 portal**：portal 點醫護版癌別卡片 → `requireProAuth` 彈明碼 modal（`type=text` + trim 比對）→ 對 → `sessionStorage('pro_auth')` + 跳轉；同 session 再點免重輸。lung/index.html 移除原 auth-gate，改輕量 `proGuard`（沒驗證過直接輸網址 → `location.replace('../')` 踢回 portal）。node 模擬 4 情境（彈框/輸錯擋/輸對進/免重輸）全綠 BUG-55 |
-| V3.4.0 | V1.14.0 | 2026-07-02 | Sela 交辦 2 事：(1) **醫護版加進入密碼**「cbshow」— 全屏 auth-gate overlay（z:9999），輸入正確存 sessionStorage（同 session 免再輸），純前端明碼擋非醫護人員（非高強度安全）(2) **民眾版基因檢測與免疫檢測併存** — 原本 Q4 驅動基因（EGFR/ALK/ROS1/BRAF/MET/KRAS）跟 PD-L1（HIGH/LOW）擠在同一組單選互斥，病人有 EGFR+ 且 PD-L1 高時只能選一個。拆成兩區：驅動基因（S.mut，必選）+ PD-L1 免疫指標（S.pdl1 新欄位，選填）各自單選。buildPath 改「driver 優先，無 driver 才看 pdl1」：有驅動基因→標靶（PD-L1 高也提醒仍標靶優先，因免疫對 driver+ 效果差）、無驅動+PD-L1高→免疫單藥、無驅動+PD-L1低→化療+免疫。pdl1 一併加進 saveQuery/loadRecord/restoreAllUI/restart（記取 BUG-53）。6 組合分流驗證全綠。⚠️ edu-patient QR 衛教頁的 PD-L1 同步未做（列待辦）BUG-54 |
-| V3.3.2 | V1.13.2 | 2026-07-02 | Sela 回報「團隊狀態沒有儲存」— 民眾版總覽頁選的照護團隊醫師（S.consult）在存查詢/載入時沒被保存。同 BUG-51 家族（存檔漏存欄位）：saveQuery 完全沒存 consult、loadRecord 還把 consult 清成 `{}`。修法：saveQuery 加 `consult:{...S.consult}`（深拷貝）、loadRecord 改 `consult:{...(rec.consult||{})}`。載入後 showPage(5)→renderSummary→renderTeam 依 S.consult 重繪選中醫師。fake-indexeddb 測存含三科醫師→讀出三科都還原 BUG-53 |
-| V3.3.1 | V1.13.1 | 2026-07-02 | Sela 回報民眾版「導航/返回有時整個跳到不知道哪頁」。先用導航模擬 harness 窮舉前進/返回/載入紀錄/開關 overlay 全部情境 → **頁內 JS 導航邏輯全部正確**（goNext/goPrev/loadRecord 的 stepIdx 與 pageId 都同步）。判定真兇：民眾版是單頁 SPA 但**沒接 History API**，使用者按手機/瀏覽器「返回鍵、返回手勢」會整頁跳離 patient.html 回 portal，被誤以為是「上一題」。修法：`initBackButton` 用 `history.pushState` 墊一筆 + `popstate` 攔截 → overlay/QR 開著先關、Q2-Q5/總覽 轉成 goPrev、只有 Q1 放行離開；每次攔截後補 pushState 形成持續攔截直到 Q1 BUG-52 |
-| V3.3.0 | V1.13.0 | 2026-07-02 | 民眾版紀錄可「載入舊紀錄 → 修改 → 再次儲存」（個管師用）。三塊：(1) 紀錄卡片可點 → `loadRecord(id)` 把該筆填回 S + `restoreAllUI()` 回填所有 Q 頁 UI（Q1 用 onclick 屬性精準定位 age/hbv/catastrophic、Q3 TNM 判斷簡易/進階組決定顯示 + 複用 applyQ2Mode/applyPostOpVisuals/recomputeStage、Q4/Q5 依 data-val toggle）→ 進總覽頁看載入結果 (2) `pdbEditId` 全域旗標綁定正在編輯哪筆；`saveQuery` 有 editId 就 `pdbPut` 更新（非新增），總覽頁按鈕文字對應變「更新這筆紀錄」 (3) **saveQuery 補存 t/n/m**（原本只存 stage/stageCat，載入無法回填 TNM 按鈕）。restart 清 pdbEditId。fake-indexeddb 測「存→載入→改→更新（仍 1 筆）→ 清 editId 存新（2 筆）」全綠 BUG-51 |
-| V3.2.1 | V1.12.1 | 2026-07-02 | Sela 截圖回報 V3.2.0 紀錄頁「跟病人流程混在一起」— 紀錄頁做成 `.page` 寄生在查詢流程容器裡，底部殘留「上一題/下一題」actbar、頂部殘留查詢進度點。修法：紀錄頁改「全屏獨立 overlay」（`position:fixed;inset:0;z-index:200` 蓋過 topbar+actbar，比照 qr-modal 作法），有自己的返回 header。openRecords 加 `.open` + 鎖背景捲動，closeRecords 只關 overlay 不再 `showPage(0)` 硬回 Q1（底下查詢流程維持原狀）BUG-50 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -865,6 +865,73 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**CI 三階段卡在哪一階段，就決定了是誰的問題**。build（檔案→artifact）綠 = 你的檔案 OK；deploy（artifact→上線）紅 = 平台端。別在檔案裡瞎找一個不存在的原因（Sela 三輪都在懷疑程式碼，實際 build 早就綠了）。看 job 卡在哪比看 error 訊息更快定位
 - 教訓：**密集 push 的專案，部署要有 concurrency 護欄**。dynamic（Deploy from a branch）自動 workflow 沒有 concurrency，短時間多次 push 容易互卡。自訂 workflow 加 `cancel-in-progress: true` 是根治
 
+### #60 (V3.4.6)：醫護版治療決策用 tstage 代替實際 stage → IIIA 誤標 IIIB（臨床安全）
+- 背景：Sela 交辦逐條檢查醫護版每條路徑抉擇，防「stage IIIA 卻做 IIIB 建議」這類分期↔治療錯配（腫瘤科嚴重問題：IIIA 多可手術、IIIB 多不可切，路徑完全不同）
+- 症狀：醫護版治療決策 `_NSCLC` 物件的 `'N2'` 分支，用 `const isT3N2 = s.tstage==='T3'` 分「路線A/B（可手術評估）vs 新輔助（標題寫死 Stage IIIB）」，**完全沒看 N2a/N2b**
+- 原因：AJCC 9th 把 N2 拆 N2a（單站）/N2b（多站），同一個 T 期會落在不同 stage — T3N2a=IIIA、T2N2b=IIIB。只用 tstage===T3 當分界 → **T3N2a（實際 IIIA）被標「Stage IIIB 新輔助」、T2N2b（實際 IIIB）被走 IIIA 路線 A/B**。兩個方向都錯配
+- 做法：改用 `const isIIIB = s.stage==='IIIB'` 分路（`s.stage` 是 `computeAJCC(t,n,m)` 算好的實際分期、決策物件本來就帶著、標題列 `_hdr` 早就在用），標題從寫死「Stage IIIB (T3,N2)」改成動態 `Stage ${s.stage}（${s.tstage}${s.nstage}）`。同步修 N2 教學卡：標題拿掉誤導的「(T1-2,N2)=IIIA /(T3,N2)=IIIB」T 綁定、footer 註明「IIIA/IIIB 依 N2a/N2b 判定非依 T 期，如 T3N2a=IIIA、T2N2b=IIIB」
+- 其他路徑逐條查過**沒問題**：TNM→stage 推算（computeAJCC）核對 AJCC 9th 全對；`resect_adv`/`N3`/`T4N2N3` 標題用 `_hdr` 動態顯示 `s.stage`；`getAdjuvantHTML/Summary` 用實際 pstage 逐一對應；checklist 的 surgery（非IV且<IIIB）/rt（IIIB/IIIC）條件用實際 stage。錯配只在 `'N2'` 這一處
+- 教訓：**臨床決策分支一律用「算好的最終分期」判斷，絕不用 T/N 單軸去猜 stage**。TNM→stage 有 computeAJCC 這個單一真相（呼應 BUG-46），決策端就該直接讀它的輸出，任何在決策端「用 tstage==='T3' 推 IIIB」的重算都是繞過真相、遲早跟真相分叉。凡看到治療分支在讀 `tstage`/`nstage` 而非 `stage`，就是可疑點
+- 教訓：**分期系統改版（8th→9th）最大的坑是「同 TNM 不同 stage」的新拆分**。N2a/N2b 是 9th 新增，任何 8th 時代寫死「T3N2=IIIB」的邏輯在 9th 都可能錯。之後若院內指引再升版，優先重查所有「硬編 TNM→治療」的地方
+
+### #61 (V3.4.7)：M1b 分期用詞錯誤 — 轉移期寫成「局部晚期」（接 BUG-60 臨床安全審查）
+- 背景：Sela 交辦續查其他期別，尤其 T4、M1a/b/c。逐條核對 T4 與 M1 的 stage 推算 + 路由 + 治療分支性質
+- 查核結果 — **T4 與 M1 路由全部相符無錯配**：T4N0/N1=IIIA→`resect_adv`(可切評估)、T4N2/N3=IIIB/C→`T4N2N3`(CCRT 不可切)、M1a/M1b→IVA、M1c1/M1c2→IVB。各分支標題用 `_hdr` 動態顯示實際 stage，沒有 BUG-60 那種硬編錯標
+- 發現的問題（用詞層級，非路由錯配）：`'M1b'` 分支內文寫「**局部晚期** — 腦部轉移 / 其他部位」。但 M1b = 單一胸腔外轉移 = **IVA 轉移期（寡轉移 oligometastatic）**，「局部晚期」(locally advanced) 是 stage III 的稱呼 — 跟 `_hdr` 同時顯示的「Stage IVA」自相矛盾。且 M1b 依定義是單一轉移，內文卻列「多處轉移」（那是 M1c）
+- 做法：M1b「局部晚期」改「寡轉移/單一轉移」、移除「多處轉移」條、加 M1b 定義 box（單一胸腔外轉移、IVA、可局部根治+全身、預後優於 M1c）。M1a 順手補完整：原本只講肋膜/心包積液，但 M1a 也含「對側肺葉結節」→ 加定義 box 標明涵蓋範圍 + IVA，與 M1b 對稱
+- 教訓：**分期↔治療審查要同時查「路由對不對」和「用詞對不對」**。BUG-60 是路由錯配（IIIA 走 IIIB 路線，會給錯治療）；這條是路由對但用詞錯（M1b 治療內容對，但講成「局部晚期」會讓醫護/病人誤解分期）。臨床工具的分期術語錯誤即使不改治療方向，也會誤導判讀 — locally advanced(III) 和 metastatic(IV) 是完全不同的預後與治療哲學，不能混用
+- 教訓：**內文的分期描述要跟動態 stage 標題對齊**。`_hdr` 已顯示正確 Stage IVA，內文若還沿用舊的「局部晚期」措辭就會打架。凡標題用變數顯示 stage、內文卻寫死分期形容詞的，都要檢查一致性
+
+### #62 (V3.4.8)：基因/免疫檢測建議 + 對應藥物 — 藥名對齊 drugs-pro 單一真相
+- 需求：Sela 交辦補「基因檢測/免疫檢測的檢查建議項目 + 相對應藥物」。醫護版 M1c 轉移期原本給藥是泛稱（「依 EGFR 突變類型選擇對應標靶藥物」、「BRAF(+) 雙標靶藥物」— 沒具體藥名）
+- 做法：建 `_BIOMARKER_TABLE`（7 項：EGFR/ALK/ROS1/BRAF/MET/KRAS/PD-L1 → 對應藥物 + 健保 tag）+ `_biomarkerHTML()` 生成對照卡，插在 `_M1c_NS`/`_M1c_SQ` 結尾。各 mutation 泛稱補具體藥名
+- **關鍵：藥名與健保狀態全部對齊 `drugs-pro.html` 藥物庫（31 藥、對齊健保第 9 章）當單一真相**，不在決策頁自己編。從藥物庫提取：EGFR→Osimertinib 泰格莎/Afatinib 妥復克…、ALK→Alectinib 安立適…、ROS1→Entrectinib 羅思克、BRAF V600E→Dabrafenib+Trametinib 泰伏樂+麥欣寧(NHI二線)、MET ex14→Tepotinib 特癌適(NHI不分線)、**KRAS G12C→Sotorasib 魯瑪克拉斯(自費 SELF)**、PD-L1→Pembrolizumab 吉舒達 等
+- 教訓：**藥名/健保給付是「業務對映單一真相」（章法二），決策頁引用不自編**。drugs-pro 是對齊健保第 9 章 + 附件 2 的權威來源，決策頁若自己寫「BRAF 雙標靶」而不對齊，健保線數/自費與否遲早跟藥物庫分叉。做法：先從 drugs-pro 提取 en/zh/nhi/line，決策頁的對照表照抄。日後健保給付調整，改 drugs-pro 一處、決策頁對照跟著對（未來可考慮真的抽成共用資料，現在手動對齊可接受）
+- 待辦：對照卡目前只放 M1c（轉移期，基因指引用藥的核心）。stage III 不可切轉系統治療時（N2/N3/T4N2N3 的「基因檢測後系統治療」box）也需基因指引，若 Sela 要可再加 `_biomarkerHTML()`；但 III 期主軸是 CCRT，暫不強加避免決策頁過長
+
+### #63 (V3.4.9)：民眾版檢測組套建議做進醫護版 + 醫令碼 toggle
+- 需求：Sela 交辦 (1) 確認民眾版的「基因檢測組套建議」也做進醫護版 (2) 醫護版加按鈕叫出醫令碼（平常隱藏，醫令碼醜不礙眼）
+- 釐清兩個「基因」東西不同：民眾版 `buildGeneTestAdvice` = 依分期建議「該開哪些檢測 + 健保給付」（檢測端）；V3.4.8 的 `_BIOMARKER_TABLE` = 檢測陽性「對應哪些藥」（治療端）。醫護版原本只有後者 + checklist 一項 NGS，缺前者的動態組套建議
+- 做法 (1)：`_genePanelHTML(s)` 對應民眾版依分期邏輯（非鱗晚期 EGFR/ALK/PD-L1 健保+ROS1 材料費、鱗狀晚期 PD-L1 健保+EGFR/ALK 自費、早期多自費），醫護版更完整（晚期非鱗列 10 項含 BRAF/MET/KRAS/RET/NTRK/HER2 走 NGS）。決策頁 `pw-content` 的 `result.tx` 後 append，SCLC 回空字串不顯示（不做驅動基因）
+- 做法 (2)：每項掛醫令碼 span、CSS `.gp-code{display:none}` 預設隱藏，標題列「顯示/隱藏醫令碼」按鈕 `toggleOrderCodes` 切換 `.tx-box.show-codes`。符合 Sela「平常隱藏醜醜的醫令碼」
+- **⚠️ 醫令碼 Claude 不捏造**：醫令碼是彰濱秀傳醫院系統的真實檢驗代碼，編錯會讓醫護照著開錯單 = 臨床安全風險。`ORDER_CODES` 各欄留空字串、UI 顯示「（待院方填入）」，架構+按鈕都到位，等 Sela 填真實碼即顯示
+- 教訓：**遇到「醫院/機構特定的真實代碼」（醫令碼、健保申報碼、病歷號規則），建架構不填內容**。這類代碼錯了有實際後果（開錯單、申報錯），不是 Claude 能推測的。正確做法：把欄位、UI、toggle 都做好，值留空 + 明確標「待院方填入」，讓有權威來源的人填。跟 BUG-57 logo「不捏造 SELA 主 logo」同精神 — 沒有權威來源的內容不編
+
+### #64 (V3.5.0)：真實醫令碼填入 — 發現「同一檢測依分期/組織型態碼不同」
+- 背景：BUG-63 建好架構 + 標「待院方填入」，Sela 隨後提供彰濱秀傳「肺癌基因檢測開單速查表 2025/06」— 正是權威來源。V3.5.0 填入真實資料
+- **關鍵發現（V3.4.9 架構沒料到的）：醫令碼與費用「依分期/組織型態不同」**，不是每個檢測一個固定碼：
+  - EGFR：非鱗晚期 `30101B`（健保 0）／ 鱗狀或早期 `L09010A`（自費 10,000）
+  - ALK：非鱗晚期 `30105B`（健保 0）／ 其他 `30105B 勾選自費`（自費 9,482）
+  - PD-L1：晚期 `30103B + L09017A`（IHC+分子綁定，健保+材料 300）／ 早期只 `L09017A`（材料 300）
+  - ROS1：全組 `L09021`（材料 300）
+- 做法：V3.4.9 的單一 `ORDER_CODES = {egfr:'',...}` 架構不夠 → 重構成 `GENE_PANEL_DATA` 三組（`ns_adv` / `sq_adv` / `early`），每組各自列真實醫令碼 + 費用。`_genePanelHTML` 依 type+stage 選組別。費用當 badge 平常可見、醫令碼 toggle 隱藏（沿用 BUG-63 的 toggleOrderCodes）。加頂部「一次開齊 PD-L1 綁定」提醒（速查表的重點）
+- 教訓：**建 placeholder 架構時，先想「這值是不是 context-dependent」**。V3.4.9 假設「一個檢測一個醫令碼」，拿到真實資料才發現同一檢測在不同分期是不同碼 + 不同費用。若當初架構設計成 `{檢測:{組別:碼}}` 巢狀，填資料就不用重構。教訓：業務代碼常隨情境變化（分期、給付身份、院區），placeholder 架構寧可先做成「情境 × 項目」二維，不要假設一維
+- 教訓：**速查表這類「已經是表格的院內資料」直接照搬結構最安全**。原始速查表就是「三組 × 檢測項目 × (醫令碼,費用)」，程式資料結構 `GENE_PANEL_DATA` 一比一對應，之後 Sela 拿新版速查表比對時，一眼看得出哪格改了。不要自作聰明重新分類
+
+### #65 (V3.5.1)：拿真實速查表反向驗證民眾版，抓到 ROS1 費用標錯
+- 背景：V3.5.0 拿到真實速查表填了醫護版，Sela 要求也驗民眾版對不對（民眾版 = 醫護版簡化、無醫令碼、引導接受不推銷）
+- 做法：把速查表當真相，逐項對照民眾版 `buildGeneTestAdvice` 三組（非鱗晚期/鱗狀晚期/早期）的健保/自費/材料費標示
+- 抓到：**早期組 ROS1 標錯**。原本 `EGFR / ALK / ROS1` 三個綁一起標「自費」，但速查表 ROS1 **全部組別都是材料費 300**（`L09021`），從不是萬元自費。EGFR/ALK 才是自費（L09010A 一萬 / 勾選自費 9482）
+- **為什麼這個錯特別該修**：民眾版定位是「引導接受檢測、不推銷」。ROS1 誤標「自費」會讓病人以為跟 EGFR/ALK 一樣要上萬元而卻步 → 正好擋掉了本來只要 300 就能做的檢測，跟「引導接受」背道而馳。標對成「材料費」反而降低接受門檻
+- 修：早期 ROS1 從綁定拆出、改材料費；順手把便宜的（PD-L1/ROS1 材料費）排前面、貴的（EGFR/ALK 自費）排後面 — 病人先看到低門檻項目。①②組本就對齊速查表
+- 教訓：**「簡化版」可以少講細節，但不能講錯方向**。民眾版簡化醫護版是對的（不列醫令碼、不列精確金額），但「自費 vs 材料費」是數量級差異（萬元 vs 數百），簡化時把 ROS1 併進「自費」就從「省略細節」變成「給錯資訊」。簡化的界線：可以模糊金額，不能把材料費說成自費
+- 教訓：**拿到權威資料時，順手回頭驗所有「當初靠推測填的地方」**。民眾版費用標示是早期（V3.0.6）憑一般認知填的，直到 V3.5.0 拿到速查表才有真相可校。有新權威來源時，主動掃一遍所有相關的舊推測值，別只改當下那處
+
+### #66 (V3.5.2)：醫護版桌面 sidebar 太小
+- 症狀：Sela 截圖回報醫護版電腦版左側導航列圖示/文字在寬螢幕上太小、難點
+- 原因：桌面版 sidebar 沿用偏手機的小尺寸 — 寬 72px、圖示 17px、**文字 9px**（9px 在大螢幕明顯過小）
+- 做法：桌面版放大 sidebar 92→96px / logo 50 / nav-item 74×64 / 圖示 22px / 文字 12px。手機版 bottom bar（`@media`）不動。`.app` flex 自適應無 hardcode 寬度，主內容自動縮
+- 教訓：**桌面 UI 不要沿用手機的小字級**。同一份 CSS 桌面/手機共用時，字級容易被壓到手機尺寸（9px 在手機底部欄可接受、桌面側欄就太小）。桌面元件字級至少 11-12px 起跳
+
+### #67 (V3.5.3)：QR 掃出來跟畫面不一樣 — payload 沒帶 stageCat、edu 反推失敗
+- 症狀：個管師反應民眾版產的 QR 掃出來（edu-patient 衛教頁）跟 patient 畫面原本內容不一樣
+- 原因：雙人口資料源（patient buildPath / edu buildPathFromData 平行維護，BUG-56 家族）。QR payload 只送 `s`（stage 字串）不送 stageCat，edu 用 `deriveStageCat(d.s)` 從 stage **反推** stageCat（IV→META、III→LOCAL、0/I/II→EARLY）。但 **NSCLC 簡易模式**（病人只點早期/局部/轉移、沒填 TNM）時 `S.stage` 是空字串 → payload `s=''` → `deriveStageCat('')` 回空 → edu 的 `st=''`，所有 `st==='LOCAL'` 分支全 false → 走不到正確治療路徑。而 patient 畫面直接用 `S.stageCat`（病人選的），所以畫面對、掃 QR 錯
+- 做法：payload 加 `sc:S.stageCat` 直接帶過去；edu `d._stageCat = d.sc || deriveStageCat(d)`（有 sc 用 sc、舊 QR 無 sc 才反推，相容）
+- 驗證：寫 vm 對照 harness 同時載入兩個檔案，同一組 S 跑 patient `buildPathRaw` vs edu `buildPathRawCoreFromData(payload)`，比首步治療。8 組（簡易 EARLY/LOCAL/META + 進階 IVA + 鱗狀 IIIB + SCLC limited/extensive + driver/pdl1 各種）修復後全一致。harness 也直接印出「簡易模式 s= 空」證實病根
+- 教訓：**雙人口資料源，接收端不要「反推」發送端已經有的東西**。`deriveStageCat` 是 edu 在猜 patient 早就知道的 stageCat — 猜錯就分叉。直接把 stageCat 塞進 payload 讓 edu 照用，比反推可靠。呼應 BUG-53「存檔要帶足以重建的最小完整集」的 QR 版：payload 要帶的不只是「顯示用的 stage 字串」，還要帶「決定路徑分支的 stageCat」
+- 教訓：**「從顯示值反推狀態」的邏輯，死角是「顯示值可能為空」的輸入**。簡易模式只有 stageCat 沒有 stage，正好讓「從 stage 反推」踩空。任何反推邏輯都要問：有沒有一種合法輸入讓被反推的來源是空的/不完整的
+- 教訓：**跨檔案一致性用 vm 對照 harness**：`vm.createContext` 各自隔離載入兩個 HTML 的 script（init 錯誤 catch 掉、用第二段 runInContext 抓 export），同輸入比兩邊輸出。這是驗證雙人口資料源沒分叉最直接的方法，比人工比對兩份程式碼可靠。下次動 patient/edu 任一邊的路徑邏輯，跑這個 harness
+
 ---
 
 ## 七、擴充新癌別
@@ -882,10 +949,11 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **完整實機驗證 V3.0.1~V3.4.5** — **累積多版沒完整上真機**。(a) V3.4.4 儲存防呆：民眾版走完查詢、病歷號跟姓名都不填 → 按儲存跳提醒且沒存進紀錄；填任一項 → 存得進去 (b) V3.4.3 favicon：各頁分頁圖示顯示新 app logo（藍底白路徑）、portal 跟 lung/ 子頁都對、手機加到主畫面圖示對 (b) V3.4.2 QR 掃描：民眾版存查詢→產生 QR→手機掃→衛教頁 PD-L1 顯示且治療分流跟查詢工具一致；舊 QR（V3.4.2 前）掃描不會壞 (b) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (c) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
-2. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
-3. **民眾版抽 `collectQueryFields()` 單一真相**（BUG-53 指向的根治）— saveQuery 已經漏存兩次（t/n/m、consult），欄位散在 saveQuery/loadRecord/restart 三處手動列。學醫護版 BUG-46 的 collectStateFields 作法，抽一個回傳完整欄位物件的函式，三處共用一份清單，之後加欄位不會再漏。目前 ~17 欄手動列還能忍，但已漏兩次，該做
-4. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
+1. **抽 lung/_path.js 讓 patient / edu 共用 buildPath**（BUG-67 升上來）— BUG-56（V3.4.2 PD-L1 同步）到 BUG-67（QR stageCat）已經是**第二次**雙人口資料源分叉。patient 的 `buildPath` 跟 edu 的 `buildPathRawCoreFromData` 是兩份平行維護的臨床路徑邏輯，改一邊漏另一邊遲早再分叉、且是臨床內容風險高。根治：抽成單一 `_path.js` 兩邊共用。BUG-67 的 vm 對照 harness 可當抽取後的回歸測試（確認行為不變）。列第 1 因為這是「會反覆咬人」的結構問題
+2. **完整實機驗證 V3.0.1~V3.5.2** — **累積多版沒完整上真機**。(a) V3.4.8 M1c 藥物對照：轉移期決策頁顯示「基因/免疫檢測→對應藥物」對照卡、各 mutation 顯示具體藥名(EGFR→泰格莎等、KRAS→魯瑪克拉斯自費)、藥名跟 drugs-pro 一致 (b) V3.4.7 T4/M1 期別：拿 M1b(單一轉移) 病人確認顯示「寡轉移/IVA」非「局部晚期」、M1a 對側肺結節病人顯示涵蓋範圍、T4N0/N1 走可切評估 vs T4N2/N3 走 CCRT (b) V3.4.6 N2 分期分路：拿真實 N2a/N2b 病人（尤其 T3N2a=IIIA、T2N2b=IIIB）核對治療建議標的 stage 跟決策路線是否相符、不再出現 IIIA 標 IIIB (b) V3.4.4 儲存防呆：民眾版走完查詢、病歷號跟姓名都不填 → 按儲存跳提醒且沒存進紀錄；填任一項 → 存得進去 (b) V3.4.3 favicon：各頁分頁圖示顯示新 app logo（藍底白路徑）、portal 跟 lung/ 子頁都對、手機加到主畫面圖示對 (b) V3.4.2 QR 掃描：民眾版存查詢→產生 QR→手機掃→衛教頁 PD-L1 顯示且治療分流跟查詢工具一致；舊 QR（V3.4.2 前）掃描不會壞 (b) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (c) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
+3. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
+4. **民眾版抽 `collectQueryFields()` 單一真相**（BUG-53 指向的根治）— saveQuery 已經漏存兩次（t/n/m、consult），欄位散在 saveQuery/loadRecord/restart 三處手動列。學醫護版 BUG-46 的 collectStateFields 作法，抽一個回傳完整欄位物件的函式，三處共用一份清單，之後加欄位不會再漏。目前 ~17 欄手動列還能忍，但已漏兩次，該做
+5. **個管師視角審查發現的 7 條設計缺口排程動手**（V3.0.3 BUG-37 末段詳列）：
    - 🟡 #1 跨院轉診 pTNM 獨立輸入（30 分）
    - 🟡 #2 紀錄列表頁加 3 個 KPI 色點（30 分）
    - 🟡 #3「我的待辦 / 即將超期」清單分頁（2 小時，大功能）
@@ -893,18 +961,18 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
    - 🟡 #5「實際治療」勾選加治療日期欄位（1 小時）
    - 🟢 #6 副作用追蹤系統 CTCAE 分級（半天起跳）
    - 🟢 #7 個管師名字改設定（15 分）
-5. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
-6. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
-7. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
-8. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
-9. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
-10. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
-11. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
-12. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
-13. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
+6. **GitHub Pages 部署實機驗證 V3.0.0 + V3.0.2 對齊狀態** — Kit 對齊里程碑後上線必跑：(a) 整個檔案結構含 `.gitignore` (b) 版號顯示「lung V1.11.2 · System V3.0.3」 (c) zip 命名「Cancer Navigation V3.0.3.zip」三位版本號 + 空格 (d) 確認沒被誤加 SELA logo 殘留（品牌歸彰濱秀傳）(e) 配色 `#5B8FB9` 沒被誤改成 Kit 預設 `#5A7A8B`
+7. **Sela 比對院內指引術後輔助章節** — V2.10.0/V2.11.0 新加的術後路徑（IA 期細分、IB 高風險判定、ADAURA Osimertinib 3 年、ALINA Alectinib 2 年、IMpower010 Atezolizumab 條件、SCLC 術後 PCI 是否仍建議、復發後重做基因檢測時機）需對照本院指引 v12 (2026)
+8. **Sela 確認健保事審現況**：(a) Sotorasib (KRAS G12C) (b) Alectinib 術後鞏固 ALINA (c) Amivantamab 健保適應症 (d) Atezolizumab adjuvant IMpower010
+9. **Sela 逐條 review drugs.html 的 ALL_DRUGS** — 28 種藥物資料
+10. **mut-based filter for postOp consolidation steps** — 目前 postOp EARLY 三個鞏固 step（EGFR/ALK/Atezo）一律全列。如果 user 已填 mut=EGFR，可考慮只顯示 Osimertinib 並標「您符合此鞏固條件」，反之只列 Atezo（PD-L1 條件視確認）
+11. **DRUGS 拆 PRO/PATIENT 兩份**（V3.0.1 + V3.0.3 教訓延伸）：patient.html / edu-patient.html / drugs-patient.html 三處共用同套 DRUGS，醫護版需要的條文編號 / 試驗代號 / NCCN 分級對民眾就是雜訊。下版考慮拆 `lung/_drugs_pro.js`（醫護版用）+ `lung/_drugs_patient.js`（民眾版用），徹底分離雙人口資料源 + 加 `lung/_qr_payload.test.js` 端到端 pipeline 測試（V3.0.3 教訓）
+12. 新增第二個癌別（頭頸或食道）— 模板已穩定。**注意**：依 BUG-22 教訓分期邏輯不同；BUG-24 教訓拆 edu-pro/edu-patient；BUG-25 教訓並列按鈕分配視覺權重；BUG-26 教訓問答鎖屏 vs 閱讀解鎖；BUG-28 教訓個人化建議要套到 step 內容；BUG-30 教訓 stage axis 從一開始就要分 c/p 兩階段；BUG-31 教訓 phase 標記要從一開始就放 step；BUG-35 教訓民眾版要獨立翻譯層不能跟醫護版共用 note；BUG-37 教訓雙人口資料傳遞 pipeline 要端到端測試
+13. 醫護版列印手冊樣板審視（自從 BUG-11 後沒再大改）
+14. **DRUGS / buildPath 共用機制觀察**：patient.html 跟 edu-patient.html 兩處有同樣的 DRUGS、buildPath、buildPostOpPath、splitStepsByProgress、buildRecurrencePath。五個地方要同步改的負擔越來越重（V3.0.1 大修同步耗時 1/3）；下版前考慮抽 `lung/_drugs.js` + `lung/_path.js` + `lung/_progress.js` 共用
 
 ---
 
 ## 九、一句話總結
 
-V3.4.5 修 GitHub Pages 部署持續失敗。排查確認非程式碼問題（build 綠 + artifact 成功 = 檔案 OK、卡在 deploy 上線階段是 GitHub 服務端，issue #418 仍 Open），最可能密集 push 觸發部署鎖卡住。根治：加自訂 `.github/workflows/deploy.yml`（帶 `concurrency cancel-in-progress` 讓新部署自動取代排隊舊部署）+ `.nojekyll`，要 Settings→Pages→Source 改「GitHub Actions」生效。BUG-59 教訓：CI 卡在哪一階段就決定是誰的問題（build 綠=檔案OK、deploy 紅=平台端，別在檔案瞎找）、密集 push 專案部署要有 concurrency 護欄。下版第一優先仍是**完整實機驗證 V3.0.1~V3.4.5**（累積十多版沒完整上真機，密碼流程/Q4 兩區併存/QR 掃描 PD-L1/載入返回團隊還原/favicon/儲存識別防呆都要真機確認）；第 2 是民眾版抽 collectQueryFields() 根治存檔漏欄位；第 3 是抽 lung/_path.js 讓 patient/edu 共用 buildPath。
+V3.5.3 個管師反應「QR 掃出來跟畫面不一樣」→ 查出雙人口資料源分叉：QR payload 只送 stage 不送 stageCat、edu 從 stage 反推，簡易模式（沒填 TNM）stage 空 → 反推失敗 → 掃 QR 走不到正確路徑。修：payload 帶 sc:S.stageCat、edu 用 d.sc||deriveStageCat（相容舊 QR）。vm 對照 harness 8 組全一致。BUG-67 教訓：雙人口資料源接收端別反推發送端已有的東西（直接帶過去）、從顯示值反推狀態的死角是顯示值可能為空、跨檔案一致性用 vm 對照 harness。下版第一優先升為：**抽 lung/_path.js 讓 patient/edu 共用 buildPath**（BUG-56→67 已是第二次雙人口分叉，平行維護兩份路徑邏輯遲早再分叉，該根治為單一真相；harness 已有可當回歸測試）；第 2 是完整實機驗證 V3.0.1~V3.5.3（尤其個管師拿真實 N2a/N2b+T4+M1a/b/c 病人核對分期↔治療、簡易模式產 QR 掃出來跟畫面一致）；第 3 是民眾版抽 collectQueryFields() 根治存檔漏欄位。
