@@ -288,7 +288,7 @@ const ALL_DRUGS = [
     target:'EGFR exon 20 ins 第一線（合併化療）；其他 EGFR 突變失敗後',
     purpose:'EGFR/MET 雙特異抗體。健保限 EGFR exon 20 ins 第一線併用 carboplatin + pemetrexed (9.126)；用於 Osimertinib 失敗後通常需自費。',
     sideEff:'輸注反應（發燒、寒顫）、皮疹、甲溝炎、低血鎂。',
-    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+    matchKey:['NSCLC_NS:META:EGFR_EX20','NSCLC_SQ:META:EGFR_EX20']},
 
   // ─── 抗血管 ───
   { en:'Bevacizumab',   zh:'癌思停',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS'],
@@ -361,6 +361,8 @@ let curQ = '';
 let matchType = '';   // 從 query 帶來的 type
 let matchStage = '';
 let matchMut = '';
+let matchPdl1 = '';      // V3.6.4
+let matchDriverRaw = '';  // V3.6.4
 
 function getFiltered(){
   return ALL_DRUGS.filter(d=>{
@@ -506,7 +508,7 @@ function clearSearch(){
   render();
 }
 function clearMatch(){
-  matchType=''; matchStage=''; matchMut='';
+  matchType=''; matchStage=''; matchMut=''; matchPdl1=''; matchDriverRaw='';
   document.getElementById('match-banner').style.display='none';
   // 順便清 type filter（讓使用者看全部）
   setTypeF('ALL');
@@ -523,15 +525,27 @@ function readQueryMatch(){
   const sp = new URLSearchParams(location.search);
   const t = sp.get('type') || '';
   const s = sp.get('stage') || '';
-  const m = sp.get('mut') || '';
+  // V3.6.4: 新 contract — driver 與 PD-L1 分開；保留 mut 供舊連結/SCLC 使用
+  const driver = sp.get('driver') || '';
+  const pdl1   = sp.get('pdl1') || '';
+  const m = driver || sp.get('mut') || '';
   if(!t) return;
   matchType = t;
   matchStage = s;
-  matchMut = m;
+  // 驅動基因優先；已確認陰性(NEG)才用 PD-L1 決定免疫藥；未檢測(PENDING)不做個人化配對
+  matchMut = ({EGFR_CLASSIC:'EGFR', EGFR:'EGFR', EGFR_EX20:'EGFR_EX20'})[m]
+          || (['ALK','ROS1','BRAF','MET','KRAS'].includes(m) ? m
+          : (m === 'NEG' ? ({HIGH:'PDL1_HIGH', LOW:'PDL1_LOW'})[pdl1] || ''
+          : (m === 'PENDING' ? '' : m)));
+  matchPdl1 = pdl1;
+  matchDriverRaw = m;
   // 顯示 banner
   const typeLabel = ({NSCLC_NS:'非小細胞肺癌（非鱗）',NSCLC_SQ:'非小細胞肺癌（鱗狀）',SCLC:'小細胞肺癌'})[t] || t;
   const stageLabel = ({EARLY:'早期',LOCAL:'局部晚期',META:'轉移期/擴散期'})[s] || s;
-  const mutLabel = m ? ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:'尚未檢測'})[m] || m : '';
+  // V3.6.4: 支援新 enum，並把 PD-L1 一起顯示
+  const driverLabel = m ? ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX20:'EGFR exon20 ins(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NEG:'無驅動基因',PENDING:'基因檢測中',NONE:'尚未檢測'})[m] || m : '';
+  const pdl1Label = ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%',UNKNOWN:'PD-L1 未驗'})[pdl1] || '';
+  const mutLabel = [driverLabel, pdl1Label].filter(Boolean).join('　·　');
   const banner = document.getElementById('match-banner');
   banner.style.display = '';
   banner.className = 'match-banner';

@@ -227,16 +227,16 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 | 系統版 | lung 模組 | 日期 | 重點 |
 |--------|----------|------|------|
+| V3.6.5 | V1.16.5 | 2026-07-04 | **外部第三輪審稿的 4 項**（審稿確認 V3.6.4 已非擋版等級，修完這批可當肺癌病人版穩定候選）：(1) **UNKNOWN 紀錄載入要分兩種來源** — UNKNOWN 可能是「真的按不知道 TNM」也可能是「有 TNM 但簡易資料跨治療分類（T1N2M0 → IIB–IIIA）」。V3.6.4 用 `stageCat==='UNKNOWN'` 判斷要不要重算 → 第二種載入後 possibleStages/stageLabel/stageNeed 全丟。改成**先看有沒有 T/N/M** 決定重算，loadRecord 也明確覆寫這三欄（原本可能沿用前一位病人的 stageNeed）(2) **QR 真 round-trip** — payload 補原始 `tt/nn/mm`，edu 用 `resolveStage` 自己重建「還需確認什麼」（照審稿建議的乾淨解法，不把中文說明塞進 QR）(3) **age/ECOG 全域警語要 gate** — 原本無條件 unshift，IA 只做手術的病人也看到「化療用藥可能調整、同步化放療可分開做」，UNKNOWN 更矛盾（說不給治療建議卻談化療強度）。改成依路徑實際有沒有 chemo/CCRT，且 `unknownStage` 完全不套 (4) 三處吃新 contract：LOCAL 警語 range 時開頭破字（`stage=''` → 「 期腫瘤範圍較廣」）、總覽 stageDisplay 把「約 IA1–IA3」退化成「I-II」且 UNKNOWN 顯示「?」、SCLC+UNKNOWN payload 偷送 `s='Limited'` 自相矛盾、PENDING 被當成「已有部分檢測結果」。驗證：864 組完整 payload 往返全一致 BUG-73 |
+| V3.6.4 | V1.16.4 | 2026-07-04 | **修 V3.6.1 三層 state 引進的 regression（外部第二輪審稿，判定 V3.6.3 不可上線）**。根因：V3.6.1 加了 `stage`(唯一解才有值) / `stageLabel` / `stageCat` 三層，但下游仍 parse 分期字串。(P0-1) `stage.startsWith('IA')`、`stage!=='IB'` 遇到範圍分期（stage=''）全部誤判 → **T1N0M0（確定 IA）被列出 II 期術前化療 + 術後輔助化療 + 術後追加標靶**、pT2N0M0(IB–IIA) 錯配 Atezolizumab、基因建議卡又判成晚期（V3.6.1 剛修掉的矛盾換形式復發）。修法：`_staging.js` 出 possibleStages + `definitelyStage/possiblyStage` helper，下游一律用 contract 不 parse 字串 (P0-2) **QR 對簡易模式整個壞掉** — edu 驗證要求 `data.s` 有值，範圍分期 s='' → 掃出來「資料不完整」。payload 加 `sl`/`ps`、edu 驗證改吃 sc、stageDisplay 支援範圍與未定 (P0-3) 模式切換舊 state 殘留 — 臨床↔病理直接沿用同一組 TNM 貼上 p、SCLC 切回侷限/擴散沒清 stageCat（UI 沒選卻能按下一題）。建 `resetStageState/resetMolecularState/resetProgressState/resetPersonalState` 統一 reset，所有 transition 走同一組。另修 restart 漏清 hbv/catastrophic、載入 UNKNOWN 紀錄被 recomputeStage 洗掉、UNKNOWN 仍問 Q4/Q5、drugs-patient 舊 enum + PD-L1 沒傳、QR 日期用 UTC 在台灣早上會變昨天 BUG-72 |
+| V3.6.3 | V1.16.3 | 2026-07-04 | **審稿剩餘兩項 + 修飾層也收斂**：(a) **B 肝與 C 肝分開** — 原本 Q1 問「B 型/C 型肝炎帶原」，按「有」就提示化療前拿預防性抗病毒藥；但治療前預防性抗病毒的規範是針對 **B 肝**（HBsAg / anti-HBc），不能把 C 肝一起套用。改成「B 型肝炎（帶原或曾感染）」，「不知道」時明確指名要驗 HBsAg / anti-HBc / anti-HBs (b) **age/ECOG 改回 modifier、不覆寫主結論** — 原本 PS 3-4 會把 pwTxt 直接改寫成「以支持療法為主」，**driver+ 病人下面列標靶、上面卻寫支持療法自相矛盾**；改成只加註與警語，且 driver+ 的 PS 3-4 明確提示「口服標靶通常仍可考慮」。年齡的碳鉑建議也從硬決策改為「由醫師依腎功能等條件決定」 (c) 順手把**修飾層（年齡/體力/B肝/重大傷病）也抽進 `_path.js` 共用** — 原本 patient 有 4 項、edu 只有 age/ecog 兩項，**掃 QR 少了 B 肝與重大傷病提醒**；QR payload 加 `hb`/`ct`（舊 QR 缺省 → 不出提醒，相容）。驗證：1,296 組 patient/edu 完全收斂 BUG-71 |
+| V3.6.2 | V1.16.2 | 2026-07-04 | **第二批臨床更新（外部審稿 P1，「會給錯藥」等級）**，全部以專案內 NCCN 3.2026 / SCLC 2.2026 / 健保第 9 章原文核實：(a) **Stage III 鞏固治療真正分流** — NCCN NSCL-F 明訂 Durvalumab 鞏固「**except EGFR exon19del/L858R**」、該類病人用 **Osimertinib（stage III category 1）**；健保 9.69 也限 durvalumab 鞏固為 EGFR/ALK/ROS-1 原生型。原本一律列 Durvalumab 再補一句警語 → 改成 EGFR classic → Osimertinib、其他 driver → 個別評估、driver 陰性 → Durvalumab，**且主結論 pwTxt 跟著分流變**（原本一律寫「治療結束後再用免疫維持治療」，跟 EGFR 警語自相矛盾 — 審稿點名） (b) **EGFR 拆 classic / exon20 insertion** — exon20 第一線是 Amivantamab + 化療（健保 114/10/1），原本全塞一顆「EGFR(+)」會給錯第一線 (c) **LS-SCLC 補 Durvalumab 鞏固** — NCCN 依 ADRIATIC 列 category 1、至多 24 個月、PCI 應排在鞏固之前；台灣健保未給付此適應症故明確標示（不是讓整項消失） (d) **術後 Atezolizumab 條件化** — 適應症是切除+含鉑化療後的 II–IIIA 且 PD-L1≥1%，**IB 不在內**，原本對所有非 IA 一律列。驗證：四項逐條 + patient/edu 2,592 組完全收斂 + 舊 QR 的 'EGFR' 值仍走 classic 相容 BUG-70 |
+| V3.6.1 | V1.16.1 | 2026-07-04 | **臨床修正（外部審稿 P0 五項，在 V3.6.0 抽好的單一 engine 上各改一處）**：(a) **T1N1 → IIA**（`_staging.js` 查表改一格，NCCN Table 2 核實）(b) **UNKNOWN 分期獨立** — 「不知道 TNM」不再猜 EARLY，改走 `buildUnknownStagePath`（只給「先完成 CT/PET/MRI/病理 → 回診確認期別」，**不提供任何治療建議**）；`buildGeneTestAdvice` 同步防護（原本 stage='' 會判成 advanced → 早期治療配晚期基因建議自相矛盾）(c) **簡易模式不產生假精確分期** — 新增 `resolveStage()` 列舉所有可能值：唯一解才給正式分期、否則顯示範圍（如「約 Stage IB–IIA」）；**若可能值跨治療分類**（T1+N2 → IIB 早期 或 IIIA 局晚）→ 標 UNKNOWN 要求確認 N2a/N2b，不硬猜 (d) **驅動基因「未驗」與「陰性確認」拆開** — NONE 拆成 `NEG`（已測陰性，才進 PD-L1 免疫決策）與 `PENDING`（未測，一律先導向完成檢測）；舊 QR 的 'NONE' 語意模糊，edu 保守映射為 PENDING (e) **紀錄頁 stored-XSS** — `who` 加 escapeHtml。驗證：五項逐條 + patient/edu 2,304 組仍完全收斂 BUG-69 |
+| V3.6.0 | V1.16.0 | 2026-07-04 | **純抽取版（重構，行為不變）**。因應外部審稿 + Sela 指示「下一個癌別是大腸直腸癌」，把重複的臨床邏輯抽成共用檔：(1) `lung/_staging.js` — AJCC 9 **改查表**（原 if/else 折疊區間才會漏格，如 T1N1；查表可逐格對 NCCN Table 2、CRC 換一張表即可），醫護版+民眾版原本各一份 computeAJCC 現共用 (2) `lung/_path.js` — 民眾版路徑決策引擎，patient + edu-patient 共用（此前平行維護、已分叉三次）。介面改吃顯式 `state` 物件不依賴全域 S，edu 用 `stateFromPayload(d)` 轉接。**三重窮舉驗證**：staging 936 組等價、patient 抽取前後 124,416 組完全一致、edu 對 patient 3,240 組完全收斂（其中 **600 組（18.5%）原本是分叉的**）。⚠️ 刻意保留已知錯誤（T1N1 應 IIA 現為 IIB），臨床修正留 V3.6.1 單獨處理 BUG-68 |
 | V3.5.3 | V1.15.3 | 2026-07-04 | 個管師反應「QR 掃出來跟畫面原本內容不一樣」。查出雙人口資料源分叉：QR payload 只送 stage 不送 stageCat，edu 用 `deriveStageCat(d.s)` 從 stage 字串反推。**簡易模式（病人只選早期/局部/轉移、沒選 TNM）時 S.stage 是空字串** → edu 反推回空 → 走不到 EARLY/LOCAL/META 分支 → 掃 QR 顯示不對。而 patient 畫面用 S.stageCat（病人直接選的）。修：payload 加 `sc:S.stageCat`、edu 改 `d._stageCat = d.sc || deriveStageCat(d)`（舊 QR 無 sc 才反推、相容）。vm 對照 harness 8 組（簡易 3 + 進階 + 鱗狀 + SCLC 2）patient 畫面 vs edu 掃 QR 全一致 BUG-67 |
 | V3.5.2 | V1.15.2 | 2026-07-04 | Sela 截圖回報醫護版電腦版左側導航列太小（寬螢幕上圖示/文字顯小難點）。桌面版 sidebar 放大：寬 72→96px、logo 44→50、nav-item 52²→74×64、圖示 17→22px、**文字 9→12px**（原本 9px 太小是主因）。手機版 bottom bar（@media）不動。`.app` flex 自適應、無 hardcode 72px 依賴，主內容自動縮 BUG-66 |
 | V3.5.1 | V1.15.1 | 2026-07-03 | 用 V3.5.0 拿到的真實速查表反向驗證民眾版 buildGeneTestAdvice（民眾版是醫護版簡化、無醫令碼、引導接受不推銷）。三組逐項對照，抓到 **早期組 ROS1 標錯**：原本「EGFR/ALK/ROS1」綁一起標自費，但速查表 ROS1 全組別都是材料費 300（非萬元自費）。這錯正好違背「引導接受」— 病人看 ROS1「自費」以為要上萬而卻步，實際只要 300。修：早期 ROS1 拆出改「材料費」、材料費項目排前面（PD-L1/ROS1）自費排後（EGFR/ALK）、subtitle/foot 更新。①非鱗晚期②鱗狀晚期本就對齊。三組×4 項 + 引導不推銷語氣驗證全綠 BUG-65 |
 | V3.5.0 | V1.15.0 | 2026-07-03 | Sela 提供彰濱秀傳「肺癌基因檢測開單速查表 2025/06」→ 把 V3.4.9 的醫令碼 placeholder 換成真實資料。**關鍵發現：醫令碼與費用「依分期/組織型態不同」**（同一 EGFR：非鱗晚期 30101B 健保 / 鱗狀或早期 L09010A 自費 10000；ALK：非鱗晚期 30105B 健保 / 其他 30105B 勾選自費 9482）。V3.4.9 單一 ORDER_CODES 架構不夠 → 重構成 `GENE_PANEL_DATA` 三組（ns_adv / sq_adv / early），每項真實醫令碼 + 費用。決策頁依 type+stage 選組別顯示，費用當 badge 平常可見、醫令碼 toggle 隱藏，加「一次開齊 PD-L1 綁定」提醒。三組 × 4 項對照速查表全綠 BUG-64 |
-| V3.4.9 | V1.14.9 | 2026-07-03 | 民眾版基因檢測組套建議做進醫護版 + 醫令碼 toggle（Sela 交辦）：`_genePanelHTML(s)` 對應民眾版 `buildGeneTestAdvice` 的依分期組套邏輯（非鱗晚期 EGFR/ALK/PD-L1 健保+ROS1 材料費+NGS 廣泛、鱗狀晚期 PD-L1 健保+EGFR/ALK 自費、早期多自費），但醫護版更完整（10 項含 BRAF/MET/KRAS/RET/NTRK/HER2）。決策頁 pw-content 的 tx 後 append（SCLC 不顯示）。每項掛醫令碼、預設隱藏（`.gp-code{display:none}`），標題「顯示/隱藏醫令碼」按鈕 toggle `.show-codes`。**⚠️ 醫令碼 Claude 不捏造**（填錯會開錯單）→ `ORDER_CODES` 各欄留空、UI 顯示「（待院方填入）」，待 Sela 填彰濱秀傳真實檢驗醫令碼 BUG-63 |
-| V3.4.8 | V1.14.8 | 2026-07-03 | 補基因/免疫檢測建議項目 + 對應藥物（Sela 交辦）：醫護版 M1c 轉移期原本給藥是泛稱（「依 EGFR 突變類型選擇對應標靶藥物」無具體藥名）。建 `_BIOMARKER_TABLE` + `_biomarkerHTML()`（7 項檢測 EGFR/ALK/ROS1/BRAF/MET/KRAS/PD-L1 → 對應藥物 + 健保 tag），**藥名與健保狀態全對齊 drugs-pro 藥物庫當單一真相**（KRAS Sotorasib 是自費、其餘 NHI）。在 _M1c_NS / _M1c_SQ 結尾插入對照卡，各 mutation 泛稱補具體藥名（EGFR→泰格莎/妥復克等、ALK→安立適等、ROS1→羅思克、BRAF→泰伏樂+麥欣寧、MET→特癌適、KRAS→魯瑪克拉斯自費）。渲染 + 藥名對齊測試全綠 BUG-62 |
-| V3.4.7 | V1.14.7 | 2026-07-03 | **臨床安全審查續**（Sela 交辦查其他期別，尤其 T4、M1a/b/c）：T4 與 M1 的 stage 推算 + 路由 + 治療分支性質全部核對相符（T4N0/N1=IIIA→resect_adv 可切評估、T4N2/N3=IIIB/C→T4N2N3 CCRT、M1a/b→IVA、M1c1/c2→IVB），無分期↔治療錯配。發現並修 **M1b 分期用詞錯誤**：M1b（單一胸腔外轉移=IVA 寡轉移）內文卻寫「局部晚期」（locally advanced 是 stage III 稱呼，與 _hdr 顯示的 Stage IVA 自相矛盾），且混入不屬於 M1b 的「多處轉移」（那是 M1c）→ 改「寡轉移/單一轉移」、加 M1b 定義 box、移除多處轉移。M1a 補對側肺結節（M1a 不只積液還含對側肺葉結節），與 M1b 對稱加定義 box BUG-61 |
-| V3.4.6 | V1.14.6 | 2026-07-03 | **臨床安全修正**（Sela 交辦逐條檢查醫護版路徑抉擇、防「IIIA 卻做 IIIB 建議」）：醫護版治療決策 `'N2'` 分支原本用 `s.tstage==='T3'` 分「路線A/B vs 新輔助IIIB」，完全沒看 N2a/N2b — 但 AJCC 9th 下 T3N2a=IIIA、T2N2b=IIIB，導致 **T3N2a(實際IIIA)被標「Stage IIIB」、T2N2b(實際IIIB)被走 IIIA 路線**。改用 `s.stage==='IIIB'` 分路（實際分期是算好的、決策物件本就有 s.stage），標籤動態顯示實際 stage。N2 教學卡標題也拿掉誤導的「(T1-2,N2)=IIIA/(T3,N2)=IIIB」T 綁定，footer 註明 IIIA/IIIB 依 N2a/N2b 判定。TNM→stage 推算本身逐條核對 AJCC 9th 全正確。6 組 N2 分流驗證與實際分期一致 BUG-60 |
-| V3.4.5 | V1.14.5 | 2026-07-03 | 修 GitHub Pages 部署持續失敗（"Deployment failed, try again later."）。排查確認非程式碼問題：build 綠 + artifact 成功 = 檔案 OK，卡在 deploy 上線階段是 GitHub 服務端（issue #418 仍 Open）。最可能密集 push 觸發部署鎖卡住。根治：加 `.github/workflows/deploy.yml`（upload-pages-artifact + deploy-pages + `concurrency cancel-in-progress`，新部署自動取代排隊舊部署）+ `.nojekyll`（純靜態跳過 Jekyll）。要 Settings→Pages→Source 改「GitHub Actions」生效 BUG-59 |
-| V3.4.4 | V1.14.4 | 2026-07-03 | 民眾版儲存查詢加識別防呆（Sela 交辦）：`saveQuery` 開頭檢查 `S.code` / `S.name`，兩者 trim 後都空 → alert 提醒「至少填病歷號或姓名其中一項」並 return 不存。理由：無識別的紀錄個管師無法辨認、統計也沒意義（呼應 V3.2.0 統計 / V3.3.0 載入都靠 code/name）。fake-indexeddb 測都沒填擋下、只空白也擋下（trim）、有填放行全綠 BUG-58 |
 | V2.10.0 | V1.8.0 | 2026-05-08 | 民眾版加病理期別模式（已手術切換）— Q3 加 stage-mode toggle、`S.postOp` 路由 `buildPostOpPath()`，跳過手術建議走「術後輔助 + 標靶/免疫鞏固 + 規律追蹤」+ stageDisplay 加 p 前綴 + edu-patient 同步 BUG-30 |
 
 ---
@@ -932,6 +932,65 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 - 教訓：**「從顯示值反推狀態」的邏輯，死角是「顯示值可能為空」的輸入**。簡易模式只有 stageCat 沒有 stage，正好讓「從 stage 反推」踩空。任何反推邏輯都要問：有沒有一種合法輸入讓被反推的來源是空的/不完整的
 - 教訓：**跨檔案一致性用 vm 對照 harness**：`vm.createContext` 各自隔離載入兩個 HTML 的 script（init 錯誤 catch 掉、用第二段 runInContext 抓 export），同輸入比兩邊輸出。這是驗證雙人口資料源沒分叉最直接的方法，比人工比對兩份程式碼可靠。下次動 patient/edu 任一邊的路徑邏輯，跑這個 harness
 
+### #68 (V3.6.0)：抽共用 engine（純抽取）— 機械替換誤傷 + 重構分版原則
+- 背景：外部審稿指出 patient/edu 又分叉（edu 還留著 patient 已移除的術後基因檢測提醒），加上 Sela 確認**下一個癌別是大腸直腸癌**，決定先抽共用再修臨床
+- 產出：`lung/_staging.js`（AJCC 9 查表，三頁共用）+ `lung/_path.js`（民眾版路徑引擎，patient/edu 共用）。介面吃顯式 `state` 物件不依賴全域 S；edu 用 `stateFromPayload(d)` 轉接（唯一轉接點）
+- **量化分叉嚴重性**：edu 收斂到 patient 後，3,240 組測試中 **600 組（18.5%）內容改變** — 也就是抽取前每 5 次掃 QR 就有近 1 次跟畫面不同。這數字說明「平行維護兩份臨床邏輯」不是理論風險
+- **踩到的坑（重要）**：把 `S.` 全域字串替換成 `state.` 時，**`DRUGS.EGFR` 被誤傷成 `DRUGstate.EGFR`**（"DRUGS." 裡含 "S."）。`node --check` **完全抓不到**（`DRUGstate.EGFR` 語法合法，執行才 ReferenceError），是 124,416 組窮舉 harness 抓出來的
+- 教訓：**大規模機械替換一定要用字界 `\bS\.`，而且語法檢查不等於行為正確**。`node --check` 只驗語法；識別碼被替換污染是「語法合法、執行才炸」的類型。凡是跨檔搬移/大量 sed/replace，必須有**行為等價測試**護航，不能只靠 `node --check`（這條補強了 BUG-14 的「語法驗證是必要不是充分」）
+- 教訓：**重構與改行為要分版**。V3.6.0 抽取時**刻意保留已知錯誤**（T1N1 應為 IIA、現為 IIB），先證明 124,416 組完全等價，臨床修正留 V3.6.1 單獨改那一格 — diff 只有一行、可審、出事可定位。若混在一起，harness 對出差異時分不清是抽壞了還是修對了
+- 教訓：**分期改查表，為多癌別鋪路**。T1N1 這種錯的成因就是 if/else 折疊區間（`isT1||isT2` 把兩格併一格）。查表可逐格對 NCCN Table 2、不可能漏格；換癌別（CRC）= 換一張表、引擎不動；換 AJCC 版本 = 換一張表。呼應 BUG-64「院內已是表格的資料照搬結構最安全」
+- 多癌別下一步（CRC 進來時再做，現在不預先抽象）：`_staging.js` 的查表引擎可提升到 `/shared/`，各癌別只留自己的表；**健保規則是跨癌別共用的**（第 9 章一份文件管全部癌別，以藥名為 key），未來 8 個癌別要一起跟健保更新，這層最該共用
+
+### #69 (V3.6.1)：外部審稿 P0 五項臨床修正 — state model 錯誤比計算錯誤更危險
+- 背景：外部審稿逐條檢查 V3.5.3 民眾版，列 5 個 release blocker。V3.6.0 抽完 engine 後，這版每項只需改一處
+- (a) **T1N1 = IIA**：`_staging.js` 查表改一格。**這格是我 V3.4.6 宣稱「computeAJCC 核對 AJCC 9th 全對」時漏掉的** — 因為當時的驗證 harness 是把程式邏輯複製一份進測試再跑，那是自我確認不是驗證。這次是拿專案內 NCCN nscl.pdf 的 AJCC Prognostic Groups 表逐格對出來的
+- (b) **UNKNOWN 分期**：原 `setStageUnknown` 設 `stageCat = isSCLC() ? 'LOCAL' : 'EARLY'` — 病人按「不知道 TNM」直接被當早期給手術建議。更糟的是 `stage=''` 又讓 `buildGeneTestAdvice` 的 `advanced` 判成 true，**同一畫面出現「早期治療路徑」+「晚期基因檢測建議」自相矛盾**。修法：新增第四種 stageCat `UNKNOWN`，走 `buildUnknownStagePath` 只給「先完成分期檢查」不給任何治療建議
+- (c) **簡易模式假精確**：簡易按鈕只有 T1/T2/T3/T4、N0-N3、M0/M1，但 computeAJCC 硬給唯一分期（T2N0 固定 IB 但可能 IIA、N2 固定 IIIA 但 N2b 是 IIIB、M1 固定 IVB 但 M1a/b 是 IVA）。修法：`resolveStage()` 展開所有可能組合 → 唯一解才給正式分期、否則顯示範圍；**可能值跨治療分類時（T1+N2 → IIB 早期 或 IIIA 局晚）標 UNKNOWN**
+- (d) **未驗 vs 陰性確認**：`NONE` 一個值同時代表「已測、無驅動基因」和「還沒測」，後端只看 `m==='NONE'` → **未驗病人 + PD-L1 ≥50% 直接被導向免疫單藥**。拆成 `NEG`（才進 PD-L1 決策）/ `PENDING`（一律先完成檢測）。舊 QR 的 'NONE' 語意模糊，edu 保守映射 PENDING
+- (e) 紀錄頁 `who = code + name` 直接進 innerHTML → 加 escapeHtml
+- 教訓：**state model 錯誤比計算錯誤更危險**。(a) T1N1 算錯一格是「數值錯」，影響單一分期；(b)(d) 是「狀態少一種」— 把「不知道」壓進「早期」、把「未驗」壓進「陰性」，會讓整條治療路徑走錯，而且畫面看起來完全正常不會報錯。**設計選項時要問：有沒有第三種狀態叫「不知道」？** 二元選項（有/無、早期/晚期）幾乎都缺這一種
+- 教訓：**「簡化輸入」不可以產生「精確輸出」**。民眾版簡化 TNM 是對的，但簡化後仍回報精確 AJCC 分期就是假精確。正確做法是輸出也跟著降精度（給範圍），並在範圍跨越治療分類時明確要求補資料
+- 教訓（回頭看 BUG-60/61 的驗證）：**驗臨床規則要對照原始表格，不能把程式邏輯複製進測試**。V3.4.6/V3.4.7 我用複製邏輯的 harness 驗過 N2a/N2b 和 T4/M1（那些剛好都對），但 T1N1 從沒被真正檢查過。專案內既然有 NCCN PDF，就該用 `project_knowledge_search` 拉原表逐格對
+
+### #70 (V3.6.2)：第二批臨床更新 — 「warning 補丁」不等於「真正分流」
+- 背景：外部審稿 P1 四項，都是會給錯藥的等級。全部拿專案內 NCCN 3.2026 / SCLC 2.2026 / 健保第 9 章原文核實才動手（不憑印象、不用外部連結）
+- (a) **Stage III 鞏固分流**：原本所有 LOCAL 一律列 Durvalumab，只在 driver+ 時 `warns.unshift` 補一句「免疫維持通常不適用」。但 NCCN NSCL-F 寫得很白：Durvalumab 鞏固 `except tumors positive for EGFR exon 19 deletion or L858R`，而該類病人是 **Osimertinib（stage III category 1）**；健保 9.69 也限 durvalumab 鞏固為 EGFR/ALK/ROS-1 原生型 — 等於**臨床和健保雙重不符**。改成三條真分流（EGFR classic → Osimertinib / 其他 driver → 個別評估 / driver 陰性 → Durvalumab）
+- **同時修掉自相矛盾**：`pwTxt`（畫面最上方的主結論）原本一律寫「治療結束後再用免疫維持治療」，跟下面的 EGFR 警語打架（審稿點名）。改成隨分流變化。驗證時我的 harness 也是先漏掉這點（只檢查 steps/warns 沒檢查 pwTxt），是 ALK 那組測失敗才回頭抓到
+- (b) **EGFR 拆 classic / exon20 insertion**：exon20 的第一線是 Amivantamab + carboplatin/pemetrexed（健保 114/10/1 已給付），跟 classic 的口服 TKI 完全不同藥。原本全塞一顆「EGFR(+)」→ 第一線就給錯。Q4 拆兩顆按鈕。**舊值 'EGFR' 仍走 classic 路徑**（舊 QR / 舊紀錄相容）
+- (c) **LS-SCLC 補 Durvalumab 鞏固**：NCCN 依 ADRIATIC 列 category 1、最長 24 個月，且 PCI 若要做應排在鞏固之前（故 step 順序 PCI → 鞏固）。台灣健保尚未給付此適應症 → **明確標示「需自費或申請藥廠資源」，而不是因為健保沒給就整項消失**
+- (d) **術後 Atezolizumab 條件化**：適應症是切除 + 完成含鉑化療後的 II–IIIA 且 PD-L1≥1%，**IB 不在內**；原本對所有非 IA 一律列，IB 病人會以為自己能用
+- 教訓：**「加一句 warning」不是分流，是補丁**。原本 EGFR+ 病人看到的仍是「CCRT → Durvalumab」的完整步驟卡，只是下面多一行小字說可能不適用 — 病人（甚至醫護）第一眼讀到的是**步驟**不是警語。真正的修法是把不適用的選項從步驟裡拿掉、換成正確的那個。**凡是發現「主要內容錯、用 warning 補救」的地方，都該改成真分流**
+- 教訓：**主結論（pwTxt / 摘要句）也要跟著分流**。細節分流了但最上面那句沒改，等於留一個最顯眼的矛盾。驗證 harness 要把摘要句一起比對，不能只比 steps/warns
+- 教訓：**健保沒給付 ≠ 不該顯示**。LS-SCLC 的 durvalumab 台灣未給付，但那是臨床上有 category 1 證據的治療。正確做法是「臨床建議 + 健保狀態」分開標示，讓病人知道有這個選項、也知道要自費 — 隱藏會讓病人失去和醫師討論的機會
+
+### #71 (V3.6.3)：修飾層也要收斂 — 「共用了核心」不等於「沒有分叉」
+- (a) **B 肝 / C 肝混為一談**：Q1 問「B 型/C 型肝炎帶原」，按有就提示化療前拿預防性抗病毒藥。但治療前預防性抗病毒的規範是針對 **HBV**（查 HBsAg / anti-HBc / anti-HBs），C 肝的處理完全不同，不能一起套。改成 B 肝專屬題，「不知道」時直接指名要驗哪三項
+- (b) **age/ECOG 從硬決策改回 modifier**：原本 `if(ps34 && /局部晚期|擴散|轉移/) r.pwTxt = '以症狀控制與支持性療法為主'` — 直接覆寫主結論。**driver+ 的 PS 3-4 病人因此下面列標靶、最上面卻寫支持療法**，自相矛盾（跟 BUG-70 的 pwTxt 問題同一種）。改成只加註 + 警語，且 driver+ 時明確講「口服標靶通常仍可考慮」。年齡的碳鉑也從「首選碳鉑」改成「由醫師依腎功能等條件決定」
+- (c) **修飾層抽進 `_path.js`**：V3.6.0 只抽了核心決策，**修飾層還是兩份** — patient 有 age/ecog + B肝 + 重大傷病 4 項，edu 只有 age/ecog 2 項 → 掃 QR 的人少收到 B 肝與重大傷病提醒（而且沒人會發現，因為畫面看起來正常）。抽出 `applyModifiers(r, state)` 共用，QR payload 補 `hb`/`ct`
+- 教訓：**抽共用時要盤點「整條管線」，不能只抽最顯眼的那段**。V3.6.0 抽了核心 buildPathCore（最大最明顯的重複），就以為單一真相達成了 — 但 patient 的完整輸出是「核心 + 修飾層」，修飾層沒抽就還是兩份。**檢查方法：從呼叫端最外層的函式往下追，每一層都問「另一邊有沒有對應的一份」**，而不是只看哪段程式碼最長
+- 教訓：**覆寫主結論的邏輯是矛盾溫床**。這版跟 BUG-70 抓到的是同一類：pwTxt / 摘要句被某個側面因素（PS、健保、年齡）直接改寫，就會跟主體內容打架。原則：**摘要句只能由主決策軸（分期 × 基因）決定，其他因素一律用加註**
+
+### #72 (V3.6.4)：加了新 state 層，卻沒定 contract — 下游 parse 字串全面誤判
+- 背景：外部第二輪審稿（只審 V3.6.3 的運行與 state flow），判定**不可上線**。窮舉 3,474 組沒有 crash，問題全是「畫面能跑、結果走錯」
+- **根因一句話：V3.6.1 引進 `stage`(唯一解才有值)/`stageLabel`/`stageCat` 三層狀態，但沒有同時定義 contract，下游各自繼續 parse 分期字串**
+- (P0-1) `_path.js` 仍寫 `stage.startsWith('IA')`、`stage !== 'IB'`、`stage === 'IIIA'`。簡易模式 T1N0M0 的 `stage=''`（label 是 IA1–IA3）→ `isIA=false` → **確定是 IA 的病人被列出「部分 II 期術前化療 + 術後輔助化療 + 術後追加 Osimertinib/Alectinib」**；pT2N0M0(IB–IIA) 因 `'' !== 'IB'` 錯配 Atezolizumab；`buildGeneTestAdvice` 的 `stage && !/IIIB.../` 讓 EARLY 病人拿到晚期基因建議（**V3.6.1 剛修掉的矛盾，換一種形式復發**）
+- 修法（照審稿建議，不做零散 patch）：`resolveStage` 正式回傳 `possible[]`，加 `definitelyStage(state,re)` / `possiblyStage(state,re)`，下游一律用 helper。語意也講清楚：**要套用某分期的建議 → definitely；要保守排除 → possibly**（Atezolizumab 用「有可能是 IB 就不列」）
+- (P0-2) **QR 對簡易模式整個壞掉**：edu 的 `if(!data.t || !data.s) showError('資料不完整')`，但範圍分期的 `s` 本來就是空字串 → 病人頁顯示「約 Stage IA1–IA3」、掃出來卻是「資料不完整」。payload 補 `sl`（顯示字串）+ `ps`（possibleStages），edu 驗證改成「有 t 且 (s 或 sc 或 sl)」，`stageDisplay` 支援確定/範圍/未定三態
+- (P0-3) transition 舊 state 殘留：臨床↔病理切換**完全沒清 TNM** → 直接把 cTNM 貼上 p 當病理分期；SCLC 從詳細 TNM 切回侷限/擴散沒清 stageCat → UI 沒選任何答案卻能按下一題。修法：建 `resetStageState / resetMolecularState / resetProgressState / resetPersonalState`，restart / pickType / setStageUnknown / setQ2Mode / pickStageMode **全部走同一組**
+- 教訓：**新增狀態層時，必須同時定義「下游怎麼問這個狀態」的 contract**。我 V3.6.1 加了三層 state 就以為做完了 — 但只要下游還能直接讀 `state.stage` 做字串判斷，就一定有人漏改。正確順序是：**先出 helper（definitelyStage/possiblyStage）、把舊的字串判斷全部改掉、再讓新狀態上線**。凡是「某欄位在某些情況會是空字串」的設計，都要問「所有讀這個欄位的地方，遇到空字串會怎樣」
+- 教訓：**收斂測試比對兩邊 buildPath 不等於端到端驗證**。V3.6.3 的「1,296 組完全收斂」是真的，但它只證明「兩邊共用 engine 後核心決策相同」，**完全沒驗 payload 能不能被 edu 接受** — 所以出現「核心 100% 收斂，但 QR 掃出去是『資料不完整』」的盲點。改成真正的 round-trip：`patient state → buildEduPayload → edu 驗證 → stateFromPayload → 渲染`，每一關都檢查
+- 教訓：**分散的 reset 邏輯必然漏**。restart/pickType/setStageUnknown/setQ2Mode/pickStageMode 各自手動清一部分欄位，每次加新欄位（stageLabel、possibleStages、hbv…）就有 5 個地方要記得改 → 必漏。統一 reset 函式後，加欄位只改一處
+- 教訓：**抽共用檔要連相依一起檢查**。改用 `definitelyStage`（定義在 `_staging.js`）後，edu-patient.html 只載了 `_path.js` → 執行才 ReferenceError。跨檔函式相依沒有編譯期檢查，只能靠端到端測試抓
+
+### #73 (V3.6.5)：同一個狀態值有兩種來源 — 修 bug 時新造的 bug
+- 背景：外部第三輪審稿確認 V3.6.4 已修好前一輪的 blocker，但抓到 4 項（3 個 P1、2 個 P2），其中最有意思的是我**在修 UNKNOWN 時新造的**
+- (1) **UNKNOWN 有兩種來源**：① 病人按「不知道 TNM」→ 真的沒有 T/N/M ② 病人**有填 TNM**，但簡易資料跨治療分類（T1N2M0 → IIB–IIIA，可能是早期也可能是局晚）→ V3.6.1 設計成也標 UNKNOWN。V3.6.4 我用 `if(stageCat==='UNKNOWN')` 決定「不要重算」，第二種載入後 possibleStages/stageLabel/stageNeed 全丟，「還需確認 N2a/N2b」的資訊消失。**判斷依據錯了**：該看的是「有沒有 T/N/M」而不是「stageCat 是不是 UNKNOWN」
+- 教訓：**一個狀態值如果有兩種來源，就不能用它本身當分支條件**。`UNKNOWN` 同時表示「沒資料」和「資料不足以定案」，用它判斷「要不要重算」必然錯一種。正確做法是用**產生該狀態的原始輸入**（有沒有 TNM）當條件。設計 enum 時要問：**這個值會不會由多條路徑產生？如果會，下游需要區分嗎？**
+- (2) QR round-trip 仍差 stageNeed：payload 有 sl/ps 卻沒有「還需確認什麼」。照審稿建議補**原始 `tt/nn/mm`**，讓 edu 自己 `resolveStage` 重建 — 比把中文說明塞進 QR 乾淨，也自動跟著 staging 規則更新
+- (3) **age/ECOG 全域警語沒 gate**：step note 早就寫對（`if(elderly && hasChemo)`），但全域 warns 是無條件 unshift → IA 只做手術的病人看到「化療用藥可能調整」、UNKNOWN 病人一邊被告知「不提供治療建議」一邊看到「同步化放療可以分開做」。教訓：**同一個條件在兩個地方實作，一定要用同一個判斷**（note 用 hasChemo、warns 也要用 hasChemo）；`unknownStage` 這種「不給建議」的路徑要一律跳過所有修飾層
+- (4) 三處沒吃新 contract：LOCAL 警語 range 時 `stage=''` 造成開頭破字「 期腫瘤範圍較廣」、總覽 `stageDisplay()` 把「約 IA1–IA3」退化成「I-II」、UNKNOWN 顯示「?」、SCLC+UNKNOWN payload 偷送 `s='Limited'`（畫面剛好沒錯是因為 edu 優先看 sc，但 payload 自身矛盾）。教訓：**改 contract 要全域搜尋所有讀舊欄位的地方**，包括「剛好還能動」的（payload 矛盾遲早被別的消費端踩到）
+
 ---
 
 ## 七、擴充新癌別
@@ -949,7 +1008,13 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 按優先序：
 
-1. **抽 lung/_path.js 讓 patient / edu 共用 buildPath**（BUG-67 升上來）— BUG-56（V3.4.2 PD-L1 同步）到 BUG-67（QR stageCat）已經是**第二次**雙人口資料源分叉。patient 的 `buildPath` 跟 edu 的 `buildPathRawCoreFromData` 是兩份平行維護的臨床路徑邏輯，改一邊漏另一邊遲早再分叉、且是臨床內容風險高。根治：抽成單一 `_path.js` 兩邊共用。BUG-67 的 vm 對照 harness 可當抽取後的回歸測試（確認行為不變）。列第 1 因為這是「會反覆咬人」的結構問題
+0. **【外部審稿待辦清單，2026-07 收到】** Sela 找外部審稿逐條檢查 V3.5.3 民眾版，已核對確認屬實的項目（詳見 BUG-68）。**Sela 已拍板的處置**：
+   - ❌ 民眾版 IndexedDB 紀錄 PHI（審稿建議移除）→ **不動**（V3.2.0~V3.3.2 四版做的個管師工作流，維持現狀）
+   - ❌ QR 去識別化（審稿建議拿掉姓名/病歷號）→ **先不動**（QR 個人化辨識是設計目的，V3.4.4 才加識別防呆）
+   - ⏸ **健保 115/8/1 新增 Aumolertinib（Pulmivex）等給付更新 → 待辦、先不動**。專案內健保文件是 `chap9_1150522.pdf`（115/5/22）+ 附件2（115/5/1 生效），查無 aumolertinib。**要 Sela 提供 115/8/1 正式給付規定 PDF 才改** — 健保內容會被拿去對申報，不用外部連結當來源（同 BUG-63 不捏造醫令碼原則）
+   - ✅ 架構（拆檔）→ 要**同時考慮未來擴充不同癌別**，見下方第 1 項
+
+1. **完整實機驗證 V3.0.1~V3.6.2** — **累積十多版沒完整上真機，而且 V3.6.0~V3.6.2 動的正是分期引擎與治療分流（最核心的臨床邏輯）**。個管師務必拿真實病人核對：(a) 簡易模式選 T2/N0 顯示「約 Stage IB–IIA」而非硬給 IB (b) 按「不知道 TNM」只出現「先完成分期檢查」、沒有任何治療建議、基因建議卡也不再給晚期建議 (c) 驅動基因選「尚未檢測」+ PD-L1 高 → 導向先完成檢測（不是免疫單藥）(d) **III 期 EGFR ex19/L858R 病人看到的是口服標靶維持、不是 Durvalumab**，且最上方主結論也一致 (e) exon20 插入突變看到 Amivantamab + 化療 (f) SCLC 侷限期看到免疫鞏固且標明健保未給付 (g) IB 術後不再出現 Atezolizumab (h) 掃 QR 跟畫面完全一致（含簡易模式）(i) T1N1 顯示 IIA
 2. **完整實機驗證 V3.0.1~V3.5.2** — **累積多版沒完整上真機**。(a) V3.4.8 M1c 藥物對照：轉移期決策頁顯示「基因/免疫檢測→對應藥物」對照卡、各 mutation 顯示具體藥名(EGFR→泰格莎等、KRAS→魯瑪克拉斯自費)、藥名跟 drugs-pro 一致 (b) V3.4.7 T4/M1 期別：拿 M1b(單一轉移) 病人確認顯示「寡轉移/IVA」非「局部晚期」、M1a 對側肺結節病人顯示涵蓋範圍、T4N0/N1 走可切評估 vs T4N2/N3 走 CCRT (b) V3.4.6 N2 分期分路：拿真實 N2a/N2b 病人（尤其 T3N2a=IIIA、T2N2b=IIIB）核對治療建議標的 stage 跟決策路線是否相符、不再出現 IIIA 標 IIIB (b) V3.4.4 儲存防呆：民眾版走完查詢、病歷號跟姓名都不填 → 按儲存跳提醒且沒存進紀錄；填任一項 → 存得進去 (b) V3.4.3 favicon：各頁分頁圖示顯示新 app logo（藍底白路徑）、portal 跟 lung/ 子頁都對、手機加到主畫面圖示對 (b) V3.4.2 QR 掃描：民眾版存查詢→產生 QR→手機掃→衛教頁 PD-L1 顯示且治療分流跟查詢工具一致；舊 QR（V3.4.2 前）掃描不會壞 (b) V3.4.1 密碼：portal 點「醫護版」某癌別 → 彈明碼密碼框、輸 cbshow 進入、同分頁再點免重輸；**直接輸 lung/ 網址（未經 portal）→ 踢回 portal**；明碼看得到打的字 (c) V3.4.0 Q4 兩區：驅動基因選 EGFR + PD-L1 選≥50% 能同時選、總覽顯示兩者、EGFR+PD-L1高顯示標靶優先提醒 (c) V3.3.2 團隊還原 (d) V3.3.1 返回鍵 (e) V3.3.0 載入修改 TNM 回填 (f) V3.2.x 紀錄不撞醫護版庫 (g) V3.1.4 字體 (h) V3.1.3 時效 (i) V3.1.2 資料安全 (j) V3.0.9 Q 頁不撐爆 (k) 個管師找 3-5 個真實病人試用
 3. **摩擦報告順手項（#7 + #9，成本低可夾帶）** — (#7) 病人分頁沒有就地「儲存」按鈕，填完基本資料想先存再離開得走到手冊/總覽才有 → 病人分頁底部加「儲存」(#9) 「多專科會議日期」欄位獨占一行右邊空 div、版面浪費 → 跟別的欄位併排。兩項都是小改，順手做
 4. **民眾版抽 `collectQueryFields()` 單一真相**（BUG-53 指向的根治）— saveQuery 已經漏存兩次（t/n/m、consult），欄位散在 saveQuery/loadRecord/restart 三處手動列。學醫護版 BUG-46 的 collectStateFields 作法，抽一個回傳完整欄位物件的函式，三處共用一份清單，之後加欄位不會再漏。目前 ~17 欄手動列還能忍，但已漏兩次，該做
@@ -975,4 +1040,4 @@ I_periph / surgical / resect_adv / N2 / N3 / T4N2N3 / M1a / M1b / M1c(NS/SQ) / l
 
 ## 九、一句話總結
 
-V3.5.3 個管師反應「QR 掃出來跟畫面不一樣」→ 查出雙人口資料源分叉：QR payload 只送 stage 不送 stageCat、edu 從 stage 反推，簡易模式（沒填 TNM）stage 空 → 反推失敗 → 掃 QR 走不到正確路徑。修：payload 帶 sc:S.stageCat、edu 用 d.sc||deriveStageCat（相容舊 QR）。vm 對照 harness 8 組全一致。BUG-67 教訓：雙人口資料源接收端別反推發送端已有的東西（直接帶過去）、從顯示值反推狀態的死角是顯示值可能為空、跨檔案一致性用 vm 對照 harness。下版第一優先升為：**抽 lung/_path.js 讓 patient/edu 共用 buildPath**（BUG-56→67 已是第二次雙人口分叉，平行維護兩份路徑邏輯遲早再分叉，該根治為單一真相；harness 已有可當回歸測試）；第 2 是完整實機驗證 V3.0.1~V3.5.3（尤其個管師拿真實 N2a/N2b+T4+M1a/b/c 病人核對分期↔治療、簡易模式產 QR 掃出來跟畫面一致）；第 3 是民眾版抽 collectQueryFields() 根治存檔漏欄位。
+V3.6.5 外部第三輪審稿 4 項（審稿確認 V3.6.4 已非擋版等級，修完可當肺癌病人版穩定候選）：(1) UNKNOWN 紀錄載入要分兩種來源 — UNKNOWN 可能是「真的沒 TNM」也可能是「有 TNM 但跨治療分類(T1N2M0→IIB–IIIA)」，V3.6.4 用 stageCat 當分支條件 → 第二種載入後 label/need 全丟；改成看有沒有 T/N/M (2) QR 補原始 tt/nn/mm 讓 edu 自己 resolveStage 重建 stageNeed，真 round-trip 成立 (3) age/ECOG 全域警語加 gate（IA 只手術的病人不再看到化療提醒、UNKNOWN 完全不套修飾層）(4) LOCAL 警語 range 破字、總覽把「約 IA1–IA3」退化成 I-II、UNKNOWN 顯示「?」、SCLC+UNKNOWN payload 偷送 Limited、PENDING 被當成已有結果。864 組完整往返全一致。BUG-73 教訓：**一個狀態值若有兩種來源就不能用它本身當分支條件**（該用產生它的原始輸入）、同一條件在兩處實作要用同一個判斷（step note 有 gate、全域 warns 也要有）、改 contract 要全域搜尋所有讀舊欄位處包括「剛好還能動」的。下版第一優先：**完整實機驗證 + 審稿方的完整操作情境 regression** — 審稿方表示這批修完就不再碰架構，直接做返回修改/存檔載入/QR/我的藥物/clinical-postop 全流程壓測；我的 harness 只能測我想得到的路徑，真人亂點的組合測不完；第 2 是健保 115/8/1 更新（等 Sela 提供正式 PDF）；第 3 是第二癌別（大腸直腸癌）。

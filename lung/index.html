@@ -1211,6 +1211,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <input type="file" id="imp-file" accept=".json" style="display:none" onchange="APP.handleImport(event)">
 <input type="file" id="imp-backup" accept=".json" style="display:none" onchange="APP.handleRestore(event)">
 
+<script src="_staging.js"></script>
 <script>
 // ═══════════════════════════════════════════
 //  ALL APP LOGIC — single global object
@@ -1222,8 +1223,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.15.3';
-const SYSTEM_VERSION = 'V3.5.3';
+const MODULE_VERSION = 'V1.16.5';
+const SYSTEM_VERSION = 'V3.6.5';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1377,58 +1378,6 @@ let draftId = null;
 let _dirty = false;  // V3.1.2 #2: 未儲存變更旗標 — input 時設 true，寫入 draft/record 時清 false
 
 // ── AJCC Stage auto-computation ──
-function computeAJCC(t,n,m){
-  if(!t||!n||!m) return '';
-  // Helper: T group
-  const isT1 = /^T1/.test(t);  // T1mi,T1a,T1b,T1c
-  const isT2 = /^T2/.test(t);  // T2a,T2b
-  const isN2 = /^N2/.test(n);  // N2a,N2b
-  // M1 → Stage IV
-  if(m!=='M0'){
-    if(m==='M1a'||m==='M1b') return 'IVA';
-    return 'IVB'; // M1c1,M1c2
-  }
-  // M0 + N0
-  if(n==='N0'){
-    if(t==='Tis') return '0';
-    if(t==='T1mi'||t==='T1a') return 'IA1';
-    if(t==='T1b') return 'IA2';
-    if(t==='T1c') return 'IA3';
-    if(t==='T2a') return 'IB';
-    if(t==='T2b') return 'IIA';
-    if(t==='T3') return 'IIB';
-    if(t==='T4') return 'IIIA';
-  }
-  // M0 + N1
-  if(n==='N1'){
-    if(isT1||isT2) return 'IIB';
-    if(t==='T3') return 'IIIA';
-    if(t==='T4') return 'IIIA';
-  }
-  // M0 + N2a (single mediastinal station)
-  if(n==='N2a'){
-    if(isT1) return 'IIB';             // AJCC 9th: T1+N2a→IIB (was IIIA in 8th)
-    if(isT2||t==='T3') return 'IIIA';  // T2-T3+N2a→IIIA
-    if(t==='T4') return 'IIIB';
-  }
-  // M0 + N2b (multiple mediastinal stations)
-  if(n==='N2b'){
-    if(isT1) return 'IIIA';            // T1+N2b→IIIA
-    if(isT2||t==='T3') return 'IIIB';  // T2-T3+N2b→IIIB (was IIIA in 8th)
-    if(t==='T4') return 'IIIB';
-  }
-  // Fallback for plain "N2" (no sub)
-  if(isN2){
-    if(isT1||isT2) return 'IIIA';
-    if(t==='T3'||t==='T4') return 'IIIB';
-  }
-  // M0 + N3
-  if(n==='N3'){
-    if(isT1||isT2) return 'IIIB';
-    if(t==='T3'||t==='T4') return 'IIIC';
-  }
-  return '';
-}
 
 // Treatment group from stage
 // ═══ Pathway Routing — 本院指引 version 12 (2026) ═══
