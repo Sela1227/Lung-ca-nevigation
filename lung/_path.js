@@ -288,11 +288,20 @@ function buildPathCore(state){
       const isL858R = (m === 'EGFR_L858R');
       steps = [
         { title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
-        { title:'病情惡化時：做抗藥基因檢測', line:'惡化後評估', note:'若第一線用的不是 Osimertinib，且檢測發現抗藥基因，可換成 Osimertinib 繼續治療。' },
-        { title:'若 Osimertinib 也失效：接續化療搭配免疫治療', line:'接續治療', nhi:'NHI', drugs:[
+        { title:'病情惡化時：做抗藥基因檢測', line:'惡化後評估', note:'__RESIST_NOTE__' },
+        { title:'標靶藥都失效後：接續化療搭配免疫治療', line:'接續治療', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}],
-          note:'非鱗狀標準接續方案。少數帶有特殊 EGFR exon 20 突變的病人，第一線可用 Amivantamab 合併化療（健保有給付）；其他情況使用 Amivantamab 通常需自費。' },
+          note:'非鱗狀標準接續方案。' },
       ];
+      // V3.7.3: 依個管實際勾選的第一線藥改寫後續敘述（原本一律寫「若第一線用的不是 Osimertinib…」，
+      //   個管已經選了 Osimertinib 時會自相矛盾）
+      const _fl = drugChoice(state, 0, DRUGS.EGFR.list);
+      const _resistNote = (_fl.narrowed && _fl.has('Osimertinib'))
+        ? '您第一線使用的已是 Osimertinib。若病情惡化，可再做抗藥基因檢測，依結果與醫師討論後續治療。'
+        : (_fl.narrowed
+            ? '若病情惡化，可做抗藥基因檢測；若驗到 T790M 抗藥性突變，健保可申請換用 Osimertinib（泰格莎）繼續治療。'
+            : '若第一線用的不是 Osimertinib，且檢測發現 T790M 抗藥性突變，健保可申請換成 Osimertinib 繼續治療。');
+      steps.forEach(s => { if(s.note === '__RESIST_NOTE__') s.note = _resistNote; });
       // V3.7.0: Bevacizumab + Erlotinib 的健保條件 = L858R + 腦轉移 + 非鱗狀 + 第Ⅳ期 + 第一線
       if(isL858R && isNS && state.brainMet === 'yes'){
         steps.splice(1, 0, { title:'第一線（合併方案）：標靶 + Bevacizumab', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI',
@@ -655,6 +664,7 @@ function buildUnknownStagePath(t, state){
    不該凌駕驅動基因、治療目的等真正的決策因素。所以只加註、不覆寫主結論。   */
 function applyModifiers(r, state){
   if(!r) return r;
+  markDroppedSteps(r, state);   // V3.7.3
   applyAgeEcog(r, state);
   applyHbvCatastrophic(r, state);
   return r;
@@ -662,6 +672,15 @@ function applyModifiers(r, state){
 
 // V3.7.1: 病理高風險因子（個管依病理報告勾選）→ 早期是否建議術後化療
 const RISK_LABELS_P = {LVI:'淋巴管／血管侵犯', VPI:'臟層肋膜侵犯', SIZE4:'腫瘤 ≥4 公分', POOR:'低分化', MARGIN:'切緣陽性', NX:'淋巴結廓清不完整'};
+// V3.7.3: 個管在總覽頁勾選用藥後，後續步驟的「假設你用的是別種藥」敘述會自相矛盾。
+//   drugOff 記的是取消勾選的（key = 步驟索引|藥名英文），據此判斷第一線實際選了什麼。
+function drugChoice(state, stepIdx, drugs){
+  const off = (state && Array.isArray(state.drugOff)) ? state.drugOff : [];
+  const on = (drugs || []).filter(d => !off.includes(stepIdx + '|' + (d.n || '')));
+  return { on, narrowed: on.length > 0 && on.length < (drugs || []).length,
+           has: n => on.some(d => (d.n || '').indexOf(n) >= 0) };
+}
+
 function riskList(state){
   return (state && Array.isArray(state.riskFactors) ? state.riskFactors : [])
     .map(k => RISK_LABELS_P[k]).filter(Boolean);
@@ -693,7 +712,7 @@ function applyAgeEcog(r, state){
     const hasCCRT = /同步化放療/.test(title);
     const note = step.note || '';
     const adjs = [];
-    if(elderly && hasChemo) adjs.push('您 ≥70 歲：化療鉑類可考慮改用副作用較輕的碳鉑（由醫師評估腎功能等條件後決定）');
+    if(elderly && hasChemo) adjs.push('您 ≥70 歲：化療鉑類可考慮改用副作用較輕的卡鉑（由醫師評估腎功能等條件後決定）');
     if(ps2 && hasCCRT)      adjs.push('您體力狀況中等：同步化放療負擔較重，可與醫師討論改成分開做（先化療再放療）');
     if(ps34 && hasChemo)    adjs.push('您體力狀況較差：化療需與主治醫師審慎評估');
     if(adjs.length) step.note = note + (note ? '　/　' : '') + '【依您狀況】' + adjs.join('；');
@@ -703,7 +722,7 @@ function applyAgeEcog(r, state){
   //   也會看到「化療用藥可能調整」、「同步化放療可以分開做」
   const pathHasChemo = hasChemoStep(r);
   const pathHasCCRT  = (r.steps || []).some(s => /同步化放療/.test(s.title || ''));
-  if(elderly && pathHasChemo) r.warns.unshift('您 ≥70 歲：化療用藥可能調整（如改用碳鉑），由醫師依腎功能與整體狀況決定');
+  if(elderly && pathHasChemo) r.warns.unshift('您 ≥70 歲：化療用藥可能調整（如改用卡鉑），由醫師依腎功能與整體狀況決定');
   if(ps2 && pathHasCCRT)      r.warns.unshift('您體力狀況中等：同步化放療可與醫師討論改成分開做（先化療再放療）');
   else if(ps2 && pathHasChemo) r.warns.unshift('您體力狀況中等：化療強度可能調整，由醫師評估');
   if(ps34){
@@ -730,4 +749,18 @@ function applyHbvCatastrophic(r, state){
   if(state.catastrophic === 'no'){
     r.warns.push('肺癌可申請重大傷病證明，減免部分醫療費用，請儘早向醫院申請');
   }
+}
+
+/* ═══ V3.7.3: 個管勾選用藥後的一致性處理 ═══
+   一個步驟的藥若被全部取消勾選，代表個管判斷這條路不適用這位病人 →
+   標記 dropped，衛教頁整步不顯示（避免「已經決定用 A 了，下面還列 B、C」的矛盾）。
+   患者端（總覽）仍會顯示劃線版本，個管可以再勾回來。                      */
+function markDroppedSteps(r, state){
+  const off = (state && Array.isArray(state.drugOff)) ? state.drugOff : [];
+  if(!off.length || !r.steps) return;
+  r.steps.forEach((s, i) => {
+    if(!s.drugs || !s.drugs.length) return;
+    const on = s.drugs.filter(d => !off.includes(i + '|' + (d.n || '')));
+    s.dropped = (on.length === 0);
+  });
 }
