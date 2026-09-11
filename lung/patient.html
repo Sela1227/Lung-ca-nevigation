@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
-<title>肺癌路徑查詢 — 彰濱秀傳癌症中心</title>
+<title>肺癌路徑查詢 V1.18.0 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1403,6 +1403,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 <script src="_path.js"></script>
 <script>
 'use strict';
+const MODULE_VERSION = 'V1.18.0';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
 
 /* ═══════════════════════════════════════════════════
    STATE
@@ -1473,6 +1474,11 @@ async function saveQuery(){
     return;
   }
   const isUpdate = (pdbEditId != null);
+  // V3.8.0（內部審核 P0-2 附帶建議）：更新既有紀錄時，若分期資訊由「有」變「空」，
+  //   很可能是載入流程把 state 洗掉了 → 先確認，避免永久覆寫
+  if(isUpdate && !S.stageCat){
+    if(!confirm('這筆紀錄目前沒有分期資訊，更新後會覆蓋原本已存的內容。確定要更新嗎？')) return;
+  }
   const rec = {
     code:S.code||'', name:(S.name||'').slice(0,8),
     type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
@@ -1824,7 +1830,7 @@ function renderTreatmentSteps(steps, opts){
     if(s.drugs && s.drugs.length){
       // V3.7.0: 個管可勾選要給病人的藥（預設全選）。取消勾選的不會出現在 QR 衛教頁。
       const items = s.drugs.map(d=>{
-        const key = drugKey(i, d);   // V3.7.1: 迴圈索引是 i（V3.7.0 誤用 si 造成整個治療方向空白）
+        const key = drugKey(s, d);   // V3.8.0: 語意 key（位置索引會隨步驟插入/三區呈現漂移）
         const on = isDrugOn(key);
         const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
         const zh = d.z ? `<div class="tx-drug-zh">${escapeHtml(d.z)}</div>` : '';
@@ -1887,7 +1893,7 @@ function renderSummary(){
   let meta = r.stageTxt;
   const tnmStr = [S.t, S.n, S.m].filter(Boolean).join(' ');
   if(tnmStr) meta += ' · ' + tnmStr;
-  if(S.mut && !['NONE','NEG','PENDING'].includes(S.mut)) meta += ' · ' + mutDisplay(S.mut);  // V3.6.1
+  if(S.mut && !['NONE','NEG','PENDING','DECLINED'].includes(S.mut)) meta += ' · ' + mutDisplay(S.mut);  // V3.6.1
   if(pdl1Display(S.pdl1)) meta += ' · ' + pdl1Display(S.pdl1);  // V3.4.0 PD-L1 併存顯示
   if(isSCLC() && S.brainMet){
     const bLabel = ({yes:'有腦/脊髓轉移', no:'無腦/脊髓轉移', unknown:'腦/脊髓轉移未明'})[S.brainMet] || '';
@@ -1963,7 +1969,7 @@ function renderSummary(){
 /* ─── Team picker ─── */
 // ═══ V3.7.0: 藥物勾選（個管決定給病人看哪幾種）═══
 //   預設全選；S.drugOff 只記「取消勾選」的，這樣新增藥物時自動是勾選狀態。
-function drugKey(stepIdx, d){ return stepIdx + '|' + (d.n || ''); }
+function drugKey(step, d){ return drugKeyOf(step, d); }   // V3.8.0: 共用 _path.js 的語意 key
 function isDrugOn(key){ return !(S.drugOff || []).includes(key); }
 function toggleDrug(key){
   if(!Array.isArray(S.drugOff)) S.drugOff = [];
@@ -2072,7 +2078,7 @@ function buildHumanReadableSummary(){
   // V2.10.0: 病理模式時 stageDisplay 已含 p 前綴
   parts.push((S.postOp ? '病理' : 'Stage ') + (S.postOp ? '' : '') + stageDisplay());
   if(tnmStr) parts.push((S.postOp ? '病理 ' : '') + tnmStr);
-  if(S.mut && !['NONE','NEG','PENDING'].includes(S.mut)) parts.push(mutDisplay(S.mut));  // V3.6.1
+  if(S.mut && !['NONE','NEG','PENDING','DECLINED'].includes(S.mut)) parts.push(mutDisplay(S.mut));  // V3.6.1
   if(pdl1Display(S.pdl1)) parts.push(pdl1Display(S.pdl1));  // V3.4.0
   if(isSCLC() && S.brainMet){
     const bL = ({yes:'腦/脊髓(+)', no:'腦/脊髓(-)', unknown:''})[S.brainMet];
@@ -2523,6 +2529,14 @@ function resetPersonalState(){
 }
 
 function recomputeStage(){
+  // V3.8.0（內部審核 P0-2）：SCLC 用侷限/擴散直接設 stageCat，沒有 TNM。
+  //   若讓它繼續往下算，resolveStage('','','') 會把 stageCat 洗成 ''，
+  //   連帶清掉 mut/pdl1/brainMet；此時按「更新這筆紀錄」會永久覆寫原資料。
+  if(isSCLC() && !(S.t && S.n && S.m)){
+    refreshStageDisplayText();
+    updateActBar();
+    return;
+  }
   const oldCat = S.stageCat;
   // V3.6.1: 用 resolveStage — 簡易模式（T1/T2/N2/M1 未細分）不產生假精確分期
   const info = resolveStage(S.t, S.n, S.m);

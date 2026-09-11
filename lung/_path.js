@@ -15,6 +15,20 @@
       行為不變；edu 端因此收斂到 patient（消除分叉）。臨床修正另版處理。
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══ V3.8.0: 驅動基因分類 — 全案唯一事實來源 ═══
+   內部審核 P0-1 根因：V3.7.0 拆 EGFR 子型後，五處 `includes([...])` 清單沒同步更新，
+   新 enum 靜悄悄掉進 else 分支（第三期 EGFR 病人因此又拿到 Durvalumab）。
+   新增 enum 只改這裡；下方所有分類判斷一律引用這些常數。                */
+const EGFR_CLASSIC_SET = ['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R'];
+const EGFR_ALL_SET     = EGFR_CLASSIC_SET.concat(['EGFR_EX20','EGFR_OTHER']);
+const NON_EGFR_DRIVERS = ['ALK','ROS1','BRAF','MET','KRAS'];
+const ALL_DRIVERS      = EGFR_ALL_SET.concat(NON_EGFR_DRIVERS);
+// Durvalumab 鞏固的排除名單（健保 9.69 / NCCN）：EGFR/ALK/ROS-1 需為原生型。
+//   KRAS 不在排除名單 → 仍可走免疫維持（審核特別提醒不要一併排除）
+const DURVA_EXCLUDED    = EGFR_ALL_SET.concat(['ALK','ROS1']);
+// 未確定/未檢測類（非驅動基因陽性）
+const NON_POSITIVE_MUT = ['', 'NONE', 'NEG', 'PENDING', 'DECLINED'];
+
 const DRUGS = {
   EGFR: {line:'一線標靶', nhi:'NHI', list:[
     {n:'Osimertinib',z:'泰格莎'},{n:'Gefitinib',z:'艾瑞莎'},
@@ -226,8 +240,8 @@ function buildPathCore(state){
         note:'化療與放射線治療同時進行 4-6 個療程。' },
     ];
     // V3.6.2: 鞏固治療依驅動基因真正分流（原本一律列 Durvalumab、只在 EGFR+ 時補一句警語）
-    const isEgfrClassic = (m === 'EGFR' || m === 'EGFR_CLASSIC');
-    const isOtherDriver = ['ALK','ROS1','BRAF','MET','EGFR_EX20'].includes(m);
+    const isEgfrClassic = EGFR_CLASSIC_SET.includes(m);          // V3.8.0: 用共用常數
+    const isOtherDriver = DURVA_EXCLUDED.includes(m) && !isEgfrClassic;   // EGFR_EX20/OTHER/ALK/ROS1
     if(isEgfrClassic){
       steps.push({ title:'同步化放療結束後病情穩定者:口服標靶維持治療', line:DRUGS.CONSOLID_OSI.line, nhi:'NHI',
         drugs: DRUGS.CONSOLID_OSI.list, note: DRUGS.CONSOLID_OSI.note });
@@ -283,11 +297,11 @@ function buildPathCore(state){
         { title:'病情惡化後：化療或臨床試驗', line:'接續治療', note:'exon20 插入突變的後線選擇較少，可與醫師討論臨床試驗機會。' },
       ];
       warns.push('EGFR exon20 插入突變:一般常用的 EGFR 口服標靶藥（如泰格莎、艾瑞莎）對這型效果不佳，第一線用的是不同的藥');
-    } else if(['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R','EGFR_OTHER'].includes(m)){
+    } else if(EGFR_CLASSIC_SET.includes(m) || m === 'EGFR_OTHER'){   // V3.8.0
       // V3.7.0: ex19del 與 L858R 拆開 — 健保 Bevacizumab+Erlotinib 只認 L858R 且需腦轉移
       const isL858R = (m === 'EGFR_L858R');
       steps = [
-        { title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note:'__FL_NOTE__' },
+        { id:'egfr-1l', title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note:'__FL_NOTE__' },
         { title:'病情惡化時：做抗藥基因檢測', line:'惡化後評估', note:'__RESIST_NOTE__' },
         { title:'標靶藥都失效後：接續化療搭配免疫治療', line:'接續治療', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}],
@@ -295,16 +309,19 @@ function buildPathCore(state){
       ];
       // V3.7.3: 依個管實際勾選的第一線藥改寫後續敘述（原本一律寫「若第一線用的不是 Osimertinib…」，
       //   個管已經選了 Osimertinib 時會自相矛盾）
-      const _fl = drugChoice(state, 0, DRUGS.EGFR.list);
+      const _fl = drugChoice(state, 'egfr-1l', DRUGS.EGFR.list);
       // V3.7.4: 個管縮小用藥後，note 不該再提沒顯示的藥（原本一律「五藥擇一。Dacomitinib 限無腦轉移。」）
-      const _flNote = !_fl.narrowed ? DRUGS.EGFR.note
-        : (_fl.on.length === 1
+      const _flNote = (!_fl.narrowed || _fl.on.length > 1) && !(_fl.narrowed && _fl.on.length === 1) ? (
+          _fl.narrowed
+            ? ('以上藥物由主治醫師擇一使用。' + (_fl.has('Dacomitinib') ? 'Dacomitinib 限無腦轉移。' : ''))
+            : DRUGS.EGFR.note
+        ) : (_fl.on.length === 1
             ? ('主治醫師已為您選擇 ' + (_fl.on[0].z || _fl.on[0].n) + '。口服，需依醫囑規律服用並定期回診評估療效。')
             : ('以上藥物由主治醫師擇一使用。' + (_fl.has('Dacomitinib') ? 'Dacomitinib 限無腦轉移。' : '')));
       steps.forEach(s => { if(s.note === '__FL_NOTE__') s.note = _flNote; });
-      const _resistNote = (_fl.narrowed && _fl.has('Osimertinib'))
+      const _resistNote = (_fl.on.length === 1 && _fl.has('Osimertinib'))
         ? '您第一線使用的已是 Osimertinib。若病情惡化，可再做抗藥基因檢測，依結果與醫師討論後續治療。'
-        : (_fl.narrowed
+        : (_fl.on.length === 1
             ? '若病情惡化，可做抗藥基因檢測；若驗到 T790M 抗藥性突變，健保可申請換用 Osimertinib（泰格莎）繼續治療。'
             : '若第一線用的不是 Osimertinib，且檢測發現 T790M 抗藥性突變，健保可申請換成 Osimertinib 繼續治療。');
       steps.forEach(s => { if(s.note === '__RESIST_NOTE__') s.note = _resistNote; });
@@ -393,13 +410,22 @@ function buildPathCore(state){
     if(state.t790m === 'yes'){
       // V3.7.4: 健保二線 Osimertinib 限「先前用過 Gefitinib/Erlotinib/Afatinib/Dacomitinib」。
       //   若第一線用的已經是 Osimertinib，再列「可換 Osimertinib」是臨床錯誤（會讓病人以為還有藥可換）。
-      const _isEgfr = ['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R','EGFR_OTHER'].includes(m);
-      const _flc = _isEgfr ? drugChoice(state, 0, DRUGS.EGFR.list) : null;
-      const _alreadyOsi = !!(_flc && _flc.narrowed && _flc.has('Osimertinib'));
+      const _isEgfr = EGFR_CLASSIC_SET.includes(m);   // V3.8.0
+      const _flc = _isEgfr ? drugChoice(state, 'egfr-1l', DRUGS.EGFR.list) : null;
+      // V3.8.0（外部審核 P1-1）：候選集合 ≠ 已選定治療。
+      //   保留 Osimertinib + 其他候選時仍是「未定」，不可斷言已使用。
+      const _alreadyOsi = !!(_flc && _flc.on.length === 1 && _flc.on[0].n === 'Osimertinib');
+      // V3.8.0（外部審核 P1-1 矩陣第 5 列）：第一線整步被取消時，不得再由已取消的候選推論前治療
+      const _noFirstLine = !!(_flc && _flc.on.length === 0);
+      const _undecided  = !!(_flc && (_flc.on.length > 1 || _noFirstLine));
       if(_alreadyOsi){
         steps.push({ title:'已驗出 T790M：後續方向需醫師評估', line:'惡化後評估',
           note:'您第一線使用的已經是 Osimertinib。健保的二線 Osimertinib 是給「先前用過 Gefitinib／Erlotinib／Afatinib／Dacomitinib 之後才出現 T790M」的病人，您的情況不適用。後續可能需要考慮化療搭配免疫治療或其他方向，請與主治醫師討論。' });
         warns.push('您第一線已使用 Osimertinib，若出現抗藥性，後續治療方向需由醫師依抗藥機轉評估');
+      } else if(_undecided){
+        steps.push({ title:'已驗出 T790M：要看第一線實際用的是哪一種藥', line:'惡化後評估',
+          note:'二線 Osimertinib 的健保條件是「先前用過 Gefitinib／Erlotinib／Afatinib／Dacomitinib 之後才出現 T790M」。若您第一線用的就是 Osimertinib 則不適用。實際用藥請與主治醫師確認。' });
+        warns.push('是否能申請二線 Osimertinib，取決於第一線實際使用的是哪一種標靶藥，請與主治醫師確認');
       } else {
         steps.push({ title:'已驗出 T790M 抗藥性突變：可換 Osimertinib', line:'二線標靶', nhi:'NHI',
           drugs:[{n:'Osimertinib',z:'泰格莎'}],
@@ -409,7 +435,7 @@ function buildPathCore(state){
     }
 
   // V3.4.0: 驅動基因陽性 + PD-L1 也高 → 提醒仍以標靶優先（免疫對驅動基因陽性者效果較差）
-    if(['EGFR','ALK','ROS1','BRAF','MET'].includes(m) && state.pdl1==='HIGH'){
+    if(ALL_DRIVERS.includes(m) && state.pdl1==='HIGH'){   // V3.8.0: 補齊新 enum 與 KRAS
       warns.push('您的 PD-L1 偏高，但因帶有 ' + mutDisplay(m) + ' 驅動基因，第一線仍以標靶藥為主（驅動基因陽性者用免疫治療效果通常較差）');
     }
     return { stageTxt:`${typeLabel} 轉移期 (IV)`, pwTxt:'依基因檢測結果與免疫指標選擇個人化治療', steps, warns };
@@ -691,9 +717,14 @@ function applyModifiers(r, state){
 const RISK_LABELS_P = {LVI:'淋巴管／血管侵犯', VPI:'臟層肋膜侵犯', SIZE4:'腫瘤 ≥4 公分', POOR:'低分化', MARGIN:'切緣陽性', NX:'淋巴結廓清不完整'};
 // V3.7.3: 個管在總覽頁勾選用藥後，後續步驟的「假設你用的是別種藥」敘述會自相矛盾。
 //   drugOff 記的是取消勾選的（key = 步驟索引|藥名英文），據此判斷第一線實際選了什麼。
-function drugChoice(state, stepIdx, drugs){
+// V3.8.0（內部審核 P0-3）：改用語意 key。原本用位置索引，任何上游答案改動
+//   （插入合併方案步驟、復發路徑 unshift、三區呈現各自從 0 起算）都會讓 key 漂移到別的藥。
+function stepKeyOf(step){ return (step && (step.id || step.phase || step.title)) || ''; }
+function drugKeyOf(step, d){ return stepKeyOf(step) + '|' + ((d && d.n) || ''); }
+function drugChoice(state, stepOrKey, drugs){
   const off = (state && Array.isArray(state.drugOff)) ? state.drugOff : [];
-  const on = (drugs || []).filter(d => !off.includes(stepIdx + '|' + (d.n || '')));
+  const key = (typeof stepOrKey === 'object') ? stepKeyOf(stepOrKey) : String(stepOrKey);
+  const on = (drugs || []).filter(d => !off.includes(key + '|' + (d.n || '')));
   return { on, narrowed: on.length > 0 && on.length < (drugs || []).length,
            has: n => on.some(d => (d.n || '').indexOf(n) >= 0) };
 }
@@ -720,7 +751,7 @@ function applyAgeEcog(r, state){
   const ps2  = state.ecog === '2';
   const ps34 = state.ecog === '34';
   // V3.6.3: 帶驅動基因者，即使體力較差仍可能適合口服標靶（不可被「支持療法」蓋掉）
-  const driverPositive = ['EGFR','EGFR_CLASSIC','EGFR_EX20','ALK','ROS1','BRAF','MET','KRAS'].includes(state.mut);
+  const driverPositive = ALL_DRIVERS.includes(state.mut);   // V3.8.0: 補齊 EGFR_EX19/L858R/OTHER
 
   for(const step of r.steps){
     const title = step.title || '';
@@ -775,9 +806,9 @@ function applyHbvCatastrophic(r, state){
 function markDroppedSteps(r, state){
   const off = (state && Array.isArray(state.drugOff)) ? state.drugOff : [];
   if(!off.length || !r.steps) return;
-  r.steps.forEach((s, i) => {
+  r.steps.forEach(s => {
     if(!s.drugs || !s.drugs.length) return;
-    const on = s.drugs.filter(d => !off.includes(i + '|' + (d.n || '')));
+    const on = s.drugs.filter(d => !off.includes(drugKeyOf(s, d)));
     s.dropped = (on.length === 0);
   });
 }

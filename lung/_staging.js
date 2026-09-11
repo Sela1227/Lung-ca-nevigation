@@ -44,6 +44,8 @@ function computeAJCC(t, n, m){
   if(!t || !n || !m) return '';
   if(m !== 'M0') return AJCC9_M[m] || 'IVB';
   if(n === 'N0') return AJCC9_N0[t] || '';
+  // V3.8.0: Tis 依定義僅適用 N0M0，配非 N0 是不合法組合 → 回傳特殊值讓上層說明
+  if(t === 'Tis') return 'TIS_INVALID';
   const tb = AJCC9_T_BUCKET[t];
   const row = AJCC9_TBL[n];
   if(!tb || !row) return '';
@@ -63,7 +65,7 @@ function stageToCategory(stage){
    舊行為：硬給一個（T2N0→IB、N2→IIA路線、M1→IVB），是「假精確」。
    新行為：列出所有可能，回報範圍；若可能值跨治療分類則標 needMore。      */
 const AJCC9_AMBIGUOUS = {
-  T: { T1:['T1mi','T1b','T1c'], T2:['T2a','T2b'] },   // 未細分的 T
+  T: { T1:['T1mi','T1a','T1b','T1c'], T2:['T2a','T2b'] },   // V3.8.0: 補 T1a（查表完整性）
   N: { N2:['N2a','N2b'] },
   M: { M1:['M1a','M1b','M1c1'] },
 };
@@ -77,7 +79,11 @@ function resolveStage(t, n, m){
     const s = computeAJCC(a, b, c2);
     if(s && !set.includes(s)) set.push(s);
   }
-  if(!set.length) return { stage:'', cat:'', label:'', needMore:false, exact:false };
+  if(set.length === 1 && set[0] === 'TIS_INVALID'){
+    return { stage:'', possible:[], cat:'', label:'', needMore:true, exact:false,
+             need:['Tis（原位癌）依定義僅適用 N0 M0，請確認 N 期是否正確'] };
+  }
+  if(!set.length) return { stage:'', possible:[], cat:'', label:'', needMore:false, exact:false, need:[] };
   const cats = [...new Set(set.map(stageToCategory))];
   const exact = (set.length === 1);
   // 排序讓範圍字串穩定（依分期先後）
@@ -86,7 +92,7 @@ function resolveStage(t, n, m){
   const label = exact ? set[0] : `${set[0]}–${set[set.length-1]}`;
   // 需要確認什麼
   const need = [];
-  if(AJCC9_AMBIGUOUS.T[t] && !exact) need.push('腫瘤大小細分（' + t + 'a/b）');
+  if(AJCC9_AMBIGUOUS.T[t] && !exact) need.push('腫瘤大小細分（' + (t==='T1' ? 'T1a/b/c' : 'T2a/b') + '）');   // V3.8.0
   if(AJCC9_AMBIGUOUS.N[n] && !exact) need.push('N2 是單站(N2a)或多站(N2b)');
   if(AJCC9_AMBIGUOUS.M[m] && !exact) need.push('轉移範圍（M1a/b/c）');
   return {

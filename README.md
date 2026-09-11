@@ -1,4 +1,55 @@
-# Cancer Navigation V3.7.4 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.8.0 — 彰濱秀傳癌症中心
+
+## V3.8.0 — 2026-09-11
+**內部 + 外部兩份審核的上線閘門項目**
+
+### 最嚴重的一項是我 V3.7.0 造成的 regression
+
+V3.7.0 把 EGFR 拆成 `EGFR_EX19` / `EGFR_L858R` 後，UI 已經不再產生 `EGFR` / `EGFR_CLASSIC`，但 LOCAL 分支仍寫：
+
+```js
+const isEgfrClassic = (m === 'EGFR' || m === 'EGFR_CLASSIC');   // 永遠 false
+```
+
+→ V3.6.2 特地寫的 Osimertinib 鞏固分支**變成死碼**，**第三期 EGFR 病人又拿到 Durvalumab**。同一畫面還同時出現「您帶有 EGFR ex19del」與「限無 EGFR 驅動基因者的 Durvalumab」。
+
+**根因**：驅動基因清單散在 **5 個地方各寫一份**。新增 enum 時沒有任何機制通知它們要更新，而漏掉的值不會報錯，只會靜悄悄走進 else。
+
+修法：抽共用常數（`EGFR_CLASSIC_SET` / `ALL_DRIVERS` / `DURVA_EXCLUDED`…），一次解掉 P0-1 + P1-4 + P1-5 + P1-6。KRAS 特別**不**放進 Durvalumab 排除名單 —— 審核提醒它臨床上仍可用免疫維持。
+
+### 其他 P0
+
+| 項目 | 問題 |
+|------|------|
+| **SCLC 載入毀損** | 載入 SCLC 紀錄時 stageCat 被洗成空、連帶清掉 mut/pdl1/brainMet，再按「更新」**永久覆寫原資料** |
+| **drugOff 位置索引** | 步驟插入／復發 unshift／三區呈現會讓 key 漂移到別的藥 → 改語意 key |
+| **候選 ≠ 已選定** | 保留 Osimertinib + Gefitinib 時被誤判「已使用 Osimertinib」→ 五態矩陣全綠 |
+| **還原靜默覆寫** | 備份還原保留來源 id，`put()` 直接覆寫本機同 id 病人紀錄 → 改「整庫取代／合併匯入」+ 單一 transaction + dry-run |
+| **儲存型 XSS** | 醫護版**完全沒有 escape 工具**，病人欄位與匯入 JSON 直接進 innerHTML；edu-pro 的 QR fragment 亦然 |
+
+### P1／P2
+
+CSV 雙引號跳脫與公式注入防護、查表漏 T1a、Tis + 非 N0 回空白、need 文字漏 T1c、mutDisplay 守衛漏 DECLINED、版號紀律（民眾版原本完全沒有版號字串）。
+
+### 新增的回歸斷言（審核建議，我認為最有價值）
+
+> **不要驗「某個值走對分支」，要驗「沒有任何值掉出分類」**
+
+把 UI 上每個可選的 mut 值抓出來，確認每個都落入某一分類。這條可以 **100% 攔截**這整個家族的錯誤 —— 而 code review 很難每次抓到。
+
+### 三條教訓（BUG-78）
+
+1. **新增 enum 後，舊的 `includes()` 清單沒人通知它要更新** —— 而且不會報錯，只會靜悄悄走錯分支。
+2. **拿位置索引或候選集合當語意，遲早漂移。**
+3. **同專案「A 檔有防護、B 檔沒有」是常見盲點** —— 民眾版 V3.6.1 就補了 escapeHtml，醫護版一直沒有。
+
+### 模組版號
+
+lung **V1.17.4 → V1.18.0**，系統版 V3.7.4 → V3.8.0。
+
+⚠️ 兩份審核都指出本輪未能做真實瀏覽器實機驗證，建議修完後請審核方複審。
+
+---
 
 ## V3.7.4 — 2026-07-04
 **勾選用藥後仍存在的兩處矛盾**（Sela 貼 QR 實際畫面抓到）

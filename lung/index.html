@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.4.1</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.18.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1223,8 +1223,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.17.4';
-const SYSTEM_VERSION = 'V3.7.4';
+const MODULE_VERSION = 'V1.18.0';
+const SYSTEM_VERSION = 'V3.8.0';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1407,6 +1407,15 @@ function txBroad(grp){
 }
 
 // ── IndexedDB ──
+/* ═══ V3.8.0（外部審核 P0-2）：醫護版原本沒有任何 escape 工具，
+   病人姓名／病歷號／位點／備註、以及匯入的 JSON 直接進 innerHTML →
+   儲存型 XSS。備份檔與同仁轉傳的 QR 都是現有入口。 ═══ */
+function esc(s){
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function openDB(){
   return new Promise((ok,fail)=>{
     const r = indexedDB.open(CFG.dbName,1);
@@ -3276,7 +3285,7 @@ function renderEduHandout(){
     const style = rec ? 'font-weight:700;color:#37516b' : 'color:#999;font-style:italic';
     h += `<tr><td>${d.fullDept}</td><td style="${style}">${docName}</td></tr>`;
   });
-  h += `<tr style="background:#F3F7FB"><td>${tm.caseManager.title}</td><td style="font-weight:700;color:#4A7A9E">${tm.caseManager.name}</td></tr>`;
+  h += `<tr style="background:#F3F7FB"><td>${tm.caseManager.title}</td><td style="font-weight:700;color:#4A7A9E">${esc(tm.caseManager.name)}</td></tr>`;
   h += '</table>';
   h += '<div class="edu-emg"><b><i class="fa-solid fa-circle-exclamation" style="color:var(--rose);margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
   h += '</div>';
@@ -3311,7 +3320,7 @@ function renderEduHandout(){
   h += '</div>';
   h += '</div>'; // close edu-qr-wrap
   // Footer
-  h += `<div class="edu-footer"><b>個管師：</b>${tm.caseManager.name}　<b>電話：</b>______________　<b>日期：</b>______________</div>`;
+  h += `<div class="edu-footer"><b>個管師：</b>${esc(tm.caseManager.name)}　<b>電話：</b>______________　<b>日期：</b>______________</div>`;
   h += '</div></div>';
   el.innerHTML = h;
   // Generate QR after DOM is ready
@@ -3501,7 +3510,7 @@ function renderSummary(){
       if(teamDone.length) txH += '<br>';
       txH += '<span style="color:var(--rose)">待看診：</span>' + teamRemain.map(d=>d.dept).join('、');
     }
-    txH += `<br><span style="font-weight:700">${tm.caseManager.title}</span>：${tm.caseManager.name}`;
+    txH += `<br><span style="font-weight:700">${esc(tm.caseManager.title)}</span>：${esc(tm.caseManager.name)}`;
     txH += `</div></div>`;
   } else { txH += '<div style="padding:8px 0;color:var(--text3);font-size:15px">尚未完成分期</div>'; }
   document.getElementById('sum-treatment').innerHTML = txH;
@@ -3998,7 +4007,7 @@ async function loadStats(){
   document.getElementById('cross-table').innerHTML=ctHtml;
 
   // Record table
-  document.getElementById('stat-tbody').innerHTML=recs.sort((a,b)=>(b.caseDate||b.savedAt||b.created).localeCompare(a.caseDate||a.savedAt||a.created)).map(r=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;font-family:monospace;font-size:12px">${r.caseDate||new Date(r.savedAt||r.created).toLocaleDateString('zh-TW')}</td><td style="padding:8px;font-weight:600">${r.code||'—'}</td><td style="padding:8px">${r.name||'—'}</td><td style="padding:8px">${TYPE_LABEL[r.type]||'—'}</td><td style="padding:8px;font-family:monospace">${(r.tstage||'')+(r.nstage||'')+(r.mstage||'')}</td><td style="padding:8px">${r.stage||'—'}</td><td style="padding:8px">${r.mutation||'—'}</td><td style="padding:8px"><span style="font-family:monospace;font-size:12px;${r.ck&&Object.keys(r.ck).length===CK.length?'color:var(--primary);font-weight:700':''}">${r.ck?Object.keys(r.ck).length:0}/${CK.length}</span></td><td style="padding:8px"><button onclick="APP.del(${r.id},'saved')" style="color:var(--rose);font-size:12px;text-decoration:underline">刪除</button> <button onclick="APP.load(${r.id},'saved')" style="color:var(--accent);font-size:12px;text-decoration:underline;margin-left:4px">編輯</button></td></tr>`).join('');
+  document.getElementById('stat-tbody').innerHTML=recs.sort((a,b)=>(b.caseDate||b.savedAt||b.created).localeCompare(a.caseDate||a.savedAt||a.created)).map(r=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;font-family:monospace;font-size:12px">${esc(r.caseDate||new Date(r.savedAt||r.created).toLocaleDateString('zh-TW'))}</td><td style="padding:8px;font-weight:600">${esc(r.code||'—')}</td><td style="padding:8px">${esc(r.name||'—')}</td><td style="padding:8px">${TYPE_LABEL[r.type]||'—'}</td><td style="padding:8px;font-family:monospace">${esc((r.tstage||'')+(r.nstage||'')+(r.mstage||''))}</td><td style="padding:8px">${esc(r.stage||'—')}</td><td style="padding:8px">${esc(r.mutation||'—')}</td><td style="padding:8px"><span style="font-family:monospace;font-size:12px;${r.ck&&Object.keys(r.ck).length===CK.length?'color:var(--primary);font-weight:700':''}">${r.ck?Object.keys(r.ck).length:0}/${CK.length}</span></td><td style="padding:8px"><button onclick="APP.del(${Number(r.id)},'saved')" style="color:var(--rose);font-size:12px;text-decoration:underline">刪除</button> <button onclick="APP.load(${Number(r.id)},'saved')" style="color:var(--accent);font-size:12px;text-decoration:underline;margin-left:4px">編輯</button></td></tr>`).join('');
 }
 function mkChart(id,type,labels,data,colors){
   if(charts[id])charts[id].destroy();
@@ -4007,13 +4016,22 @@ function mkChart(id,type,labels,data,colors){
 }
 
 // ── Export / Import ──
+/* V3.8.0（外部審核 P1-2）：CSV 欄位序列化 — 原本只用 `"${c}"` 包住，
+   欄位內含雙引號會讓整份 CSV 欄位錯位；以 = + - @ 開頭者 Excel 會當公式執行。 */
+function csvCell(v){
+  let s = (v === null || v === undefined) ? '' : String(v);
+  s = s.replace(/\r\n|\r|\n/g, ' ');        // 換行正規化，避免破行
+  if(/^[=+\-@\t]/.test(s)) s = "'" + s;      // 公式注入防護
+  return '"' + s.replace(/"/g, '""') + '"';   // 雙引號跳脫
+}
+
 A.exportCSV = async function(){
   const r=await getAll('records'); if(!r.length){alert('無紀錄');return;}
   const bioHeaders = BIO_MARKERS.map(m => m.name);
   const consultHeaders = CFG.team.depts.map(d=>d.dept+'主治');
   const h=['收案日期','確診日期','首治日期','MDT日期','代號','姓名','性別','出生日期','年齡','ECOG','組織學','T','N','M','AJCC Stage','驅動基因/PD-L1','位點/表現',...bioHeaders,'必要檢查完成','全部檢查完成','實際治療',...consultHeaders,'個管師','備註'];
   const rows=r.map(x=>{const age=calcAgeFromDates(x.birthday,x.caseDate); const txExec=x.actualTx?Object.keys(x.actualTx).join(';'):''; const bReq=CK_BASIC.filter(c=>c.req!=='opt'); const aReq=x.stage?CK_ADV.filter(c=>isItemRequired(c,x.type,x.stage)):[]; const allReq=[...bReq,...aReq]; const reqDone=allReq.filter(it=>x.ck?.[it.id]).length; const bio=x.bio||{}; const bioCols=BIO_MARKERS.map(m=>{const b=bio[m.id]; if(!b||!b.s) return ''; let t=b.s==='+' ?'(+)':'(-)'; if(b.v) t+=' '+b.v+(m.unit||'%'); if(b.d) t+=' '+b.d; return t;}); const consultCols=CFG.team.depts.map(d=>x.consult?.[d.id]?.doctor||''); return [x.caseDate||new Date(x.savedAt||x.created).toLocaleDateString('zh-TW'),x.dateDiag||'',x.dateTx||'',x.dateMdm||'',x.code,x.name||'',x.gender,x.birthday||'',age!==null?age:'',x.ecog,x.type,x.tstage||'',x.nstage||'',x.mstage||'',x.stage,x.mutation||'',x.mutSite||'',...bioCols,reqDone+'/'+allReq.length,(x.ck?Object.keys(x.ck).length:0)+'/'+CK.length,txExec,...consultCols,CFG.team.caseManager.name,(x.notes||'').replace(/\n/g,' ')];});
-  dl('\uFEFF'+[h,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'),CFG.id+'_records.csv','text/csv');
+  dl('\uFEFF'+[h,...rows].map(r=>r.map(csvCell).join(',')).join('\r\n'),CFG.id+'_records.csv','text/csv');
   await put('settings',{key:'lastExport',value:new Date().toISOString()});
 };
 A.exportJSON = async function(){ const r=await getAll('records'); dl(JSON.stringify(r,null,2),CFG.id+'_records.json','application/json'); await put('settings',{key:'lastExport',value:new Date().toISOString()}); };
@@ -4023,15 +4041,61 @@ A.backupAll = async function(){
   await put('settings',{key:'lastExport',value:new Date().toISOString()});
   alert('完整備份已下載'); loadBackupStatus();
 };
+/* V3.8.0（外部審核 P0-1）：原本直接 put() 保留備份裡的 id →
+   本機既有的同 id 病人紀錄會被「靜默覆寫」，畫面只說「還原完成」。
+   改成兩種明確語意，且在單一 readwrite transaction 內完成（任一筆失敗整批 rollback）。 */
 A.handleRestore = async function(e){
   const f=e.target.files[0]; if(!f)return;
-  try{ const data=JSON.parse(await f.text()); if(!data.records||!Array.isArray(data.records)) throw 0;
-    if(!confirm(`確定還原？將匯入 ${data.records.length} 筆紀錄、${(data.drafts||[]).length} 筆草稿。`)) return;
-    for(const r of data.records) await put('records',r);
-    for(const d of (data.drafts||[])) await put('drafts',d);
-    for(const s of (data.settings||[])) await put('settings',s);
-    alert('還原完成'); loadStats(); loadBackupStatus();
-  } catch{ alert('備份檔格式錯誤'); } e.target.value='';
+  try{
+    const data=JSON.parse(await f.text());
+    if(!data.records||!Array.isArray(data.records)) throw 0;
+    const recs=data.records, drafts=data.drafts||[], setts=data.settings||[];
+
+    // 逐筆基本驗證（dry-run）：全部通過才寫入
+    const bad = recs.filter(r => !r || typeof r !== 'object' || (r.code===undefined && r.name===undefined));
+    if(bad.length){ alert(`備份檔有 ${bad.length} 筆紀錄格式不符，未寫入任何資料。`); e.target.value=''; return; }
+
+    const existing = await getAll('records');
+    const existIds = new Set(existing.map(r=>r.id));
+    const clash = recs.filter(r=>existIds.has(r.id)).length;
+
+    const mode = prompt(
+      `備份檔：${recs.length} 筆紀錄、${drafts.length} 筆草稿\n` +
+      `本機現有：${existing.length} 筆紀錄\n` +
+      (clash ? `⚠ 其中 ${clash} 筆 id 與本機重複\n\n` : '\n') +
+      `請輸入處理方式：\n` +
+      `  1 = 整庫取代（清空本機全部資料，換成備份內容）\n` +
+      `  2 = 合併匯入（備份資料一律新增為新紀錄，不覆蓋本機任何一筆）\n` +
+      `  其他 = 取消`, '2');
+    if(mode !== '1' && mode !== '2'){ e.target.value=''; return; }
+
+    if(mode === '1' && !confirm(`確定要「整庫取代」？\n本機現有 ${existing.length} 筆紀錄會全部被刪除，無法復原。`)){ e.target.value=''; return; }
+
+    const db = await openDB();
+    const stats = await new Promise((resolve, reject)=>{
+      const tx = db.transaction(['records','drafts','settings'],'readwrite');
+      const sR = tx.objectStore('records'), sD = tx.objectStore('drafts'), sS = tx.objectStore('settings');
+      let added=0, replaced=0;
+      if(mode === '1'){
+        sR.clear(); sD.clear();
+        recs.forEach(r=>{ sR.put(r); added++; });
+        drafts.forEach(d=>sD.put(d));
+      } else {
+        recs.forEach(r=>{ const cp=Object.assign({},r); delete cp.id; sR.add(cp); added++; });   // 本機重新配號
+        drafts.forEach(d=>{ const cp=Object.assign({},d); delete cp.id; sD.add(cp); });
+      }
+      setts.forEach(s=>sS.put(s));
+      tx.oncomplete = ()=>resolve({added, replaced: mode==='1' ? existing.length : 0});
+      tx.onerror = ()=>reject(tx.error);
+      tx.onabort = ()=>reject(tx.error || new Error('aborted'));
+    });
+
+    alert(mode === '1'
+      ? `整庫取代完成\n刪除原有 ${stats.replaced} 筆、寫入 ${stats.added} 筆`
+      : `合併匯入完成\n新增 ${stats.added} 筆（本機原有 ${existing.length} 筆未變動）`);
+    loadStats(); loadBackupStatus();
+  } catch(err){ alert('還原失敗，資料庫維持原狀。\n' + (err && err.message ? err.message : '備份檔格式錯誤')); }
+  e.target.value='';
 };
 A.handleImport = async function(e){
   const f=e.target.files[0]; if(!f)return;

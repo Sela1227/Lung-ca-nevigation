@@ -81,6 +81,8 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
 <div id="app"></div>
 <div class="page-footer" id="page-footer"></div>
 <script>
+/* V3.8.0（外部審核 P0-2）：QR fragment 是外部可控輸入，所有欄位輸出前必須 escape */
+function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 (function(){
   const app = document.getElementById('app');
   const footer = document.getElementById('page-footer');
@@ -245,7 +247,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
     h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 個人化照護導航手冊 — 醫護版</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
     h += '<div class="edu-body">';
     h += '<div class="edu-info">';
-    h += `<div><b>姓名：</b>${d.n||'—'}</div>`;
+    h += `<div><b>姓名：</b>${esc(d.n||'—')}</div>`;
     h += `<div><b>診斷：</b>${typeName}</div>`;
     h += `<div><b>分期：</b>${stageTxt}</div>`;
     h += '</div>';
@@ -263,9 +265,9 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
     TEAM.forEach((t,i)=>{
       const doc = d.tm && d.tm[i] ? d.tm[i] : '';
       const style = doc ? 'font-weight:700;color:#166534' : 'color:#999;font-style:italic';
-      h += `<tr><td>${t.dept}</td><td style="${style}">${doc ? doc+' 醫師' : '（待安排）'}</td></tr>`;
+      h += `<tr><td>${esc(t.dept)}</td><td style="${style}">${doc ? esc(doc)+' 醫師' : '（待安排）'}</td></tr>`;
     });
-    if(d.c) h += `<tr style="background:#f0fdfa"><td>個案管理師</td><td style="font-weight:700;color:#0891b2">${d.c}</td></tr>`;
+    if(d.c) h += `<tr style="background:#f0fdfa"><td>個案管理師</td><td style="font-weight:700;color:#0891b2">${esc(d.c)}</td></tr>`;
     h += '</table>';
     h += '<div class="edu-emg"><b><i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
     h += '</div>';
@@ -285,14 +287,14 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
     h += '</div>';
     h += '<p class="edu-note">＊依本院診療指引與健保第 9 章彙整，實際處方由主治醫師依病人狀況決定。</p>';
     h += '</div></div>';
-    h += `<div class="edu-footer">本頁為醫護內部快速查閱用。如有疑問請聯繫個案管理師${d.c?'（'+d.c+'）':''}。</div>`;
+    h += `<div class="edu-footer">本頁為醫護內部快速查閱用。如有疑問請聯繫個案管理師${d.c?'（'+esc(d.c)+'）':''}。</div>`;
     h += '</div></div>';
     app.innerHTML = h;
-    footer.innerHTML = `產生日期：${d.d||'—'}<br>此頁面為醫護快速查閱版本（病人版本請改用 edu-patient.html）。<br>彰濱秀傳紀念醫院 癌症中心`;
+    footer.innerHTML = `產生日期：${esc(d.d||'—')}<br>此頁面為醫護快速查閱版本（病人版本請改用 edu-patient.html）。<br>彰濱秀傳紀念醫院 癌症中心`;
   }
 
   function showError(title, msg){
-    app.innerHTML = `<div class="edu-error"><i class="fa-solid fa-circle-exclamation"></i><h3>${title}</h3><p>${msg}</p></div>`;
+    app.innerHTML = `<div class="edu-error"><i class="fa-solid fa-circle-exclamation"></i><h3>${esc(title)}</h3><p>${esc(msg)}</p></div>`;
     footer.innerHTML = '彰濱秀傳紀念醫院 癌症中心';
   }
 })();
