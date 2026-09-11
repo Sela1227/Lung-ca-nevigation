@@ -430,7 +430,12 @@ body.summary{
 body.summary .main{flex:1 0 auto}
 body.summary .page#p-sum{height:auto;min-height:0;flex:none}
 body.summary .sum-wrap{overflow:visible;flex:none;min-height:0}
-body.summary .sum-drugs{flex:none}
+body.summary /* V3.7.0: 藥物勾選（個管用） */
+.drug-pick{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+.drug-pick .dp-box{flex:0 0 18px;height:18px;border:1.5px solid var(--teal);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:var(--teal);font-weight:900;margin-top:1px}
+.drug-pick.off .dp-box{background:#fff;color:transparent;border-color:#CBD5DC}
+.drug-pick.off .dp-body{opacity:.42;text-decoration:line-through}
+.sum-drugs{flex:none}
 body.summary .sum-drugs-body{overflow:visible;max-height:none}
 body.summary .actbar{position:sticky;bottom:0;z-index:50}
 /* 桌面版決策框給足最小高度，確保完整顯示不再被壓 */
@@ -1015,10 +1020,15 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     <!-- NSCLC: ① 驅動基因（單選，必填） -->
     <div class="q4-sec-label" id="q4-lbl-mut">① 驅動基因<span class="q4-sec-opt">　通常擇一，彼此多為互斥</span></div>
     <div class="mut-grid" id="opt-mut">
-      <button type="button" class="mut-btn" data-val="EGFR_CLASSIC" onclick="pickMut(this)">
+      <button type="button" class="mut-btn" data-val="EGFR_EX19" onclick="pickMut(this)">
         <span class="mut-tag">EGFR</span>
-        <div class="mut-tt">EGFR ex19 / L858R</div>
-        <div class="mut-ss">最常見型，東方人多</div>
+        <div class="mut-tt">EGFR ex19 缺失</div>
+        <div class="mut-ss">最常見型</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="EGFR_L858R" onclick="pickMut(this)">
+        <span class="mut-tag">EGFR</span>
+        <div class="mut-tt">EGFR L858R</div>
+        <div class="mut-ss">用藥選項與 ex19 略不同</div>
       </button>
       <button type="button" class="mut-btn" data-val="EGFR_EX20" onclick="pickMut(this)">
         <span class="mut-tag">EGFR</span>
@@ -1060,10 +1070,44 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
         <div class="mut-tt">還沒驗 / 等報告中</div>
         <div class="mut-ss">先完成檢測再決定</div>
       </button>
+      <button type="button" class="mut-btn muted" data-val="DECLINED" onclick="pickMut(this)">
+        <span class="mut-tag">暫不檢測</span>
+        <div class="mut-tt">目前不做基因檢測</div>
+        <div class="mut-ss">依現有資料給方向</div>
+      </button>
     </div>
 
     <!-- NSCLC: ② PD-L1 免疫指標（單選，可與驅動基因併存） -->
-    <div class="q4-sec-label" id="q4-lbl-pdl1">② PD-L1 免疫指標<span class="q4-sec-opt">　可與驅動基因併存</span></div>
+    <!-- V3.7.0: T790M 是疊加的抗藥性突變，不與主要突變互斥 -->
+    <div class="q4-sec-label" id="q4-lbl-t790">② 抗藥性突變<span class="q4-sec-opt">　用過標靶藥後才會驗到</span></div>
+    <div class="pdl1-grid" id="opt-t790">
+      <button type="button" class="mut-btn" data-val="yes" onclick="pickT790(this)">
+        <span class="mut-tag">T790M</span>
+        <div class="mut-tt">有 T790M</div>
+        <div class="mut-ss">可換泰格莎</div>
+      </button>
+      <button type="button" class="mut-btn muted" data-val="no" onclick="pickT790(this)">
+        <span class="mut-tag">沒有</span>
+        <div class="mut-tt">沒驗到 / 未驗</div>
+        <div class="mut-ss"></div>
+      </button>
+    </div>
+
+    <!-- V3.7.0: 腦轉移 — 健保 Bevacizumab+Erlotinib 需 L858R + 腦轉移，僅相關時顯示 -->
+    <div class="q4-sec-label" id="q4-lbl-brain-ns" style="display:none">③ 腦部轉移<span class="q4-sec-opt">　影響可申請的合併方案</span></div>
+    <div class="pdl1-grid" id="opt-brain-ns" style="display:none">
+      <button type="button" class="mut-btn" data-val="yes" onclick="pickBrainNs(this)">
+        <span class="mut-tag">有</span><div class="mut-tt">有腦轉移</div><div class="mut-ss"></div>
+      </button>
+      <button type="button" class="mut-btn" data-val="no" onclick="pickBrainNs(this)">
+        <span class="mut-tag">沒有</span><div class="mut-tt">沒有腦轉移</div><div class="mut-ss"></div>
+      </button>
+      <button type="button" class="mut-btn muted" data-val="unknown" onclick="pickBrainNs(this)">
+        <span class="mut-tag">不確定</span><div class="mut-tt">不清楚</div><div class="mut-ss"></div>
+      </button>
+    </div>
+
+    <div class="q4-sec-label" id="q4-lbl-pdl1">④ PD-L1 免疫指標<span class="q4-sec-opt">　可與驅動基因併存</span></div>
     <div class="pdl1-grid" id="opt-pdl1">
       <button type="button" class="mut-btn pdl1" data-val="HIGH" onclick="pickPdl1(this)">
         <span class="mut-tag">PD-L1 ≥ 50%</span>
@@ -1355,6 +1399,8 @@ const S = {
   // V2.10.0: 期別來源 — false = 臨床期別 (cTNM)；true = 病理期別 (pTNM, 已手術)
   postOp:false,
   // Q4 基因/腦轉移
+  drugOff:[],      // V3.7.0: 個管取消勾選的藥（預設全選）
+  t790m:'',        // V3.7.0: T790M 抗藥性突變（疊加，不互斥）
   mut:'',          // NSCLC 驅動基因: '' / EGFR / ALK / ROS1 / BRAF / MET / KRAS / NONE
   pdl1:'',         // V3.4.0: PD-L1 免疫指標(與驅動基因併存): '' / HIGH / LOW / UNKNOWN
   brainMet:'',     // SCLC: '' / 'no' / 'yes' / 'unknown'
@@ -1406,7 +1452,8 @@ async function saveQuery(){
   const rec = {
     code:S.code||'', name:(S.name||'').slice(0,8),
     type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
-    mut:S.mut||'', pdl1:S.pdl1||'', brainMet:S.brainMet||'',
+    mut:S.mut||'', pdl1:S.pdl1||'', t790m:S.t790m||'', brainMet:S.brainMet||'',
+    drugOff:[...(S.drugOff||[])],   // V3.7.0
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
     consult:{...S.consult},   // V3.3.2: 照護團隊醫師選擇（原本漏存）
@@ -1555,6 +1602,9 @@ function restoreAllUI(){
   applyQ3Mode();
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', S.mut===b.dataset.val));
   document.querySelectorAll('#opt-pdl1 .mut-btn').forEach(b=>b.classList.toggle('selected', S.pdl1===b.dataset.val));  // V3.4.0
+  document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.toggle('selected', S.t790m===b.dataset.val));   // V3.7.0
+  applyBrainNsVisibility();
+  document.querySelectorAll('#opt-brain-ns .mut-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
   document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
   // Q5 — 治療進度
   document.querySelectorAll('#opt-progress .prog-btn').forEach(b=>b.classList.toggle('selected', S.txProgress===b.dataset.val));
@@ -1570,7 +1620,8 @@ async function loadRecord(id){
     code:rec.code||'', name:rec.name||'',
     type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
     stage:rec.stage||'', stageCat:rec.stageCat||'',
-    postOp:!!rec.postOp, mut:rec.mut||'', pdl1:rec.pdl1||'', brainMet:rec.brainMet||'',
+    postOp:!!rec.postOp, mut:rec.mut||'', pdl1:rec.pdl1||'', t790m:rec.t790m||'', brainMet:rec.brainMet||'',
+    drugOff:[...(rec.drugOff||[])],   // V3.7.0
     possibleStages:[], stageLabel:'', stageNeed:[],   // V3.6.5: 明確覆寫，restoreAllUI 再依 TNM 重算
     txProgress:rec.txProgress||'', consult:{...(rec.consult||{})},  // V3.3.2: 還原團隊選擇
   });
@@ -1746,10 +1797,14 @@ function renderTreatmentSteps(steps, opts){
     let line = s.line ? `<span class="tx-step-line">${escapeHtml(s.line)}</span>` : '';
     let drugsBox = '';
     if(s.drugs && s.drugs.length){
+      // V3.7.0: 個管可勾選要給病人的藥（預設全選）。取消勾選的不會出現在 QR 衛教頁。
       const items = s.drugs.map(d=>{
+        const key = drugKey(si, d);
+        const on = isDrugOn(key);
         const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
         const zh = d.z ? `<div class="tx-drug-zh">${escapeHtml(d.z)}</div>` : '';
-        return `<div class="tx-drug-item">${en}${zh}</div>`;
+        return `<div class="tx-drug-item drug-pick${on?'':' off'}" onclick="toggleDrug('${escapeHtml(key)}')">
+          <span class="dp-box">${on?'✓':''}</span><div class="dp-body">${en}${zh}</div></div>`;
       }).join('');
       drugsBox = `<div class="tx-drugs-box">
         <div class="tx-drugs-head">
@@ -1881,26 +1936,40 @@ function renderSummary(){
 }
 
 /* ─── Team picker ─── */
+// ═══ V3.7.0: 藥物勾選（個管決定給病人看哪幾種）═══
+//   預設全選；S.drugOff 只記「取消勾選」的，這樣新增藥物時自動是勾選狀態。
+function drugKey(stepIdx, d){ return stepIdx + '|' + (d.n || ''); }
+function isDrugOn(key){ return !(S.drugOff || []).includes(key); }
+function toggleDrug(key){
+  if(!Array.isArray(S.drugOff)) S.drugOff = [];
+  const i = S.drugOff.indexOf(key);
+  if(i >= 0) S.drugOff.splice(i, 1); else S.drugOff.push(key);
+  renderSummary();
+}
+
 function renderTeam(){
   const el = document.getElementById('team-list');
   if(!el) return;
   const html = TEAM.depts.map((d,i)=>{
-    const picked = S.consult[d.id] || '';
+    const raw = S.consult[d.id] || '';
+    const picked = (raw === '__SKIP__') ? '' : raw;
     // 預設第一科展開（其他科收合，避免撐爆版面）
     const open = !picked && i===0;
     const docBtns = d.doctors.map(name=>
       `<button type="button" class="tm-doc-btn${name===picked?' selected':''}" onclick="pickDoctor('${d.id}','${escapeHtml(name)}')">${escapeHtml(name)}</button>`
     ).join('');
-    const clearBtn = picked
+    const skipped = (S.consult[d.id] === '__SKIP__');   // V3.7.0: 本次不需要此科 → 衛教頁不顯示
+    const clearBtn = (picked && !skipped)
       ? `<button type="button" class="tm-doc-btn clear" onclick="pickDoctor('${d.id}','')">清除</button>`
       : '';
+    const skipBtn = `<button type="button" class="tm-doc-btn clear${skipped?' selected':''}" onclick="pickDoctor('${d.id}','${skipped?'':'__SKIP__'}')">${skipped?'恢復顯示':'不需要'}</button>`;
     return `<div class="tm-dept${open?' open':''}" data-id="${d.id}">
       <div class="tm-dept-head" onclick="toggleDept('${d.id}')">
         <span class="l"><b>${escapeHtml(d.name)}</b><span class="h">${escapeHtml(d.hint||'')}</span></span>
-        <span class="v ${picked?'':'empty'}">${picked ? escapeHtml(picked) : '尚未選擇'}</span>
+        <span class="v ${picked?'':'empty'}">${skipped ? '本次不需要' : (picked ? escapeHtml(picked) : '尚未選擇')}</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
-      <div class="tm-doctors">${docBtns}${clearBtn}</div>
+      <div class="tm-doctors">${docBtns}${clearBtn}${skipBtn}</div>
     </div>`;
   }).join('');
   el.innerHTML = html;
@@ -1944,7 +2013,9 @@ function buildEduPayload(){
     tt: S.t || '', nn: S.n || '', mm: S.m || '',   // V3.6.5: 原始 TNM → edu 自己 resolveStage 重建「還需確認什麼」
     sc: S.stageCat || '',         // V3.5.3: 直接帶 stageCat，edu 不再從 stage 反推（反推≠實際會導致掃出來不一樣）
     m: S.mut || '',
-    pd: S.pdl1 || '',             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
+    pd: S.pdl1 || '',
+    t9: S.t790m || '',            // V3.7.0: T790M
+    dx: (S.drugOff||[]).join('~'),   // V3.7.0: 取消勾選的藥（衛教頁不顯示）             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
     b: S.brainMet || '',          // SCLC 腦/脊髓轉移
     hb: S.hbv || '',               // V3.6.3: B 型肝炎（edu 才能給一樣的提醒）
     ct: S.catastrophic || '',      // V3.6.3: 重大傷病
@@ -2300,9 +2371,31 @@ function pickBrain(btn){
 function pickMut(btn){
   S.mut = btn.dataset.val;
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  applyBrainNsVisibility();   // V3.7.0
   updateActBar();  // V3.4.0: 驅動基因選完不自動跳（讓使用者續填 PD-L1），由「下一步」前進
 }
 // V3.4.0: PD-L1 免疫指標（與驅動基因併存，可各自單選）
+// V3.7.0: T790M（疊加，不與主要突變互斥）
+function pickT790(btn){
+  S.t790m = btn.dataset.val;
+  document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  updateActBar();
+}
+// V3.7.0: NSCLC 腦轉移（健保 Bevacizumab+Erlotinib 條件之一）
+function pickBrainNs(btn){
+  S.brainMet = btn.dataset.val;
+  document.querySelectorAll('#opt-brain-ns .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  updateActBar();
+}
+// V3.7.0: 只在「晚期 + 非鱗狀 + L858R」時才問腦轉移，一般病人不多回答一題
+function applyBrainNsVisibility(){
+  const need = (S.type==='NSCLC_NS') && (S.stageCat==='META') && (S.mut==='EGFR_L858R');
+  ['q4-lbl-brain-ns','opt-brain-ns'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display = need ? '' : 'none';
+  });
+  if(!need && S.type!=='SCLC' && S.brainMet){ S.brainMet=''; document.querySelectorAll('#opt-brain-ns .mut-btn').forEach(b=>b.classList.remove('selected')); }
+}
+
 function pickPdl1(btn){
   S.pdl1 = btn.dataset.val;
   document.querySelectorAll('#opt-pdl1 .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
@@ -2380,7 +2473,7 @@ function resetStageState(opts){
   if(!keepMode) tnmAdv = false;
 }
 function resetMolecularState(){
-  S.mut=''; S.pdl1=''; S.brainMet='';
+  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[];   // V3.7.0
   document.querySelectorAll('.mut-btn, .brain-btn').forEach(b=>b.classList.remove('selected'));
 }
 function resetProgressState(){

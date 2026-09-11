@@ -68,7 +68,7 @@ const DRUGS = {
 
 function mutDisplay(m){
   // V3.6.1: NEG=確認無驅動基因、PENDING=尚未檢測（皆不顯示為「陽性基因」）
-  return ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX20:'EGFR exon20 ins(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NONE:''}[m] || '');
+  return ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX19:'EGFR ex19del(+)',EGFR_L858R:'EGFR L858R(+)',EGFR_OTHER:'EGFR 其他型(+)',EGFR_EX20:'EGFR exon20 ins(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NONE:''}[m] || '');
 }
 function pdl1Display(v){ return ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%'}[v] || ''); }
 
@@ -281,15 +281,25 @@ function buildPathCore(state){
         { title:'病情惡化後：化療或臨床試驗', line:'接續治療', note:'exon20 插入突變的後線選擇較少，可與醫師討論臨床試驗機會。' },
       ];
       warns.push('EGFR exon20 插入突變:一般常用的 EGFR 口服標靶藥（如泰格莎、艾瑞莎）對這型效果不佳，第一線用的是不同的藥');
-    } else if(m==='EGFR' || m==='EGFR_CLASSIC'){
+    } else if(['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R','EGFR_OTHER'].includes(m)){
+      // V3.7.0: ex19del 與 L858R 拆開 — 健保 Bevacizumab+Erlotinib 只認 L858R 且需腦轉移
+      const isL858R = (m === 'EGFR_L858R');
       steps = [
         { title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
-        { title:'若是 L858R 突變且有腦轉移：可加 Bevacizumab 合併方案', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI', drugs: DRUGS.EGFR_BRAIN.list, note: DRUGS.EGFR_BRAIN.note },
         { title:'病情惡化時：做抗藥基因檢測', line:'惡化後評估', note:'若第一線用的不是 Osimertinib，且檢測發現抗藥基因，可換成 Osimertinib 繼續治療。' },
         { title:'若 Osimertinib 也失效：接續化療搭配免疫治療', line:'接續治療', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}],
           note:'非鱗狀標準接續方案。少數帶有特殊 EGFR exon 20 突變的病人，第一線可用 Amivantamab 合併化療（健保有給付）；其他情況使用 Amivantamab 通常需自費。' },
       ];
+      // V3.7.0: Bevacizumab + Erlotinib 的健保條件 = L858R + 腦轉移 + 非鱗狀 + 第Ⅳ期 + 第一線
+      if(isL858R && isNS && state.brainMet === 'yes'){
+        steps.splice(1, 0, { title:'第一線（合併方案）：標靶 + Bevacizumab', line:DRUGS.EGFR_BRAIN.line, nhi:'NHI',
+          drugs: DRUGS.EGFR_BRAIN.list,
+          note:'您的情況（L858R 突變 + 腦轉移 + 非鱗狀第Ⅳ期）符合健保給付條件，需事前審查。第一線時與其他 EGFR 標靶藥擇一使用。' });
+      } else if(isL858R && isNS && state.brainMet !== 'no'){
+        steps.push({ title:'若有腦部轉移：可再問醫師合併方案', line:'補充選項',
+          note:'L858R 突變且有腦轉移的非鱗狀第Ⅳ期病人，健保另有「標靶 + Bevacizumab」的合併方案可申請。' });
+      }
     } else if(m==='ALK'){
       steps = [
         { title:'第一線：口服 ALK 標靶藥', line:DRUGS.ALK.line, nhi:'NHI', drugs: DRUGS.ALK.list, note: DRUGS.ALK.note },
@@ -318,17 +328,22 @@ function buildPathCore(state){
       ];
       warns.push('KRAS G12C 口服標靶藥（Sotorasib）目前健保未給付，需自費');
     } else if(m !== 'NEG'){
+      const declined = (m === 'DECLINED');
       // V3.6.1: 驅動基因「尚未檢測 / 等報告」(PENDING)、未填、或舊 QR 的 'NONE'
       //   → 一律先完成分子檢測，**不得**進入 driver-negative 的免疫決策。
       //   （原本 NONE 把「未驗」跟「確認陰性」當同一種，未驗 + PD-L1 高會直接被導向免疫單藥）
       steps = [
-        { title:'第一步：先完成驅動基因檢測', line:'前置檢查', note:'EGFR、ALK、ROS1、BRAF、MET、KRAS 等（NGS 可一次涵蓋）+ PD-L1 免疫指標。' },
+        { title:'第一步：先完成驅動基因檢測', line:'前置檢查',
+          note: declined
+            ? 'EGFR、ALK、ROS1、BRAF、MET、KRAS 等（NGS 可一次涵蓋）。您目前選擇暫不檢測，日後若改變想法隨時可與醫師討論。'
+            : 'EGFR、ALK、ROS1、BRAF、MET、KRAS 等（NGS 可一次涵蓋）+ PD-L1 免疫指標。' },
         { title:'等報告期間：可先用化療控制', line:'一線', nhi:'NHI', drugs: isNS ? [{n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}] : [{n:'Carboplatin + Paclitaxel',z:'鉑類 + 紫杉醇'}], note:'體力狀況允許時，可先化療爭取時間。' },
         { title:'報告出來後：依結果決定個人化治療', line:'後續', note:'有驅動基因 → 用標靶；確認無驅動基因且 PD-L1 高 → 才考慮免疫治療。' },
       ];
-      warns.push('驅動基因檢測尚未完成：治療方向要等報告才能決定，請盡快完成檢測');
-      if(state.pdl1 === 'HIGH'){
-        warns.push('您的 PD-L1 偏高，但在驅動基因報告出來前，先不宜直接決定用免疫治療 — 若同時帶有驅動基因，第一線仍以標靶藥為主');
+      // V3.7.0: 上方步驟已說明要做檢測，這裡不再重複提醒（自費項目反覆催會變成推銷）。
+      //   僅在「未驗 + PD-L1 高」時保留一次安全提醒，因為這是會導致用錯藥的組合。
+      if(state.pdl1 === 'HIGH' && !declined){
+        warns.push('在驅動基因報告出來前，先不宜只憑 PD-L1 決定用免疫治療 — 若同時帶有驅動基因，第一線仍以標靶藥為主');
       }
     } else {
       // V3.6.1: 已確認無驅動基因（NEG）→ 才依 PD-L1 免疫指標決定
@@ -356,7 +371,16 @@ function buildPathCore(state){
         warns.push('PD-L1 免疫指標會影響能不能用免疫治療，建議補驗');
       }
     }
-    // V3.4.0: 驅動基因陽性 + PD-L1 也高 → 提醒仍以標靶優先（免疫對驅動基因陽性者效果較差）
+      // V3.7.0: T790M 是「疊加」在主要突變上的抗藥性突變（用過第一/二代 TKI 後才驗得到）
+    //   健保 Osimertinib 二線：需 T790M + 曾用 gefitinib/erlotinib/afatinib/dacomitinib 且已惡化
+    if(state.t790m === 'yes'){
+      steps.push({ title:'已驗出 T790M 抗藥性突變：可換 Osimertinib', line:'二線標靶', nhi:'NHI',
+        drugs:[{n:'Osimertinib',z:'泰格莎'}],
+        note:'健保條件：曾用過 Gefitinib／Erlotinib／Afatinib／Dacomitinib 其中一種且已惡化，並檢附 T790M 檢測報告，需事前審查。' });
+      warns.push('T790M 是使用標靶藥一段時間後才可能出現的抗藥性突變，代表原本的標靶藥可能需要更換');
+    }
+
+  // V3.4.0: 驅動基因陽性 + PD-L1 也高 → 提醒仍以標靶優先（免疫對驅動基因陽性者效果較差）
     if(['EGFR','ALK','ROS1','BRAF','MET'].includes(m) && state.pdl1==='HIGH'){
       warns.push('您的 PD-L1 偏高，但因帶有 ' + mutDisplay(m) + ' 驅動基因，第一線仍以標靶藥為主（驅動基因陽性者用免疫治療效果通常較差）');
     }
