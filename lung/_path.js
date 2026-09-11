@@ -812,3 +812,34 @@ function markDroppedSteps(r, state){
     s.dropped = (on.length === 0);
   });
 }
+
+/* ═══ V3.8.1: QR payload 壓縮（審核 P2-15：已膨脹到 856 字元，長輩掃描成功率下降）═══
+   三個原則：
+   1. 能從其他欄位算回來的就不送（有 TNM 就不送 s/sl/ps/sc，edu 用 resolveStage 重算）
+   2. 空值不送（JSON 不留空字串鍵）
+   3. 固定值用短碼（下表兩端共用；解碼時查不到就原樣回傳 → 舊 QR 相容）           */
+const QR_CODES = {
+  m:  {EGFR_EX19:'e9', EGFR_L858R:'e8', EGFR_EX20:'e2', EGFR_OTHER:'eo', EGFR:'eg', EGFR_CLASSIC:'ec',
+       ALK:'al', ROS1:'ro', BRAF:'br', MET:'me', KRAS:'kr', NEG:'ng', PENDING:'pd', DECLINED:'dc', NONE:'nn'},
+  pd: {HIGH:'h', LOW:'l', UNKNOWN:'u'},
+  a:  {lt70:'y', ge70:'o'},
+  e:  {'01':'a', '2':'b', '34':'c'},
+  yn: {yes:'y', no:'n', unknown:'u'},
+  tp: {just_op:'j', chemo:'c', awaiting_consol:'a', consol:'s', followup:'f', recurrence:'r'},
+  rf: {LVI:'L', VPI:'V', SIZE4:'S', POOR:'P', MARGIN:'M', NX:'N'},
+  sc: {EARLY:'E', LOCAL:'L', META:'M', UNKNOWN:'U'},
+};
+function qrEnc(table, v){ if(!v) return ''; return (QR_CODES[table] || {})[v] || v; }
+function qrDec(table, v){
+  if(!v) return '';
+  const t = QR_CODES[table] || {};
+  for(const k in t){ if(t[k] === v) return k; }
+  return v;   // 舊 QR 直接送長字串 → 原樣回傳
+}
+// base64url：避免 + / = 在 URL fragment 被二次編碼導致 atob 失敗（審核 P2-15）
+function b64uEnc(s){ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function b64uDec(s){
+  let t = String(s).replace(/-/g,'+').replace(/_/g,'/');
+  while(t.length % 4) t += '=';
+  return decodeURIComponent(escape(atob(t)));
+}

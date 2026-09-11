@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
-<title>肺癌路徑查詢 V1.18.0 — 彰濱秀傳癌症中心</title>
+<title>肺癌路徑查詢 V1.18.1 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1403,7 +1403,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 <script src="_path.js"></script>
 <script>
 'use strict';
-const MODULE_VERSION = 'V1.18.0';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
+const MODULE_VERSION = 'V1.18.1';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
 
 /* ═══════════════════════════════════════════════════
    STATE
@@ -2029,42 +2029,60 @@ function pickDoctor(deptId, name){
 const EDU_BASE_URL = 'https://sela1227.github.io/Lung-ca-nevigation/lung/edu-patient.html';
 
 function buildEduPayload(){
-  // 只送必要欄位（base64 後 < 200 字元）
+  // V3.8.1: QR 壓縮（審核 P2-15）— 空值不送、可重算的不送、固定值用短碼。
+  //   目標是讓 QR 圖形不要太密，長輩用手機掃或列印成小張時比較掃得到。
   const typeCode = {NSCLC_NS:'NS', NSCLC_SQ:'SQ', SCLC:'SC'}[S.type] || '';
-  // V3.6.4: 用本地日期（toISOString 是 UTC，台灣 08:00 前會變成前一天）
   const _d = new Date();
-  const today = _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0');
-  return {
-    n: (S.name||'').slice(0,8),    // 姓名（限 8 字以內隱私）
+  const today = String(_d.getFullYear()).slice(2) + String(_d.getMonth()+1).padStart(2,'0') + String(_d.getDate()).padStart(2,'0');
+  const hasTNM = !!(S.t && S.n && S.m);
+
+  const p = {
+    n: (S.name||'').slice(0,8),
     t: typeCode,
-    // V3.6.5: SCLC 的 s 依 stageCat 明確對應，UNKNOWN 不再偷送 'Limited'（payload 自相矛盾）
-    s: S.stage || (isSCLC() ? (S.stageCat==='META' ? 'Extensive' : S.stageCat==='LOCAL' ? 'Limited' : '') : ''),
-    sl: S.stageLabel || '',                    // V3.6.4: 範圍分期顯示字串
-    ps: (S.possibleStages || []).join(','),    // V3.6.4: 所有可能分期（edu 的 decision engine 要用）
-    tt: S.t || '', nn: S.n || '', mm: S.m || '',   // V3.6.5: 原始 TNM → edu 自己 resolveStage 重建「還需確認什麼」
-    sc: S.stageCat || '',         // V3.5.3: 直接帶 stageCat，edu 不再從 stage 反推（反推≠實際會導致掃出來不一樣）
-    m: S.mut || '',
-    pd: S.pdl1 || '',
-    t9: S.t790m || '',            // V3.7.0: T790M
-    dx: (S.drugOff||[]).join('~'),   // V3.7.0: 取消勾選的藥（衛教頁不顯示）
-    rf: (S.riskFactors||[]).join(','),  // V3.7.1: 病理高風險因子             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
-    b: S.brainMet || '',          // SCLC 腦/脊髓轉移
-    hb: S.hbv || '',               // V3.6.3: B 型肝炎（edu 才能給一樣的提醒）
-    ct: S.catastrophic || '',      // V3.6.3: 重大傷病
-    a: S.age || '',                // V2.9.0: 年齡 lt70/ge70
-    e: S.ecog || '',               // V2.9.0: ECOG 01/2/34
-    po: S.postOp ? 1 : 0,          // V2.10.0: 病理期別模式（已手術）
-    tp: S.txProgress || '',        // V2.11.0: 治療進度
-    tm: TEAM.depts.map(d => S.consult[d.id] || ''),
-    c: TEAM.caseManager.name,
-    d: today,
-    co: S.code || '',              // 病歷號（可空）
+    tt: S.t || '', nn: S.n || '', mm: S.m || '',
+    // 有完整 TNM 時，s/sl/ps/sc 全部可由 edu 用 resolveStage 重算 → 不送（省 ~50 bytes）
+    s:  hasTNM ? '' : (S.stage || (isSCLC() ? (S.stageCat==='META' ? 'Extensive' : S.stageCat==='LOCAL' ? 'Limited' : '') : '')),
+    sl: hasTNM ? '' : (S.stageLabel || ''),
+    ps: hasTNM ? '' : (S.possibleStages || []).join(','),
+    sc: qrEnc('sc', S.stageCat),
+    m:  qrEnc('m', S.mut),
+    pd: qrEnc('pd', S.pdl1),
+    t9: qrEnc('yn', S.t790m),
+    b:  qrEnc('yn', S.brainMet),
+    hb: qrEnc('yn', S.hbv),
+    ct: qrEnc('yn', S.catastrophic),
+    a:  qrEnc('a', S.age),
+    e:  qrEnc('e', S.ecog),
+    tp: qrEnc('tp', S.txProgress),
+    rf: (S.riskFactors||[]).map(x=>qrEnc('rf',x)).join(''),     // 單字母串接，免分隔符
+    dx: compactDrugOff(S.drugOff),                               // 步驟鍵:藥物索引
+    tm: TEAM.depts.map((d,i)=> (S.consult[d.id] ? i+':'+S.consult[d.id] : '')).filter(Boolean).join(','),
+    c:  TEAM.caseManager.name,
+    d:  today,
+    co: S.code || '',
   };
+  if(S.postOp) p.po = 1;                       // 預設 0 → 不送
+  Object.keys(p).forEach(k => { if(p[k] === '' || p[k] === undefined) delete p[k]; });
+  return p;
 }
+
+/* V3.8.1: drugOff 從「步驟鍵|藥名」壓成「步驟鍵:索引,索引」（79 bytes → ~17） */
+function compactDrugOff(off){
+  if(!Array.isArray(off) || !off.length) return '';
+  const r = buildPathRaw(S);            // 取得本次的步驟與藥物清單
+  const groups = {};
+  (r.steps||[]).forEach(s=>{
+    if(!s.drugs) return;
+    const key = stepKeyOf(s);
+    s.drugs.forEach((d,idx)=>{ if(off.includes(key + '|' + (d.n||''))) (groups[key] = groups[key] || []).push(idx); });
+  });
+  return Object.keys(groups).map(k => k + ':' + groups[k].join(',')).join(';');
+}
+
 
 function buildEduURL(){
   const json = JSON.stringify(buildEduPayload());
-  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const b64 = b64uEnc(json);   // V3.8.1: base64url
   return EDU_BASE_URL + '#' + b64;
 }
 
@@ -2105,8 +2123,8 @@ function openQR(){
     }
     new QRCode(canvas, {
       text: url,
-      width: 200,
-      height: 200,
+      width: 300,
+      height: 300,
       colorDark: '#000000',
       colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.M

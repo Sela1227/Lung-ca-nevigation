@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0d9488">
-<title>個人化照護導航手冊（民眾版）V1.18.0 — 彰濱秀傳癌症中心</title>
+<title>個人化照護導航手冊（民眾版）V1.18.1 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -175,6 +175,14 @@ function _eduStageInfo(d){
 
 // V3.6.0: QR payload → 共用 _path.js 的 state 形狀（唯一的轉接點）
 function stateFromPayload(d){
+  // V3.8.1: rf 是單字母串接（LVS）；舊 QR 是逗號分隔長碼 → 兩種都吃
+function decodeRisk(rf){
+  if(!rf) return [];
+  const s = String(rf);
+  if(s.indexOf(',') >= 0) return s.split(',').filter(Boolean);
+  return s.split('').map(ch => qrDec('rf', ch)).filter(Boolean);
+}
+// V3.8.1: 還原 V3.8.0+ 的短碼；舊 QR 送的是長字串，qrDec 查不到會原樣回傳 → 相容
   return {
     type: d._type, stageCat: d._stageCat, stage: d.s || '',
     possibleStages: _eduStageInfo(d).possible,
@@ -182,20 +190,42 @@ function stateFromPayload(d){
     stageNeed: _eduStageInfo(d).need,     // V3.6.5: 用原始 TNM 重新 resolveStage 重建「還需確認什麼」
     // V3.6.1: 舊 QR 的 'NONE'（無/未驗語意混在一起）保守視為「尚未檢測」，
     //   不讓語意不明的舊資料走進 driver-negative 的免疫決策
-    mut: (d.m === 'NONE' ? 'PENDING' : (d.m || '')),
-    pdl1: d.pd || '', brainMet: d.b || '', t790m: d.t9 || '',   // V3.7.0
-    postOp: (d.po === 1 || d.po === '1'), txProgress: d.tp || '',
-    age: d.a || '', ecog: d.e || '',
-    hbv: d.hb || '', catastrophic: d.ct || '',
-    riskFactors: (d.rf ? String(d.rf).split(',').filter(Boolean) : []),   // V3.7.1
-    drugOff: (d.dx ? String(d.dx).split('~').filter(Boolean) : []),        // V3.7.3: 引擎要靠它判斷第一線實際選了什麼   // V3.6.3: 舊 QR 沒帶 → '' → 不出提醒（相容）
+    mut: (function(){ const v = qrDec('m', d.m); return v === 'NONE' ? 'PENDING' : v; })(),
+    pdl1: qrDec('pd', d.pd), brainMet: qrDec('yn', d.b), t790m: qrDec('yn', d.t9),
+    postOp: (d.po === 1 || d.po === '1'), txProgress: qrDec('tp', d.tp),
+    age: qrDec('a', d.a), ecog: qrDec('e', d.e),
+    hbv: qrDec('yn', d.hb), catastrophic: qrDec('yn', d.ct),
+    riskFactors: decodeRisk(d.rf),
+    drugOff: [],   // V3.8.1: 索引式 dx 需先知道步驟 → 於 buildPathFromData 兩段式還原   // V3.6.3: 舊 QR 沒帶 → '' → 不出提醒（相容）
   };
 }
-function buildPathRawFromData(d){ return buildPathRaw(stateFromPayload(d)); }
+// V3.8.1: dx 現在是「步驟鍵:藥物索引」。索引要對應到實際步驟，所以先用空 drugOff 建一次步驟，
+//   把索引翻回藥名，再帶著正確的 drugOff 重建。舊 QR 的「步驟鍵|藥名」格式直接沿用。
+function resolveDrugOff(d, baseState){
+  if(!d.dx) return [];
+  const raw = String(d.dx);
+  if(raw.indexOf('|') >= 0) return raw.split('~').filter(Boolean);   // 舊格式
+  const first = buildPathRaw(Object.assign({}, baseState, {drugOff: []}));
+  const byKey = {};
+  (first.steps||[]).forEach(s => { if(s.drugs) byKey[stepKeyOf(s)] = s.drugs; });
+  const out = [];
+  raw.split(';').filter(Boolean).forEach(part => {
+    const i = part.indexOf(':'); if(i < 0) return;
+    const key = part.slice(0, i), idxs = part.slice(i+1).split(',');
+    idxs.forEach(ix => { const dd = (byKey[key] || [])[Number(ix)]; if(dd) out.push(key + '|' + (dd.n || '')); });
+  });
+  return out;
+}
+function buildPathRawFromData(d){
+  const st = stateFromPayload(d);
+  st.drugOff = resolveDrugOff(d, st);
+  return buildPathRaw(st);
+}
 
 function buildPathFromData(d){
   const r = buildPathRawFromData(d);
-  applyModifiers(r, stateFromPayload(d));   // V3.6.3: 與 patient 共用修飾層
+  const _st = stateFromPayload(d); _st.drugOff = resolveDrugOff(d, _st);
+  applyModifiers(r, _st);   // V3.8.1: 與上面同一份 state（審核 P3-26）
   return r;
 }
 
@@ -349,14 +379,14 @@ function renderTreatmentSteps3Section(steps, txProgress){
 
 function render(d){
   d._type = TYPE_CODE_TO_FULL[d.t] || d.t || '';
-  d._stageCat = d.sc || deriveStageCat(d);  // V3.5.3: 優先用 patient 直接帶來的 stageCat；舊 QR 無 sc 才反推
+  d._stageCat = qrDec('sc', d.sc) || deriveStageCat(d);   // V3.8.1: 短碼還原  // V3.5.3: 優先用 patient 直接帶來的 stageCat；舊 QR 無 sc 才反推
   const r = buildPathFromData(d);
-  window.__drugOff = d.dx ? String(d.dx).split('~').filter(Boolean) : [];   // V3.7.0
+  window.__drugOff = resolveDrugOff(d, stateFromPayload(d));   // V3.8.1
 
   let h = '<div class="hdr"><h1>';
   h += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
   h += '個人化照護導航手冊</h1>';
-  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版 · V1.18.0</p></div>';
+  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版 · V1.18.1</p></div>';
 
   h += '<div class="body">';
 
@@ -459,7 +489,7 @@ if(!frag){
 } else {
   let data;
   try {
-    const json = decodeURIComponent(escape(atob(frag)));
+    const json = b64uDec(frag);   // V3.8.1: base64url（相容舊的標準 base64）
     data = JSON.parse(json);
   } catch(e){
     showError('資料解析失敗','QR code 內容無法解讀，請確認連結完整。');

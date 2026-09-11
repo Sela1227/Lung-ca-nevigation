@@ -1,4 +1,94 @@
-# Cancer Navigation V3.8.0 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.8.1 — 彰濱秀傳癌症中心
+
+## V3.8.1 — 2026-09-11
+**QR 瘦身：614 → 338 字元（縮減 51%）**
+
+Sela 回報「QR 圖形好複雜」，外部審核 P2-15 也量出已膨脹到 856 字元。
+
+ 的註解寫著「只送必要欄位（base64 後 < 200 字元）」—— 但那是第一版的註解，欄位從 V3.4.2 的 PD-L1、V3.5.3 的 stageCat、V3.6.4 的 sl/ps、V3.6.5 的 TNM、V3.7.0 的 T790M/藥物勾選、V3.7.1 的高風險因子一路加上去，**沒人回頭量過**。
+
+### 四類優化
+
+| 做法 | 效果 |
+|------|------|
+| 有完整 TNM 時 //  PID TTY          TIME CMD
+    1 ?        00:00:00 process_api
+    2 ?        00:00:00 kthreadd
+    3 ?        00:00:00 pool_workqueue_release
+    4 ?        00:00:00 kworker/R-rcu_gp
+    5 ?        00:00:00 kworker/R-sync_wq
+    6 ?        00:00:00 kworker/R-kvfree_rcu_reclaim
+    7 ?        00:00:00 kworker/R-slub_flushwq
+    8 ?        00:00:00 kworker/R-netns
+    9 ?        00:00:00 kworker/0:0-events
+   10 ?        00:00:00 kworker/0:0H-events_highpri
+   11 ?        00:00:00 kworker/0:1-virtio_vsock
+   12 ?        00:00:00 kworker/u4:0-iou_exit
+   13 ?        00:00:00 kworker/R-mm_percpu_wq
+   14 ?        00:00:00 ksoftirqd/0
+   15 ?        00:00:00 rcu_preempt
+   16 ?        00:00:00 rcu_exp_par_gp_kthread_worker/0
+   17 ?        00:00:00 rcu_exp_gp_kthread_worker
+   18 ?        00:00:00 migration/0
+   19 ?        00:00:00 cpuhp/0
+   20 ?        00:00:00 kdevtmpfs
+   21 ?        00:00:00 kworker/R-inet_frag_wq
+   22 ?        00:00:00 rcu_tasks_kthread
+   23 ?        00:00:00 rcu_tasks_rude_kthread
+   24 ?        00:00:00 rcu_tasks_trace_kthread
+   25 ?        00:00:00 kauditd
+   26 ?        00:00:00 khungtaskd
+   27 ?        00:00:00 oom_reaper
+   28 ?        00:00:00 kworker/u4:1-ext4-rsv-conversion
+   29 ?        00:00:00 kworker/u4:2-iou_exit
+   30 ?        00:00:00 kworker/R-writeback
+   31 ?        00:00:00 kcompactd0
+   32 ?        00:00:00 ksmd
+   33 ?        00:00:00 khugepaged
+   34 ?        00:00:00 kworker/R-kblockd
+   35 ?        00:00:00 watchdogd
+   36 ?        00:00:00 kworker/R-quota_events_unbound
+   37 ?        00:00:00 kworker/0:1H-kblockd
+   38 ?        00:00:00 kswapd0
+   39 ?        00:00:00 kworker/u5:0
+   40 ?        00:00:00 kworker/R-kthrotld
+   41 ?        00:00:00 irq/24-ACPI:Ged
+   42 ?        00:00:00 irq/25-ACPI:Ged
+   43 ?        00:00:00 hwrng
+   44 ?        00:00:00 kworker/R-kstrp
+   50 ?        00:00:00 kworker/R-ext4-rsv-conversion
+   53 ?        00:00:00 rclone-filestor
+   91 ?        00:00:00 kworker/u4:3
+  221 ?        00:00:00 sh
+  226 ?        00:00:00 ps 不送（edu 重算） | −50 bytes |
+| 空值不入 JSON（原本每欄都帶 空字串） | −40 bytes |
+| 固定值用短碼表（兩端共用） | −60 bytes |
+|  從「步驟鍵\|藥名」壓成「步驟鍵:索引」 | 79 → 15 bytes |
+
+### 另外兩項（比省 byte 更直接影響掃描）
+
+- **QR canvas 200 → 300px** —— 模組密度才是長輩掃得到的關鍵
+- **base64 改 base64url** —— 原本的    在 URL fragment 會被部分 App 二次編碼，導致 edu 顯示「資料解析失敗」
+
+### 舊 QR 相容
+
+短碼解碼採「查不到就原樣回傳」，所以舊 QR（送長字串）與新 QR（送短碼）共用同一段解碼程式，不需要版本旗標。 也同時支援舊的「步驟鍵|藥名」格式。
+
+### 驗證
+
+96 組 round-trip + 舊 QR 相容 + 四條分類斷言 + T790M 五態矩陣，全綠。
+
+### 三條教訓（BUG-79）
+
+1. **payload 這種「一版加一個欄位」的東西要定期量測** —— 每版只加 10-20 bytes，累積六版翻三倍。
+2. **可由其他欄位重算的資料不要進 payload** —— 送過去只是讓兩邊有機會不一致。
+3. **短碼表放共用檔 + 解碼「查不到就原樣回傳」**，舊資料自動相容。
+
+### 模組版號
+
+lung **V1.18.0 → V1.18.1**，系統版 V3.8.0 → V3.8.1。
+
+---
 
 ## V3.8.0 — 2026-09-11
 **內部 + 外部兩份審核的上線閘門項目**
