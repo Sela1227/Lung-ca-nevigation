@@ -287,7 +287,7 @@ function buildPathCore(state){
       // V3.7.0: ex19del 與 L858R 拆開 — 健保 Bevacizumab+Erlotinib 只認 L858R 且需腦轉移
       const isL858R = (m === 'EGFR_L858R');
       steps = [
-        { title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note: DRUGS.EGFR.note },
+        { title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note:'__FL_NOTE__' },
         { title:'病情惡化時：做抗藥基因檢測', line:'惡化後評估', note:'__RESIST_NOTE__' },
         { title:'標靶藥都失效後：接續化療搭配免疫治療', line:'接續治療', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}],
@@ -296,6 +296,12 @@ function buildPathCore(state){
       // V3.7.3: 依個管實際勾選的第一線藥改寫後續敘述（原本一律寫「若第一線用的不是 Osimertinib…」，
       //   個管已經選了 Osimertinib 時會自相矛盾）
       const _fl = drugChoice(state, 0, DRUGS.EGFR.list);
+      // V3.7.4: 個管縮小用藥後，note 不該再提沒顯示的藥（原本一律「五藥擇一。Dacomitinib 限無腦轉移。」）
+      const _flNote = !_fl.narrowed ? DRUGS.EGFR.note
+        : (_fl.on.length === 1
+            ? ('主治醫師已為您選擇 ' + (_fl.on[0].z || _fl.on[0].n) + '。口服，需依醫囑規律服用並定期回診評估療效。')
+            : ('以上藥物由主治醫師擇一使用。' + (_fl.has('Dacomitinib') ? 'Dacomitinib 限無腦轉移。' : '')));
+      steps.forEach(s => { if(s.note === '__FL_NOTE__') s.note = _flNote; });
       const _resistNote = (_fl.narrowed && _fl.has('Osimertinib'))
         ? '您第一線使用的已是 Osimertinib。若病情惡化，可再做抗藥基因檢測，依結果與醫師討論後續治療。'
         : (_fl.narrowed
@@ -385,10 +391,21 @@ function buildPathCore(state){
       // V3.7.0: T790M 是「疊加」在主要突變上的抗藥性突變（用過第一/二代 TKI 後才驗得到）
     //   健保 Osimertinib 二線：需 T790M + 曾用 gefitinib/erlotinib/afatinib/dacomitinib 且已惡化
     if(state.t790m === 'yes'){
-      steps.push({ title:'已驗出 T790M 抗藥性突變：可換 Osimertinib', line:'二線標靶', nhi:'NHI',
-        drugs:[{n:'Osimertinib',z:'泰格莎'}],
-        note:'健保條件：曾用過 Gefitinib／Erlotinib／Afatinib／Dacomitinib 其中一種且已惡化，並檢附 T790M 檢測報告，需事前審查。' });
-      warns.push('T790M 是使用標靶藥一段時間後才可能出現的抗藥性突變，代表原本的標靶藥可能需要更換');
+      // V3.7.4: 健保二線 Osimertinib 限「先前用過 Gefitinib/Erlotinib/Afatinib/Dacomitinib」。
+      //   若第一線用的已經是 Osimertinib，再列「可換 Osimertinib」是臨床錯誤（會讓病人以為還有藥可換）。
+      const _isEgfr = ['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R','EGFR_OTHER'].includes(m);
+      const _flc = _isEgfr ? drugChoice(state, 0, DRUGS.EGFR.list) : null;
+      const _alreadyOsi = !!(_flc && _flc.narrowed && _flc.has('Osimertinib'));
+      if(_alreadyOsi){
+        steps.push({ title:'已驗出 T790M：後續方向需醫師評估', line:'惡化後評估',
+          note:'您第一線使用的已經是 Osimertinib。健保的二線 Osimertinib 是給「先前用過 Gefitinib／Erlotinib／Afatinib／Dacomitinib 之後才出現 T790M」的病人，您的情況不適用。後續可能需要考慮化療搭配免疫治療或其他方向，請與主治醫師討論。' });
+        warns.push('您第一線已使用 Osimertinib，若出現抗藥性，後續治療方向需由醫師依抗藥機轉評估');
+      } else {
+        steps.push({ title:'已驗出 T790M 抗藥性突變：可換 Osimertinib', line:'二線標靶', nhi:'NHI',
+          drugs:[{n:'Osimertinib',z:'泰格莎'}],
+          note:'健保條件：曾用過 Gefitinib／Erlotinib／Afatinib／Dacomitinib 其中一種且已惡化，並檢附 T790M 檢測報告，需事前審查。' });
+        warns.push('T790M 是使用標靶藥一段時間後才可能出現的抗藥性突變，代表原本的標靶藥可能需要更換');
+      }
     }
 
   // V3.4.0: 驅動基因陽性 + PD-L1 也高 → 提醒仍以標靶優先（免疫對驅動基因陽性者效果較差）
