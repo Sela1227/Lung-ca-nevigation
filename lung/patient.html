@@ -1225,6 +1225,29 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
         </div>
       </button>
     </div>
+
+    <!-- V3.7.1: 病理高風險因子（個管師依病理報告選填，可複選）—— 會影響早期是否建議術後化療 -->
+    <div class="q4-sec-label" id="q5-lbl-risk">病理報告高風險因子<span class="q4-sec-opt">　可複選，依病理報告勾選</span></div>
+    <div class="pdl1-grid" id="opt-risk">
+      <button type="button" class="mut-btn" data-val="LVI" onclick="toggleRisk(this)">
+        <span class="mut-tag">脈管</span><div class="mut-tt">淋巴管／血管侵犯</div><div class="mut-ss">LVI</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="VPI" onclick="toggleRisk(this)">
+        <span class="mut-tag">肋膜</span><div class="mut-tt">臟層肋膜侵犯</div><div class="mut-ss">VPI</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="SIZE4" onclick="toggleRisk(this)">
+        <span class="mut-tag">大小</span><div class="mut-tt">腫瘤 ≥ 4 公分</div><div class="mut-ss"></div>
+      </button>
+      <button type="button" class="mut-btn" data-val="POOR" onclick="toggleRisk(this)">
+        <span class="mut-tag">分化</span><div class="mut-tt">低分化</div><div class="mut-ss">poorly differentiated</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="MARGIN" onclick="toggleRisk(this)">
+        <span class="mut-tag">切緣</span><div class="mut-tt">切緣陽性</div><div class="mut-ss">R1／R2</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="NX" onclick="toggleRisk(this)">
+        <span class="mut-tag">淋巴</span><div class="mut-tt">淋巴結廓清不完整</div><div class="mut-ss">Nx</div>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1399,6 +1422,7 @@ const S = {
   // V2.10.0: 期別來源 — false = 臨床期別 (cTNM)；true = 病理期別 (pTNM, 已手術)
   postOp:false,
   // Q4 基因/腦轉移
+  riskFactors:[],  // V3.7.1: 病理高風險因子（複選）
   drugOff:[],      // V3.7.0: 個管取消勾選的藥（預設全選）
   t790m:'',        // V3.7.0: T790M 抗藥性突變（疊加，不互斥）
   mut:'',          // NSCLC 驅動基因: '' / EGFR / ALK / ROS1 / BRAF / MET / KRAS / NONE
@@ -1453,7 +1477,7 @@ async function saveQuery(){
     code:S.code||'', name:(S.name||'').slice(0,8),
     type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
     mut:S.mut||'', pdl1:S.pdl1||'', t790m:S.t790m||'', brainMet:S.brainMet||'',
-    drugOff:[...(S.drugOff||[])],   // V3.7.0
+    drugOff:[...(S.drugOff||[])], riskFactors:[...(S.riskFactors||[])],   // V3.7.0/V3.7.1
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
     consult:{...S.consult},   // V3.3.2: 照護團隊醫師選擇（原本漏存）
@@ -1603,6 +1627,7 @@ function restoreAllUI(){
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', S.mut===b.dataset.val));
   document.querySelectorAll('#opt-pdl1 .mut-btn').forEach(b=>b.classList.toggle('selected', S.pdl1===b.dataset.val));  // V3.4.0
   document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.toggle('selected', S.t790m===b.dataset.val));   // V3.7.0
+  document.querySelectorAll('#opt-risk .mut-btn').forEach(b=>b.classList.toggle('selected', (S.riskFactors||[]).includes(b.dataset.val)));   // V3.7.1
   applyBrainNsVisibility();
   document.querySelectorAll('#opt-brain-ns .mut-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
   document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
@@ -1621,7 +1646,7 @@ async function loadRecord(id){
     type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
     stage:rec.stage||'', stageCat:rec.stageCat||'',
     postOp:!!rec.postOp, mut:rec.mut||'', pdl1:rec.pdl1||'', t790m:rec.t790m||'', brainMet:rec.brainMet||'',
-    drugOff:[...(rec.drugOff||[])],   // V3.7.0
+    drugOff:[...(rec.drugOff||[])], riskFactors:[...(rec.riskFactors||[])],   // V3.7.0/V3.7.1
     possibleStages:[], stageLabel:'', stageNeed:[],   // V3.6.5: 明確覆寫，restoreAllUI 再依 TNM 重算
     txProgress:rec.txProgress||'', consult:{...(rec.consult||{})},  // V3.3.2: 還原團隊選擇
   });
@@ -1799,7 +1824,7 @@ function renderTreatmentSteps(steps, opts){
     if(s.drugs && s.drugs.length){
       // V3.7.0: 個管可勾選要給病人的藥（預設全選）。取消勾選的不會出現在 QR 衛教頁。
       const items = s.drugs.map(d=>{
-        const key = drugKey(si, d);
+        const key = drugKey(i, d);   // V3.7.1: 迴圈索引是 i（V3.7.0 誤用 si 造成整個治療方向空白）
         const on = isDrugOn(key);
         const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
         const zh = d.z ? `<div class="tx-drug-zh">${escapeHtml(d.z)}</div>` : '';
@@ -2015,7 +2040,8 @@ function buildEduPayload(){
     m: S.mut || '',
     pd: S.pdl1 || '',
     t9: S.t790m || '',            // V3.7.0: T790M
-    dx: (S.drugOff||[]).join('~'),   // V3.7.0: 取消勾選的藥（衛教頁不顯示）             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
+    dx: (S.drugOff||[]).join('~'),   // V3.7.0: 取消勾選的藥（衛教頁不顯示）
+    rf: (S.riskFactors||[]).join(','),  // V3.7.1: 病理高風險因子             // V3.4.2: PD-L1 免疫指標（與驅動基因併存）
     b: S.brainMet || '',          // SCLC 腦/脊髓轉移
     hb: S.hbv || '',               // V3.6.3: B 型肝炎（edu 才能給一樣的提醒）
     ct: S.catastrophic || '',      // V3.6.3: 重大傷病
@@ -2375,6 +2401,17 @@ function pickMut(btn){
   updateActBar();  // V3.4.0: 驅動基因選完不自動跳（讓使用者續填 PD-L1），由「下一步」前進
 }
 // V3.4.0: PD-L1 免疫指標（與驅動基因併存，可各自單選）
+// V3.7.1: 病理高風險因子（複選，個管依病理報告勾）
+const RISK_LABELS = {LVI:'淋巴管／血管侵犯', VPI:'臟層肋膜侵犯', SIZE4:'腫瘤 ≥4 公分', POOR:'低分化', MARGIN:'切緣陽性', NX:'淋巴結廓清不完整'};
+function toggleRisk(btn){
+  if(!Array.isArray(S.riskFactors)) S.riskFactors = [];
+  const v = btn.dataset.val;
+  const i = S.riskFactors.indexOf(v);
+  if(i >= 0) S.riskFactors.splice(i, 1); else S.riskFactors.push(v);
+  btn.classList.toggle('selected', S.riskFactors.includes(v));
+  updateActBar();
+}
+
 // V3.7.0: T790M（疊加，不與主要突變互斥）
 function pickT790(btn){
   S.t790m = btn.dataset.val;
@@ -2473,7 +2510,7 @@ function resetStageState(opts){
   if(!keepMode) tnmAdv = false;
 }
 function resetMolecularState(){
-  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[];   // V3.7.0
+  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[]; S.riskFactors=[];   // V3.7.0/V3.7.1
   document.querySelectorAll('.mut-btn, .brain-btn').forEach(b=>b.classList.remove('selected'));
 }
 function resetProgressState(){

@@ -182,7 +182,8 @@ function stateFromPayload(d){
     pdl1: d.pd || '', brainMet: d.b || '', t790m: d.t9 || '',   // V3.7.0
     postOp: (d.po === 1 || d.po === '1'), txProgress: d.tp || '',
     age: d.a || '', ecog: d.e || '',
-    hbv: d.hb || '', catastrophic: d.ct || '',   // V3.6.3: 舊 QR 沒帶 → '' → 不出提醒（相容）
+    hbv: d.hb || '', catastrophic: d.ct || '',
+    riskFactors: (d.rf ? String(d.rf).split(',').filter(Boolean) : []),   // V3.7.1   // V3.6.3: 舊 QR 沒帶 → '' → 不出提醒（相容）
   };
 }
 function buildPathRawFromData(d){ return buildPathRaw(stateFromPayload(d)); }
@@ -260,7 +261,7 @@ function renderTreatmentSteps(steps, opts){
     if(s.drugs && s.drugs.length){
       // V3.7.0: 只顯示個管勾選的藥（dx 帶來取消勾選的清單）
       const _off = (window.__drugOff || []);
-      const _shown = s.drugs.filter(d => !_off.includes(_si + '|' + (d.n || '')));
+      const _shown = s.drugs.filter(d => !_off.includes(i + '|' + (d.n || '')));   // V3.7.1: 索引是 i
       if(!_shown.length) return '';
       const items = _shown.map(d=>{
         const en = `<div class="tx-drug-en">${escapeHtml(d.n)}</div>`;
@@ -430,7 +431,8 @@ function render(d){
   h += '</div>';
 
   // 緊急回診
-  h += '<div class="emg"><b>⚠ 緊急回診時機：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸 → 請立即聯繫個案管理師或回診。</div>';
+  // V3.7.1: 緊急狀況不要叫病人先聯繫個管師（可能聯繫不上而延誤），直接導向急診/就醫
+  h += '<div class="emg"><b>⚠ 緊急回診時機：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸 → <b>請立即至急診就醫</b>，不需等待門診時間。症狀較輕但持續不適，可提前回診由主治醫師評估。</div>';
 
   h += '<p class="tx-step-note" style="margin-top:14px;margin-left:0;font-size:11px">＊本頁依本院《肺癌診療指引 v12 (2026)》與健保第 9 章規範彙整。實際治療由主治醫師依您的完整檢查結果決定。</p>';
 

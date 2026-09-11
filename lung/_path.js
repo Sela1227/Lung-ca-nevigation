@@ -201,7 +201,9 @@ function buildPathCore(state){
     const warns = [];
     if(isIA){
       warns.push('IA 期復發風險低，多數情況觀察追蹤即可');
-      warns.push('若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加術後化療');
+      warns.push(riskList(state).length
+        ? ('病理高風險因子：' + riskList(state).join('、') + ' → 需與主治討論是否加術後化療')
+        : '若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加術後化療');
     } else {
       warns.push('IB 期若有腫瘤 ≥4cm、血管侵犯、臟層肋膜侵犯等高風險因子，建議做術後化療');
       // V3.0.7: 「建議做基因檢測」已由總覽頁基因檢測卡片涵蓋，這裡不重複
@@ -462,8 +464,17 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
     const steps = [surgeryStep];
     if(isIA){
       // IA 期：觀察為主
-      steps.push({ title:'以規律追蹤為主', line:'術後追蹤', phase:'adjuvant_chemo',
-        note:'IA 期復發風險低，多數情況觀察追蹤即可。除非病理發現高風險因子（淋巴血管/臟層肋膜侵犯、低分化），否則不需化療。' });
+      const _rk = riskList(state);
+      if(_rk.length){
+        // V3.7.1: 病理已確認有高風險因子 → 不再說「除非發現」，直接建議與主治討論
+        steps.push({ title:'病理有高風險因子：與主治討論是否加術後化療', line:'術後輔助', phase:'adjuvant_chemo',
+          note:'您的病理報告顯示：' + _rk.join('、') + '。IA 期一般不需化療，但有這些因子時復發風險較高，是否加做術後輔助化療請與主治醫師討論。' });
+        steps.push({ title:'規律追蹤', line:'術後追蹤', phase:'adjuvant_chemo',
+          note:'不論是否加化療，都需要規律影像追蹤。' });
+      } else {
+        steps.push({ title:'以規律追蹤為主', line:'術後追蹤', phase:'adjuvant_chemo',
+          note:'IA 期復發風險低，多數情況觀察追蹤即可。除非病理發現高風險因子（淋巴血管/臟層肋膜侵犯、低分化），否則不需化療。' });
+      }
       // IA 不再推「標靶鞏固非主流適應症」這個 step（資訊太細，IA 病人不需要看到）
     } else {
       // IB / IIA / IIB：明確推化療
@@ -472,7 +483,10 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
           {n:'Cisplatin + Vinorelbine',z:'鉑類 + 溫諾平'},
           ...(isNS ? [{n:'Cisplatin + Pemetrexed（非鱗狀）',z:'鉑類 + 愛寧達'}] : []),
         ],
-        note:'4 個療程。IB 期若有腫瘤 ≥4cm、血管/臟層肋膜/淋巴管侵犯等高風險因子建議化療；II 期一律建議。' });
+        note:(function(){ const rk = riskList(state);
+          return rk.length
+            ? ('4 個療程。您的病理報告顯示：' + rk.join('、') + '，屬於高風險，建議做術後輔助化療。')
+            : '4 個療程。IB 期若有腫瘤 ≥4cm、血管/臟層肋膜/淋巴管侵犯等高風險因子建議化療；II 期一律建議。'; })() });
 
       // V3.0.1: 三個術後追加藥合成單一「擇一」step，避免病人誤以為要全用
       // V3.6.2: 術後免疫（Atezolizumab）的適應症是「切除 + 完成含鉑化療」後的 II–IIIA 且 PD-L1≥1%，
@@ -502,7 +516,9 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
     const warns = [];
     if(isIA){
       warns.push('IA 期切除復發風險低，請務必依時程回診追蹤');
-      warns.push('若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加輔助化療');
+      warns.push(riskList(state).length
+        ? ('病理高風險因子：' + riskList(state).join('、') + ' → 需與主治討論是否加輔助化療')
+        : '若病理發現高風險因子（淋巴血管/臟層肋膜侵犯），需與主治討論是否加輔助化療');
     } else {
       warns.push('II 期或高風險 IB：請務必完成 4 個療程術後輔助化療');
       // V3.0.7: 「建議做基因檢測」已由總覽頁基因檢測卡片涵蓋，這裡不重複
@@ -642,6 +658,13 @@ function applyModifiers(r, state){
   applyAgeEcog(r, state);
   applyHbvCatastrophic(r, state);
   return r;
+}
+
+// V3.7.1: 病理高風險因子（個管依病理報告勾選）→ 早期是否建議術後化療
+const RISK_LABELS_P = {LVI:'淋巴管／血管侵犯', VPI:'臟層肋膜侵犯', SIZE4:'腫瘤 ≥4 公分', POOR:'低分化', MARGIN:'切緣陽性', NX:'淋巴結廓清不完整'};
+function riskList(state){
+  return (state && Array.isArray(state.riskFactors) ? state.riskFactors : [])
+    .map(k => RISK_LABELS_P[k]).filter(Boolean);
 }
 
 function hasChemoStep(r){
