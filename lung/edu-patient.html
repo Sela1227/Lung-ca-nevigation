@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0d9488">
-<title>個人化照護導航手冊（民眾版）V1.18.2 — 彰濱秀傳癌症中心</title>
+<title>個人化照護導航手冊（民眾版）V1.18.3 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -157,6 +157,43 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
 ═══════════════════════════════════════════════════ */
 // V3.6.5: 有原始 TNM 就用 _staging.js 重算（架構最乾淨，不必把中文說明塞進 QR）；
 //   舊 QR 沒帶 tt/nn/mm 就退回用 payload 裡的 ps/sl
+/* ═══ V3.8.3: QR payload 正規化（解碼入口唯一一處）═══
+   V3.8.1 為了縮短 QR 把固定值改成短碼、tm 改成字串、日期改成 YYMMDD。
+   `stateFromPayload`（引擎）有用 qrDec 還原，但**畫面上另外 5 個地方**
+   （主治醫師、驅動基因、PD-L1、SCLC 腦轉移、產生日期）仍是為長格式寫的
+   → 主治顯示成單一字元、基因與 PD-L1 整段消失、日期變 260911。
+   與其逐點補，不如在入口一次還原成「舊的長格式」，下游所有消費端都不必改。 */
+function normalizeQR(d){
+  if(!d || typeof d !== 'object') return d;
+  const dec = (tbl, v) => (typeof qrDec === 'function' ? qrDec(tbl, v) : v);
+  ['m'].forEach(k => { if(d[k]) d[k] = dec('m', d[k]); });
+  if(d.pd) d.pd = dec('pd', d.pd);
+  if(d.sc) d.sc = dec('sc', d.sc);
+  if(d.a)  d.a  = dec('a',  d.a);
+  if(d.e)  d.e  = dec('e',  d.e);
+  if(d.tp) d.tp = dec('tp', d.tp);
+  ['t9','b','hb','ct'].forEach(k => { if(d[k]) d[k] = dec('yn', d[k]); });
+  // rf：新格式是單字母串接（LVS），舊格式是逗號分隔長碼
+  if(d.rf && String(d.rf).indexOf(',') < 0){
+    d.rf = String(d.rf).split('').map(ch => dec('rf', ch)).filter(Boolean).join(',');
+  }
+  // tm：新格式是 "0:姓名,1:姓名" 字串；舊格式本來就是陣列
+  if(typeof d.tm === 'string'){
+    const arr = ['','',''];
+    d.tm.split(',').filter(Boolean).forEach(part => {
+      const i = part.indexOf(':');
+      if(i > 0){ const idx = Number(part.slice(0,i)); if(!isNaN(idx)) arr[idx] = part.slice(i+1); }
+    });
+    d.tm = arr;
+  }
+  // 日期：YYMMDD → YYYY-MM-DD（舊格式已是長的，長度判斷即可）
+  if(d.d && /^\d{6}$/.test(String(d.d))){
+    const s = String(d.d);
+    d.d = '20' + s.slice(0,2) + '-' + s.slice(2,4) + '-' + s.slice(4,6);
+  }
+  return d;
+}
+
 function _eduStageInfo(d){
   if(d.__si) return d.__si;
   let si;
@@ -392,7 +429,7 @@ function render(d){
   let h = '<div class="hdr"><h1>';
   h += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
   h += '個人化照護導航手冊</h1>';
-  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版 · V1.18.2</p></div>';
+  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版 · V1.18.3</p></div>';
 
   h += '<div class="body">';
 
@@ -496,7 +533,7 @@ if(!frag){
   let data;
   try {
     const json = b64uDec(frag);   // V3.8.1: base64url（相容舊的標準 base64）
-    data = JSON.parse(json);
+    data = normalizeQR(JSON.parse(json));   // V3.8.3: 短碼一次還原成長格式，下游全部不用改
   } catch(e){
     showError('資料解析失敗','QR code 內容無法解讀，請確認連結完整。');
     data = null;
