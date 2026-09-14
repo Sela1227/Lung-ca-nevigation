@@ -1,4 +1,30 @@
-# Cancer Navigation V3.8.1 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.8.2 — 彰濱秀傳癌症中心
+
+## V3.8.2 — 2026-09-11
+**修 V3.8.1 的 regression：QR 分期顯示成「p?」**
+
+Sela 實機掃 QR 抓到：pT2a pN0 pM0（實際是 IB）在衛教頁顯示成「**p?**」。
+
+### 原因
+
+V3.8.1 瘦身時讓「有完整 TNM 就不送 s/sl/ps」，改由 edu 用 resolveStage 重算。我改了 stateFromPayload（**引擎**用的那條），但顯示用的 stageDisplay **還在直接讀 d.s / d.sl** → 兩者皆空 → 回傳 '?'。
+
+補上後又發現 _eduStageInfo 只回 possible 沒回 exact stage，所以 pT2a N0 M0 一度顯示成「約 IB」—— 那是唯一解，不該有「約」。
+
+### 兩條教訓（BUG-80）
+
+1. **移除或停送一個欄位時，要 grep 全專案所有讀它的地方** —— 不能只改「我記得會用到它」的那一處。這跟 BUG-76 是同一家族的鏡像：那次是資料進了 renderer 沒進 engine，這次是 engine 改了 renderer 沒跟。
+2. **「衍生值改由接收端重算」要一次做完整** —— 算出來的要涵蓋原本送過去的所有欄位（exact stage、label、possible、need），少一個就會有某個消費端拿到空值。
+
+### 驗證
+
+分期顯示六種情境（新 QR 唯一解／範圍／SCLC／UNKNOWN／舊 QR）全對，96 組 round-trip + 舊 QR 相容維持全綠。
+
+### 模組版號
+
+lung **V1.18.1 → V1.18.2**，系統版 V3.8.1 → V3.8.2。
+
+---
 
 ## V3.8.1 — 2026-09-11
 **QR 瘦身：614 → 338 字元（縮減 51%）**

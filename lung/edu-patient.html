@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0d9488">
-<title>個人化照護導航手冊（民眾版）V1.18.1 — 彰濱秀傳癌症中心</title>
+<title>個人化照護導航手冊（民眾版）V1.18.2 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -162,9 +162,10 @@ function _eduStageInfo(d){
   let si;
   if(d.tt && d.nn && d.mm && typeof resolveStage === 'function'){
     const r = resolveStage(d.tt, d.nn, d.mm);
-    si = { possible: r.possible || [], label: r.label || d.sl || d.s || '', need: r.need || [] };
+    si = { stage: r.stage || '', possible: r.possible || [], label: r.label || d.sl || d.s || '', need: r.need || [] };   // V3.8.2: 帶 exact stage（唯一解時不該顯示「約」）
   } else {
     si = {
+      stage: d.s || '',
       possible: (d.ps ? String(d.ps).split(',').filter(Boolean) : (d.s ? [d.s] : [])),
       label: d.sl || d.s || '', need: [],
     };
@@ -184,7 +185,7 @@ function decodeRisk(rf){
 }
 // V3.8.1: 還原 V3.8.0+ 的短碼；舊 QR 送的是長字串，qrDec 查不到會原樣回傳 → 相容
   return {
-    type: d._type, stageCat: d._stageCat, stage: d.s || '',
+    type: d._type, stageCat: d._stageCat, stage: d.s || _eduStageInfo(d).stage || '',   // V3.8.2
     possibleStages: _eduStageInfo(d).possible,
     stageLabel: _eduStageInfo(d).label,
     stageNeed: _eduStageInfo(d).need,     // V3.6.5: 用原始 TNM 重新 resolveStage 重建「還需確認什麼」
@@ -273,8 +274,13 @@ function stageDisplay(d){
     if(d._stageCat === 'META')  return '擴散型';
     return '?';
   }
-  if(d.s) return d.s;                       // 確定分期
-  if(d.sl) return '約 ' + d.sl;             // 範圍分期（如「約 IA1–IA3」）
+  // V3.8.2: V3.8.1 起「有完整 TNM 時不送 s/sl」（由 edu 重算），
+  //   但這裡仍直接讀 d.s/d.sl → 顯示成「p?」。改成走 _eduStageInfo（跟引擎同一個來源）。
+  const si = _eduStageInfo(d);
+  if(d.s) return d.s;                       // 舊 QR：直接帶確定分期
+  if(si.stage) return si.stage;             // 由 TNM 重算出的唯一解
+  if(si.label) return '約 ' + si.label;     // 範圍分期（如「約 IA1–IA3」）
+  if(d.sl) return '約 ' + d.sl;             // 舊 QR 的範圍字串
   return '?';
 }
 
@@ -386,7 +392,7 @@ function render(d){
   let h = '<div class="hdr"><h1>';
   h += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
   h += '個人化照護導航手冊</h1>';
-  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版 · V1.18.1</p></div>';
+  h += '<p>彰濱秀傳癌症中心 · 民眾簡易版 · V1.18.2</p></div>';
 
   h += '<div class="body">';
 
