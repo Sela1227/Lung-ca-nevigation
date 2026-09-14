@@ -121,12 +121,15 @@ function buildPathCore(state){
       if(brain==='no'){
         steps.push({ title:'第一線：化療 + 免疫治療', line:DRUGS.SCLC_ES.line, nhi:'NHI', drugs: DRUGS.SCLC_ES.list, note: DRUGS.SCLC_ES.note });
       } else if(brain==='yes'){
-        steps.push({ title:'第一線：化療（免疫不適用）', line:'一線', nhi:'NHI',
+        // V3.9.0（複審 C4）：原本寫「免疫不適用」把「健保不給付」講成「醫學上不能用」。
+        //   改由共用規則層回傳，臨床選項與健保給付分開陳述。
+        const es = ruleEsSclcImmune('yes');
+        steps.push({ title:'第一線：化學治療（合併腦部放射線治療）', line:'一線', nhi:'NHI',
           drugs:[{n:'Cisplatin/Carboplatin + Etoposide',z:'鉑類 + 滅必治'}],
-          note:'有腦/脊髓轉移者免疫不在健保給付範圍。' });
+          note:'臨床上：' + es.clinical + '。健保給付：' + es.nhi + '。' });
         steps.push({ title:'腦轉移處理：依症狀決定放療時機', line:'並行',
           note:'有症狀或大病灶：先放療再化療；無症狀小病灶：先化療同時 MRI 監測。' });
-        warns.push('腦轉移使免疫治療不適用，預後相對較差');
+        warns.push('有腦／脊髓轉移時，免疫治療目前不在健保給付條件內（這是給付限制，不代表醫學上完全不能使用），若考慮使用需與醫師討論自費或其他管道');
       } else {
         // unknown
         steps.push({ title:'第一線：化療為基礎，是否加免疫須先確認腦影像', line:'一線', nhi:'NHI',
@@ -250,8 +253,10 @@ function buildPathCore(state){
           : '化療與放射線治療同時進行 4-6 個療程。鱗狀細胞癌不使用愛寧達（Pemetrexed）；實際用哪一種由主治醫師決定。' },
     ];
     // V3.6.2: 鞏固治療依驅動基因真正分流（原本一律列 Durvalumab、只在 EGFR+ 時補一句警語）
-    const isEgfrClassic = EGFR_CLASSIC_SET.includes(m);          // V3.8.0: 用共用常數
-    const isOtherDriver = DURVA_EXCLUDED.includes(m) && !isEgfrClassic;   // EGFR_EX20/OTHER/ALK/ROS1
+    // V3.9.0: 鞏固治療改由共用規則層決定（醫護版與 edu-pro 呼叫同一個函式）
+    const consol = ruleConsolidationIII(m);
+    const isEgfrClassic = (consol.kind === 'osimertinib');
+    const isOtherDriver = (consol.kind === 'individual');
     if(isEgfrClassic){
       steps.push({ title:'同步化放療結束後病情穩定者:口服標靶維持治療', line:DRUGS.CONSOLID_OSI.line, nhi:'NHI',
         drugs: DRUGS.CONSOLID_OSI.list, note: DRUGS.CONSOLID_OSI.note });
@@ -313,9 +318,13 @@ function buildPathCore(state){
       steps = [
         { id:'egfr-1l', title:'第一線：口服 EGFR 標靶藥', line:DRUGS.EGFR.line, nhi:'NHI', drugs: DRUGS.EGFR.list, note:'__FL_NOTE__' },
         { title:'病情惡化時：做抗藥基因檢測', line:'惡化後評估', note:'__RESIST_NOTE__' },
-        { title:'標靶藥都失效後：接續化療搭配免疫治療', line:'接續治療', nhi:'NHI', drugs:[
+        // V3.9.0（路徑漂移複審 P1-02）：原標題寫「化療搭配免疫治療」但藥單只有化療，
+        //   且同一引擎稍後又警告 driver-positive 用免疫效果較差 → 標題與內容不同步。
+        //   依審核建議「不由工程端臆測補 ICI」，先把標題對齊實際 regimen，
+        //   是否／何時加免疫留待肺癌團隊依院內指引核定（見 CLAUDE.md 待核定清單 C3）。
+        { title:'標靶藥都失效後：接續化學治療', line:'接續治療', nhi:'NHI', drugs:[
             {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}],
-          note:'非鱗狀標準接續方案。' },
+          note:'非鱗狀標準接續方案。後續是否合併免疫治療，需由主治醫師依抗藥機轉與院內指引評估。' },
       ];
       // V3.7.3: 依個管實際勾選的第一線藥改寫後續敘述（原本一律寫「若第一線用的不是 Osimertinib…」，
       //   個管已經選了 Osimertinib 時會自相矛盾）
@@ -852,4 +861,77 @@ function b64uDec(s){
   let t = String(s).replace(/-/g,'+').replace(/_/g,'/');
   while(t.length % 4) t += '=';
   return decodeURIComponent(escape(atob(t)));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V3.9.0：共用臨床規則層（CLINICAL RULES）
+   ───────────────────────────────────────────────────────────────
+   背景（外部路徑漂移複審 P0-01）：臨床路徑長期由三套程式碼平行維護 —
+     1. _path.js         民眾版 patient / edu-patient
+     2. index.html       醫護版 PW / PW_SUMMARY / STAGE_GOALS
+     3. edu-pro.html     醫護 QR 自有簡化路徑
+   V3.6.0 之後的臨床修正只進了 _path.js，導致同一病人在不同頁面拿到
+   不同的治療順序與藥物（III 期 EGFR 鞏固、LS-SCLC 鞏固、ES-SCLC 腦轉移）。
+
+   完整的 canonical engine（結構化輸出 + 各頁只做 renderer）是 V4.0 等級改造，
+   需先凍結功能並由 MDT 建立 golden cases。這一層是過渡：
+   **把「會分叉的臨床判斷」抽成唯一事實來源，三頁都呼叫同一個函式。**
+   新增臨床規則只改這裡；renderer 只負責用自己的語氣呈現。
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 不可切除 III 期：definitive CCRT 之後的鞏固治療（NCCN NSCL-F + 健保 9.69）
+   注意順序語意：鞏固是「CCRT 完成且未惡化之後」，不是 CCRT 的並列替代方案。 */
+function ruleConsolidationIII(mut){
+  if(EGFR_CLASSIC_SET.includes(mut)){
+    return { kind:'osimertinib', drug:'Osimertinib（泰格莎）',
+      label:'CCRT 完成且未惡化 → Osimertinib 鞏固',
+      note:'EGFR exon19 缺失或 L858R：健保／NCCN 均以 Osimertinib 為鞏固治療（LAURA），不適用 Durvalumab。',
+      nhi:'NHI' };
+  }
+  if(DURVA_EXCLUDED.includes(mut)){   // EGFR_EX20 / EGFR_OTHER / ALK / ROS1
+    return { kind:'individual', drug:'',
+      label:'CCRT 完成且未惡化 → 鞏固治療需個別評估',
+      note:'Durvalumab 鞏固的條件排除 EGFR／ALK／ROS-1 陽性者；此類病人目前無標準鞏固方案，建議 MDT 討論。',
+      nhi:'' };
+  }
+  return { kind:'durvalumab', drug:'Durvalumab（抑癌寧）',
+    label:'CCRT 完成且未惡化 → Durvalumab 鞏固',
+    note:'健保條件：第三期無法手術切除、同步化放療後未惡化、PD-L1 ≥1%、EGFR／ALK／ROS-1 原生型，至多 12 個月。',
+    nhi:'NHI' };
+}
+
+/* 侷限期 SCLC：同步化放療後的鞏固（ADRIATIC / FDA 2024-12；台灣健保尚未給付） */
+function ruleLsSclcConsolidation(){
+  return { drug:'Durvalumab（抑癌寧）',
+    label:'同步化放療後未惡化 → 免疫鞏固治療',
+    note:'依 ADRIATIC 試驗，可延長存活，最長 24 個月；若要做預防性腦部照射（PCI），一般安排在鞏固治療之前。',
+    clinical:'臨床有 category 1 證據',
+    nhi:'台灣健保尚未給付此適應症，需自費或申請藥廠資源' };
+}
+
+/* 擴散期 SCLC + 腦轉移：C4 —「臨床可用」與「健保給付」必須分開陳述，
+   不可把 reimbursement restriction 寫成 medical contraindication。 */
+function ruleEsSclcImmune(brainMet){
+  if(brainMet === 'yes'){
+    return { clinical:'化療合併免疫treatment在臨床上仍可能適用，但需評估腦部病灶控制與整體狀況',
+      nhi:'台灣健保現行給付條件不含已有腦／脊髓轉移者，若要使用需自費或另行申請',
+      firstLine:'化學治療（合併腦部放射線治療）', immuneNhiEligible:false };
+  }
+  return { clinical:'化療合併免疫治療為標準第一線',
+    nhi:'健保給付（需事前審查）', firstLine:'化學治療 + 免疫治療', immuneNhiEligible:true };
+}
+
+/* 轉移期（M1a／M1b／M1c 皆同）：全身治療一律依分子結果分流。
+   M stage 決定「局部治療策略」，不決定「要不要做 precision therapy」。 */
+function ruleMetaSystemic(mut, pdl1){
+  if(EGFR_CLASSIC_SET.includes(mut)) return { kind:'targeted', label:'EGFR 標靶（依 exon19／L858R 選藥）' };
+  if(mut === 'EGFR_EX20')            return { kind:'targeted', label:'EGFR exon20：Amivantamab 合併化療（非一般 EGFR TKI）' };
+  if(mut === 'EGFR_OTHER')           return { kind:'targeted', label:'EGFR 其他型：依實際位點與 MDT 討論選藥' };
+  if(NON_EGFR_DRIVERS.includes(mut)) return { kind:'targeted', label:mut + ' 對應標靶藥' };
+  if(mut === 'NEG'){
+    if(pdl1 === 'HIGH') return { kind:'io',   label:'無驅動基因 + PD-L1 ≥50%：免疫單藥或免疫+化療' };
+    if(pdl1 === 'LOW')  return { kind:'iochemo', label:'無驅動基因 + PD-L1 <50%：免疫 + 化療' };
+    return { kind:'pending-pdl1', label:'已確認無驅動基因，建議補驗 PD-L1 再決定免疫' };
+  }
+  return { kind:'pending', label:'驅動基因尚未確認：先完成分子檢測，勿逕行決定免疫治療' };
 }

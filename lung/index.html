@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.18.5</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1212,6 +1212,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <input type="file" id="imp-backup" accept=".json" style="display:none" onchange="APP.handleRestore(event)">
 
 <script src="_staging.js"></script>
+<script src="_path.js"></script>   <!-- V3.9.0: 共用臨床規則層 -->
 <script>
 // ═══════════════════════════════════════════
 //  ALL APP LOGIC — single global object
@@ -1223,8 +1224,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.18.5';
-const SYSTEM_VERSION = 'V3.8.5';
+const MODULE_VERSION = 'V1.19.0';
+const SYSTEM_VERSION = 'V3.9.0';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1971,6 +1972,27 @@ A.finishMol = function(){
   showDone();
 };
 
+/* V3.9.0: EGFR 位點自由文字 → 共用 enum（與民眾版 _path.js 同一套語彙） */
+function parseEgfrSubtype(site){
+  const s = String(site || '').toLowerCase().replace(/\s+/g,'');
+  if(/exon?20|ex20|20ins|insertion/.test(s)) return 'EGFR_EX20';
+  if(/l858r|exon?21|ex21/.test(s))           return 'EGFR_L858R';
+  if(/19del|del19|exon?19|ex19/.test(s))     return 'EGFR_EX19';
+  return 'EGFR_OTHER';   // 位點未填或其他型 → 不可當成 classic（會誤觸 Osimertinib 鞏固）
+}
+/* V3.9.0: 醫護版 S → 共用規則層用的 mutation enum */
+function mutEnumForRules(S){
+  if(S.mutation === 'EGFR')  return S.egfrSubtype || 'EGFR_OTHER';
+  if(S.mutation === 'ALK')   return 'ALK';
+  if(S.mutation === 'OTHER_TKI'){
+    const d = S.drivers || {};
+    for(const k of ['ros1','braf','met','kras']) if(d[k] === '+') return k.toUpperCase();
+    return 'EGFR_OTHER';
+  }
+  if(['PDL1_HIGH','PDL1_LOW','PDL1_NEG'].includes(S.mutation)) return 'NEG';
+  return 'PENDING';
+}
+
 function deriveMutation(){
   const S = A.S;
   const d = S.drivers||{};
@@ -1978,7 +2000,13 @@ function deriveMutation(){
   const priority = ['egfr','alk','ros1','braf','met','ret','ntrk','her2','kras'];
   const firstPos = priority.find(id=>d[id]==='+');
   if(firstPos){
-    if(firstPos==='egfr') S.mutation = 'EGFR';
+    // V3.9.0（路徑漂移複審 P1-03）：EGFR 原本一律壓成 'EGFR'，位點只放自由文字 mutSite
+    //   不參與決策 → 醫護版無法區分 LAURA 適用的 ex19/L858R、無法排除 exon20。
+    //   改成把位點解析成 subtype，決策才接得上共用規則層（民眾版 enum 相同）。
+    if(firstPos==='egfr'){
+      S.mutation = 'EGFR';
+      S.egfrSubtype = parseEgfrSubtype((S.driverSites||{}).egfr || '');
+    }
     else if(firstPos==='alk') S.mutation = 'ALK';
     else S.mutation = 'OTHER_TKI';
     // Build mutSite from driver sites
@@ -2405,7 +2433,9 @@ const _NSCLC = {
         <p><b>新輔助：</b>① 免疫 + 化療 ② 化療或同步化療 + 放療</p>
         <p>→ 再次手術評估後進行手術 → 依病理分期輔助治療</p></div>`;
       tx += `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> 基因檢測後系統治療</h4>
-        <p>合併化放療 或標靶治療 或免疫治療（自費）</p></div>`;
+        <p>合併化放療（CCRT）為主要治療</p>
+        <p style="margin-top:6px"><b>${_consolIII(s).label}</b></p>
+        <p style="font-size:12px;color:var(--text3)">${_consolIII(s).note}</p></div>`;
     }
     return { tx, cost:[{l:'CCRT',v:'健保'},{l:'免疫治療',v:'自費/健保申請'},{l:'化療',v:'健保'},{l:'手術',v:'健保'}] };
   },
@@ -2413,7 +2443,10 @@ const _NSCLC = {
   'N3': s => ({
     tx: _hdr(s,'fa-radiation') +
       `<div class="tx-box rose" style="border:2px solid var(--rose-border)"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> 同步化放療 / 標靶 / 免疫治療</h4>
-        <p>同步化放療（CCRT）或標靶治療 或免疫治療（依健保規範）</p><p style="font-size:12px;color:var(--text3)">年齡 >70 歲 or PS >1：CCRT 可改 Sequential（先化療後接放療）</p>
+        <p>同步化放療（CCRT）為主要治療</p>
+        <p style="margin-top:6px"><b>${_consolIII(s).label}</b></p>
+        <p style="font-size:12px;color:var(--text3)">${_consolIII(s).note}</p>
+        <p style="font-size:12px;color:var(--text3)">年齡 >70 歲 or PS >1：CCRT 可改 Sequential（先化療後接放療）</p>
         <div class="row"><span></span><span class="badge nhi">化放療健保</span><span class="badge self">標靶/免疫依規範</span></div></div>` +
       `<div class="tx-box gray"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> 若發現遠端轉移</h4><p>依轉移性疾病 (M1c) 路徑治療</p></div>`,
     cost:[{l:'CCRT',v:'健保'},{l:'標靶治療',v:'健保申請/自費'},{l:'免疫治療',v:'依健保規範'}]
@@ -2583,6 +2616,25 @@ function _M1c_SQ(s){
   return { tx, cost:[{l:'免疫治療',v:'依健保規範'},{l:'化療',v:'健保全額'},{l:'標靶(如適用)',v:'健保申請'}] };
 }
 
+/* V3.9.0（路徑漂移複審 P0-02）：原本把鞏固治療寫成 CCRT 的「並列替代方案」
+   （合併化放療 或標靶 或免疫），沒有表達「先完成 definitive CCRT、未惡化、
+   再依 driver 決定鞏固」的順序，也沒有 EGFR 分流。
+   改為呼叫共用規則層 ruleConsolidationIII（民眾版 / edu-pro 同一個來源）。 */
+function _lsConsol(){
+  return (typeof ruleLsSclcConsolidation === 'function') ? ruleLsSclcConsolidation()
+    : { label:'同步化放療後未惡化 → 免疫鞏固治療', drug:'Durvalumab', note:'', nhi:'' };
+}
+function _esImmune(brainMet){
+  return (typeof ruleEsSclcImmune === 'function') ? ruleEsSclcImmune(brainMet)
+    : { clinical:'', nhi:'', firstLine:'化療 + 免疫治療' };
+}
+function _consolIII(s){
+  const mut = (typeof mutEnumForRules === 'function') ? mutEnumForRules(s) : 'PENDING';
+  return (typeof ruleConsolidationIII === 'function')
+    ? ruleConsolidationIII(mut)
+    : { label:'CCRT 完成且未惡化 → 鞏固治療', note:'' };
+}
+
 const PW = {
   NSCLC_NS: { ..._NSCLC, 'M1c': _M1c_NS },
   NSCLC_SQ: { ..._NSCLC, 'M1c': _M1c_SQ },
@@ -2605,6 +2657,12 @@ const PW = {
           <p>CCRT: 每次 2Gy，total 50-70Gy</p>
           <p>CR 或 PR → 預防性全腦照射 (PCI)：30Gy/15fx or 25Gy/10fx</p>
           <div class="row"><span></span><span class="badge nhi">健保全額</span></div></div>` +
+        // V3.9.0（路徑漂移複審 P0-03）：LS-SCLC 的 CCRT 後免疫鞏固原本只存在民眾版，
+        //   醫護主畫面與 QR 都沒有 → 醫護看到的是舊路徑。改由共用規則層提供。
+        `<div class="tx-box blue"><h4><i class="fa-solid fa-star" style="color:var(--primary);margin-right:4px"></i> ${_lsConsol().label}</h4>
+          <p>${_lsConsol().drug}　最長 24 個月（ADRIATIC）</p>
+          <p style="font-size:12px;color:var(--text3)">${_lsConsol().note}</p>
+          <div class="row"><span></span><span class="badge self">${_lsConsol().nhi}</span></div></div>` +
         `<div class="tx-box amber"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> PS 3-4（因癌症）</h4><p>化療 ± 放療</p></div>` +
         `<div class="tx-box gray"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> PS 3-4（非癌症引起）</h4><p>最佳支持性治療</p></div>`,
       cost:[{l:'Cisplatin/Etoposide',v:'健保全額'},{l:'放療',v:'健保全額'},{l:'PCI',v:'健保全額'}]
@@ -2618,9 +2676,14 @@ const PW = {
         `<div class="tx-box amber"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> 有局部症狀</h4>
           <p><b>SVC / obstruction / bone：</b>化療 + 放療（有症狀區域）+ 免疫治療（健保事審）</p>
           <p><b>Spine：</b>先放療再化療</p></div>` +
+        // V3.9.0（路徑漂移複審 P0-04 + C4）：主卡列「化療+免疫」但腦轉移欄位沒說明
+        //   免疫的健保限制 → 同一張卡暗示可加免疫，QR 頁卻說不適用。
+        //   改由共用規則層提供，且「臨床可用」與「健保給付」分兩行寫，不可混為一談。
         `<div class="tx-box blue"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> 腦轉移</h4>
           <p><b>有症狀：</b>先放療全腦或伽瑪刀 → 化療</p>
-          <p><b>無症狀：</b>先化療 → 再放療腦部或伽瑪刀</p></div>` +
+          <p><b>無症狀：</b>先化療 → 再放療腦部或伽瑪刀</p>
+          <p style="margin-top:6px"><b>免疫治療：</b>臨床上 — ${_esImmune('yes').clinical}</p>
+          <p style="font-size:12px;color:var(--text3)">健保給付 — ${_esImmune('yes').nhi}</p></div>` +
         `<div class="tx-box gray"><h4><i class="fa-solid fa-circle-dot" style="color:var(--text3);margin-right:4px"></i> PS 3-4（非癌症引起）</h4><p>最佳支持性治療</p></div>`,
       cost:[{l:'Cisplatin/Etoposide',v:'健保全額'},{l:'免疫治療',v:'健保事審'},{l:'PCI',v:'健保全額'},{l:'鞏固 RT',v:'健保全額'}]
     })
@@ -2643,8 +2706,8 @@ const PW_SUMMARY = {
   NSCLC_SQ: { ..._NSCLC_SUM, 'M1c': s => { const m=s.mutation||'PENDING'; if(m==='EGFR'||m==='ALK'||m==='OTHER_TKI') return '標靶藥物'; if(m==='PDL1_HIGH') return '免疫±化療'; if(m==='PDL1_LOW'||m==='PDL1_NEG') return '免疫+化療 or 化療（依PS）'; return '等報告中—先化療'; } },
   SCLC: {
     'ls_surg': s => '手術+淋巴廓清→化療±放療',
-    'ls_chemoRT': s => '化療+放療(EP+RT)→PCI',
-    'extensive': s => '化療+免疫（健保事審）±鞏固RT',
+    'ls_chemoRT': s => '化療+放療(EP+RT)→PCI→免疫鞏固(Durvalumab，健保未給付)',   // V3.9.0: 與 PW 同步
+    'extensive': s => '化療+免疫（健保事審；腦轉移者免疫不在給付條件內）±鞏固RT',   // V3.9.0
   }
 };
 

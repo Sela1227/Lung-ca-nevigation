@@ -1,4 +1,64 @@
-# Cancer Navigation V3.8.5 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.9.0 — 彰濱秀傳癌症中心
+
+## V3.9.0 — 2026-09-14
+**收斂三套平行臨床路徑**（外部「路徑漂移複審」判定 P0）
+
+### 複審發現：所謂「共用引擎」只共用了民眾版
+
+專案同時存在三套會決定治療方向的邏輯：
+
+| 引擎 | 服務的頁面 |
+|---|---|
+| `_path.js` | 民眾版 patient / edu-patient |
+| `index.html` 的 PW／PW_SUMMARY／STAGE_GOALS | 醫護主畫面（三份） |
+| `edu-pro.html` 的 getGoal／getTx／getDrugDetail | 醫護 QR |
+
+V3.6.0 之後的臨床修正**全部只進了 `_path.js`**，所以同一個病人：
+
+- III 期 EGFR ex19 → 民眾版走 Osimertinib，**醫護 QR 仍給 Durvalumab**（正好相反）
+- 醫護主畫面把鞏固寫成 CCRT 的**並列選項**「合併化放療 或標靶 或免疫」，沒有先後順序與 driver 分流
+- LS-SCLC 的 Durvalumab 鞏固**只有民眾版有** → 醫護列印／掃 QR 看到的是舊路徑
+- ES-SCLC 腦轉移：醫護主卡暗示可加免疫、QR 說不適用
+
+### 這版的處置（過渡）
+
+在 `_path.js` 建**共用臨床規則層**，四個頁面全部載入並呼叫同一個函式：
+
+- `ruleConsolidationIII(mut)` — III 期 CCRT 後鞏固（Osimertinib／個別評估／Durvalumab）
+- `ruleLsSclcConsolidation()` — LS-SCLC 免疫鞏固（含健保未給付標示）
+- `ruleEsSclcImmune(brainMet)` — ES-SCLC 免疫（**臨床可用與健保給付分開**）
+- `ruleMetaSystemic(mut, pdl1)` — 轉移期分子分流（M1a/b/c 一視同仁）
+
+一併修正：醫護版 EGFR 原本一律壓成 `'EGFR'`、位點只放自由文字不參與決策 → 加 `parseEgfrSubtype` 解析成共用 enum；EGFR 後線標題寫「化療搭配免疫」但藥單只有化療 → 依審核建議不臆測補 ICI，先對齊標題並列入待核定。
+
+### 新增測試
+
+`test/cross_engine.test.js`（**53 項 golden-case 一致性斷言**），驗證四頁採用同一來源、關鍵臨床欄位一致。連同 `test/qr_payload.test.js`（54 項），共 **107 項**。
+
+```
+node test/cross_engine.test.js
+node test/qr_payload.test.js
+```
+
+### 三條教訓（BUG-84）
+
+1. **抽共用引擎要先盤點「有幾個地方在做同一件事」** —— 我 V3.6.0 只解決當時被回報的民眾版分叉，從沒問過醫護版是不是也在決定治療方向。
+2. **「96 組 round-trip 全綠」是被誤用的指標** —— 它只證明民眾版兩頁一致，我卻拿它當全系統品質保證講了好幾版。
+3. **renderer 可以有很多份，決策點只能有一個** —— 判斷方法：這段程式碼在決定「要給什麼治療」還是「怎麼呈現」？前者只能有一份。
+
+### 尚未完成（V4.0 等級）
+
+複審建議的 **canonical clinical pathway model**：engine 產生結構化結果，各頁只當 renderer，刪除 PW_SUMMARY／STAGE_GOALS／edu-pro 的決策功能。需先凍結功能並由 MDT 建立 12–20 個 golden cases 核定 canonical output。
+
+### 待肺癌團隊核定（不由工程端決定）
+
+C1 IA 期高風險因子是否提示術後化療｜C2 Durvalumab 的 driver 排除集合需以現行健保第 9 章逐字核定｜C3 EGFR 標靶失效後是否／何時呈現 ICI｜C4 健保限制與臨床禁忌的措辭分層（已先改成兩行陳述）
+
+### 模組版號
+
+lung **V1.18.5 → V1.19.0**，系統版 V3.8.5 → V3.9.0。
+
+---
 
 ## V3.8.5 — 2026-09-14
 **外部審核 V3.8.3 報告的四項**
