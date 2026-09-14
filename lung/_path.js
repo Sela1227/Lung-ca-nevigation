@@ -234,10 +234,20 @@ function buildPathCore(state){
     const stage = state.stage || '';
     const isIIIA = definitelyStage(state, /^IIIA$/);   // V3.6.4: 確定是 IIIA 才提可切除選項
     const steps = [
-      { title:'同步化放療 — 主要治療', line:'主要治療', nhi:'NHI', drugs:[
-          {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'},
-          {n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'鉑類 + 紫杉醇 + 放射線治療'}],
-        note:'化療與放射線治療同時進行 4-6 個療程。' },
+      // V3.8.4: 同步化放療處方依組織型態分開（NCCN 3.2026 NSCL-F）。
+      //   非鱗狀的首選是含 Pemetrexed 的組合（PROCLAIM：與 cisplatin+etoposide 存活相當但副作用較少）；
+      //   鱗狀不適用 Pemetrexed。原本兩種組織型態給同一組，非鱗狀病人看不到自己的首選處方。
+      { id:'ccrt-main', title:'同步化放療 — 主要治療', line:'主要治療', nhi:'NHI',
+        drugs: isNS
+          ? [{n:'Carboplatin + Pemetrexed + 胸部放射線治療',z:'卡鉑 + 愛寧達 + 放射線治療'},
+             {n:'Cisplatin + Pemetrexed + 胸部放射線治療',z:'順鉑 + 愛寧達 + 放射線治療'},
+             {n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'卡鉑 + 紫杉醇 + 放射線治療'},
+             {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'順鉑 + 滅必治 + 放射線治療'}]
+          : [{n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'卡鉑 + 紫杉醇 + 放射線治療'},
+             {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'順鉑 + 滅必治 + 放射線治療'}],
+        note: isNS
+          ? '化療與放射線治療同時進行 4-6 個療程。非鱗狀肺癌可用含愛寧達（Pemetrexed）的組合，副作用相對較少；實際用哪一種由主治醫師依身體狀況決定。'
+          : '化療與放射線治療同時進行 4-6 個療程。鱗狀細胞癌不使用愛寧達（Pemetrexed）；實際用哪一種由主治醫師決定。' },
     ];
     // V3.6.2: 鞏固治療依驅動基因真正分流（原本一律列 Durvalumab、只在 EGFR+ 時補一句警語）
     const isEgfrClassic = EGFR_CLASSIC_SET.includes(m);          // V3.8.0: 用共用常數

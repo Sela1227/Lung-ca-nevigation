@@ -1,4 +1,42 @@
-# Cancer Navigation V3.8.3 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.8.4 — 彰濱秀傳癌症中心
+
+## V3.8.4 — 2026-09-14
+**同步化放療處方依組織型態分流**
+
+個管說「怎麼都有點怪怪的」—— 查證後屬實。
+
+### NCCN 3.2026 NSCL-F 的實際內容
+
+| 組織型態 | Preferred 同步化放療處方 |
+|---|---|
+| **非鱗狀** | **Carboplatin + Pemetrexed**、**Cisplatin + Pemetrexed**、Carboplatin+Paclitaxel、Cisplatin+Etoposide |
+| 鱗狀 | Carboplatin+Paclitaxel、Cisplatin+Etoposide |
+
+NCCN 討論段也明講「pemetrexed plus either carboplatin or cisplatin **for nonsquamous NSCLC only**」。PROCLAIM 試驗顯示 cisplatin+pemetrexed 與 cisplatin+etoposide 存活相當，但嗜中性球低下（24.4% vs 44.5%）與 G3-4 不良事件明顯較少。
+
+### 原本的問題
+
+LOCAL 分支兩種組織型態給**同一組**處方（只有共用的那兩種）→ **非鱗狀病人（約佔 NSCLC 六成）看不到自己的首選處方**。不是給錯藥，但少了副作用較輕的選項。
+
+### 修正後
+
+- 非鱗狀：4 種，Pemetrexed 組合排最前
+- 鱗狀：2 種，說明寫明「鱗狀細胞癌不使用愛寧達」
+
+### 順手全面稽核
+
+其他化療處方的組織型態分流：術後輔助（非鱗多 Cisplatin+Pemetrexed）、轉移期第一線（非鱗 Pemetrexed vs 鱗狀 Paclitaxel）本來就正確。**鱗狀路徑上沒有任何一處出現 Pemetrexed。**
+
+### 兩條教訓（BUG-82）
+
+1. **「所有組織型態共用一組處方」本身就是可疑訊號** —— 肺癌鱗狀/非鱗狀用藥差異很大（Pemetrexed、Bevacizumab 都限非鱗狀），凡是治療步驟沒有依組織型態分岔的地方，都該回頭對一次指引。
+2. **個管說「怪怪的」但講不出所以然時，通常是「少了什麼」而不是「多了什麼」** —— 多出來的錯誤顯眼，少掉的不顯眼。這次就是漏了兩個處方選項，畫面完全正常、不會報錯。
+
+### 模組版號
+
+lung **V1.18.3 → V1.18.4**，系統版 V3.8.3 → V3.8.4。
+
+---
 
 ## V3.8.3 — 2026-09-14
 **全面修 V3.8.1 短碼造成的顯示破口**
