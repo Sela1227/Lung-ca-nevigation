@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
-<title>肺癌路徑查詢 V1.19.1 — 彰濱秀傳癌症中心</title>
+<title>肺癌路徑查詢 V1.19.2 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1403,7 +1403,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 <script src="_path.js"></script>
 <script>
 'use strict';
-const MODULE_VERSION = 'V1.19.1';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
+const MODULE_VERSION = 'V1.19.2';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
 
 /* ═══════════════════════════════════════════════════
    STATE
@@ -1632,6 +1632,7 @@ function restoreAllUI(){
   applyQ3Mode();
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', S.mut===b.dataset.val));
   document.querySelectorAll('#opt-pdl1 .mut-btn').forEach(b=>b.classList.toggle('selected', S.pdl1===b.dataset.val));  // V3.4.0
+  applyT790Visibility();   // V3.9.2
   document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.toggle('selected', S.t790m===b.dataset.val));   // V3.7.0
   document.querySelectorAll('#opt-risk .mut-btn').forEach(b=>b.classList.toggle('selected', (S.riskFactors||[]).includes(b.dataset.val)));   // V3.7.1
   applyBrainNsVisibility();
@@ -2422,6 +2423,7 @@ function pickBrain(btn){
 function pickMut(btn){
   S.mut = btn.dataset.val;
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  applyT790Visibility();      // V3.9.2
   applyBrainNsVisibility();   // V3.7.0
   updateActBar();  // V3.4.0: 驅動基因選完不自動跳（讓使用者續填 PD-L1），由「下一步」前進
 }
@@ -2450,6 +2452,18 @@ function pickBrainNs(btn){
   updateActBar();
 }
 // V3.7.0: 只在「晚期 + 非鱗狀 + L858R」時才問腦轉移，一般病人不多回答一題
+// V3.9.2（內部複審 N-03 輸入面）：T790M 是 EGFR 的抗藥性突變，
+//   非 EGFR 病人不該被問；切走時要清掉，否則舊答案會留在 state。
+function applyT790Visibility(){
+  const need = ['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R'].includes(S.mut);
+  ['q4-lbl-t790','opt-t790'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.style.display = need ? '' : 'none';
+  });
+  if(!need && S.t790m){
+    S.t790m = '';
+    document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.remove('selected'));
+  }
+}
 function applyBrainNsVisibility(){
   const need = (S.type==='NSCLC_NS') && (S.stageCat==='META') && (S.mut==='EGFR_L858R');
   ['q4-lbl-brain-ns','opt-brain-ns'].forEach(id=>{

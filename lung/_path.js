@@ -23,9 +23,8 @@ const EGFR_CLASSIC_SET = ['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R'];
 const EGFR_ALL_SET     = EGFR_CLASSIC_SET.concat(['EGFR_EX20','EGFR_OTHER']);
 const NON_EGFR_DRIVERS = ['ALK','ROS1','BRAF','MET','KRAS'];
 const ALL_DRIVERS      = EGFR_ALL_SET.concat(NON_EGFR_DRIVERS);
-// Durvalumab 鞏固的排除名單（健保 9.69 / NCCN）：EGFR/ALK/ROS-1 需為原生型。
-//   KRAS 不在排除名單 → 仍可走免疫維持（審核特別提醒不要一併排除）
-const DURVA_EXCLUDED    = EGFR_ALL_SET.concat(['ALK','ROS1']);
+// V3.9.2（內部複審 N-13）：原本的 DURVA_EXCLUDED 在 V3.9.1 已被 durvaExcludedFor(isSquamous)
+//   取代（排除集合依組織型態不同），留著會讓人以為那是唯一事實來源 → 移除，避免誤用。
 // 未確定/未檢測類（非驅動基因陽性）
 const NON_POSITIVE_MUT = ['', 'NONE', 'NEG', 'PENDING', 'DECLINED'];
 
@@ -167,6 +166,17 @@ function buildPathCore(state){
       } else {
         steps.push({ title:'治療反應佳者：可考慮預防性腦部照射', line:'追加治療', note:'評估前需先做腦部 MRI 確認沒有腦轉移。' });
       }
+      // V3.9.2（內部複審 N-05）：已知腦/脊髓轉移的 SCLC 依定義屬擴散期，
+      //   不該沿用侷限期的 CCRT + PCI + 鞏固路徑（ADRIATIC 收的是侷限期病人）。
+      //   這裡明確提示分期需重新確認，並不給侷限期專屬的鞏固建議。
+      if(brain === 'yes'){
+        steps.push({ title:'已有腦／脊髓轉移：分期需重新確認', line:'前置確認',
+          note:'小細胞肺癌若已有腦或脊髓轉移，依定義屬於擴散期，治療方向與侷限期不同（不做預防性腦部照射、以全身治療合併腦部放射線治療為主）。請與主治醫師確認分期。' });
+        return { stageTxt:'小細胞肺癌 侷限型（分期需確認）',
+                 pwTxt:'分期資訊不一致，請先與主治醫師確認',
+                 steps,
+                 warns:['您勾選了有腦／脊髓轉移，但分期選的是侷限期 — 這兩者通常不會同時成立，請先與主治醫師確認分期'] };
+      }
       // V3.6.2: 同步化放療後無惡化者，加免疫鞏固（NCCN 2.2026 依 ADRIATIC，category 1，至多 24 個月）
       //   PCI 若要做，應在鞏固治療之前 → 故此步排在 PCI 之後
       steps.push({ title:'同步化放療後病情未惡化者:免疫鞏固治療', line:'鞏固治療', nhi:'SELF',
@@ -261,6 +271,10 @@ function buildPathCore(state){
     if(isEgfrClassic){
       steps.push({ title:'同步化放療結束後病情穩定者:口服標靶維持治療', line:DRUGS.CONSOLID_OSI.line, nhi:'NHI',
         drugs: DRUGS.CONSOLID_OSI.list, note: DRUGS.CONSOLID_OSI.note });
+    } else if(consol.kind === 'pending'){
+      // V3.9.2（內部複審 N-06）：基因未驗/暫不檢測時不得直接呈現 Durvalumab 鞏固
+      steps.push({ title:'同步化放療結束後:先完成分子檢測再決定鞏固治療', line:'鞏固治療',
+        note: consol.note });
     } else if(isOtherDriver){
       steps.push({ title:'同步化放療結束後:維持治療需個別評估', line:'維持治療',
         note:'帶有驅動基因者，同步化放療後的免疫維持治療通常不適用；EGFR exon19/L858R 以外的驅動基因目前沒有標準的維持治療，請與主治醫師個別討論。' });
@@ -281,6 +295,8 @@ function buildPathCore(state){
       '若年紀較大或體力較差:同步化放療負擔重，可改成分開做（先化療再放療）',
       (isEgfrClassic
         ? '您帶有 EGFR 突變:同步化放療後的維持治療用口服標靶藥（Osimertinib），不是免疫治療 — 免疫維持治療的條件明確排除 EGFR exon19/L858R'
+        : consol.kind === 'pending'
+        ? '免疫維持治療（Durvalumab）需檢附檢測報告證明無 EGFR/ALK/ROS-1 驅動基因，請先完成分子檢測'
         : '免疫維持治療有條件限制:需第三期無法手術切除、同步化放療後病情穩定、無 EGFR/ALK/ROS-1 等驅動基因、PD-L1 ≥1%，至多 12 個月'),
       '建議診斷時即做 EGFR、ALK、PD-L1 等基因與免疫指標檢測',
     ];
@@ -289,13 +305,14 @@ function buildPathCore(state){
       warns.unshift('您帶有 ' + (mutDisplay(m) || '驅動基因') + '：同步化放療後的免疫維持治療通常不適用（此類藥物排除帶有驅動基因者），維持治療請與主治醫師個別討論');
     }
     if(!isIIIA){
-      warns.unshift((state.stage || state.stageLabel || 'III') + ' 期腫瘤範圍較廣（涉及 T4 或多處淋巴轉移），一般不建議先手術，以同步化放療為主' + (isEgfrClassic ? '，之後接口服標靶維持' : isOtherDriver ? '，之後的維持治療需個別評估' : '，之後接免疫維持治療'));
+      warns.unshift((state.stage || state.stageLabel || 'III') + ' 期腫瘤範圍較廣（涉及 T4 或多處淋巴轉移），一般不建議先手術，以同步化放療為主' + (isEgfrClassic ? '，之後接口服標靶維持' : isOtherDriver ? '，之後的維持治療需個別評估' : consol.kind === 'pending' ? '，鞏固方向待分子檢測結果' : '，之後接免疫維持治療'));
     }
     return {
       stageTxt:`${typeLabel} 局部晚期 (III)`,
       // V3.6.2: 主結論隨鞏固分流變化（原本一律寫「免疫維持」，跟 EGFR 分流自相矛盾）
       pwTxt: isEgfrClassic ? '以同步化放療為主，治療結束後接口服標靶維持治療'
            : isOtherDriver ? '以同步化放療為主，治療結束後的維持治療需個別評估'
+           : consol.kind === 'pending' ? '以同步化放療為主，鞏固治療方向待分子檢測結果確定'
            : '以同步化放療為主，治療結束後再用免疫維持治療',
       steps, warns,
     };
@@ -308,8 +325,16 @@ function buildPathCore(state){
       // V3.6.2: exon20 插入突變的第一線與 classic EGFR 完全不同（一般 EGFR TKI 反應率低）
       steps = [
         { title:'第一線：Amivantamab + 化療', line:'一線', nhi:'NHI',
-          drugs:[{n:'Amivantamab + Carboplatin + Pemetrexed',z:'瑞普替 + 鉑類 + 愛寧達'}],
-          note:'EGFR exon20 插入突變適用的第一線組合（健保 114/10/1 起給付，需事前審查）。' },
+          // V3.9.2（內部複審 N-02 延伸）：健保 9.126 給付的組合是
+          //   Amivantamab + carboplatin + pemetrexed（條文未限組織型態，但組合含 Pemetrexed）。
+          //   Pemetrexed 對鱗狀細胞癌無效，故鱗狀不直接套用該組合，改標示需個別評估
+          //   （不由工程端臆測鱗狀的替代組合）。
+          drugs: isNS
+            ? [{n:'Amivantamab + Carboplatin + Pemetrexed',z:'瑞普替 + 鉑類 + 愛寧達'}]
+            : [{n:'Amivantamab（合併化療組合需個別評估）',z:'瑞普替'}],
+          note: isNS
+            ? 'EGFR exon20 插入突變適用的第一線組合（健保 9.126，114/10/1 起給付，需事前審查）。'
+            : '健保給付的組合為 Amivantamab + 鉑類 + 愛寧達（Pemetrexed）；愛寧達不用於鱗狀細胞癌，因此鱗狀癌的合併方案需由主治醫師個別評估。' },
         { title:'病情惡化後：化療或臨床試驗', line:'接續治療', note:'exon20 插入突變的後線選擇較少，可與醫師討論臨床試驗機會。' },
       ];
       warns.push('EGFR exon20 插入突變:一般常用的 EGFR 口服標靶藥（如泰格莎、艾瑞莎）對這型效果不佳，第一線用的是不同的藥');
@@ -324,8 +349,8 @@ function buildPathCore(state){
         //   依審核建議「不由工程端臆測補 ICI」，先把標題對齊實際 regimen，
         //   是否／何時加免疫留待肺癌團隊依院內指引核定（見 CLAUDE.md 待核定清單 C3）。
         { title:'標靶藥都失效後：接續化學治療', line:'接續治療', nhi:'NHI', drugs:[
-            {n:'Pemetrexed + Carboplatin/Cisplatin',z:'愛寧達 + 鉑類'}],
-          note:'非鱗狀標準接續方案。後續是否合併免疫治療，需由主治醫師依抗藥機轉與院內指引評估。' },
+            chemoBackbone(isNS)],
+          note: chemoNote(isNS) + '後續是否合併免疫治療，需由主治醫師依抗藥機轉與院內指引評估。' },
       ];
       // V3.7.3: 依個管實際勾選的第一線藥改寫後續敘述（原本一律寫「若第一線用的不是 Osimertinib…」，
       //   個管已經選了 Osimertinib 時會自相矛盾）
@@ -358,26 +383,26 @@ function buildPathCore(state){
       steps = [
         { title:'第一線：口服 ALK 標靶藥', line:DRUGS.ALK.line, nhi:'NHI', drugs: DRUGS.ALK.list, note: DRUGS.ALK.note },
         { title:'若產生抗藥性：換接續 ALK 標靶藥', line:'接續治療', note:'Lorlatinib 可用於其他 ALK 標靶失敗後。' },
-        { title:'多線標靶失敗後：接續化療', line:'接續治療', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'非鱗狀標準接續方案。' },
+        { title:'多線標靶失敗後：接續化療', line:'接續治療', nhi:'NHI', drugs:[chemoBackbone(isNS)], note: chemoNote(isNS) },
       ];
     } else if(m==='ROS1'){
       steps = [
         { title:'第一線：口服 ROS1 標靶藥', line:DRUGS.ROS1.line, nhi:'NHI', drugs: DRUGS.ROS1.list, note: DRUGS.ROS1.note },
-        { title:'若產生抗藥性或多線失敗：接續化療', line:'接續治療', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin',z:'愛寧達 + 鉑類'}], note:'' },
+        { title:'若產生抗藥性或多線失敗：接續化療', line:'接續治療', nhi:'NHI', drugs:[chemoBackbone(isNS)], note: chemoNote(isNS) },
       ];
     } else if(m==='BRAF'){
       steps = [
-        { title:'第一線：含鉑類化療', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin（非鱗狀）',z:'愛寧達 + 鉑類'}], note:'鱗狀者改用紫杉醇 + 鉑類。' },
+        { title:'第一線：含鉑類化療', line:'一線', nhi:'NHI', drugs:[chemoBackbone(isNS)], note: chemoNote(isNS) },
         { title:'第二線（化療失敗後）：口服 BRAF 雙標靶', line:DRUGS.BRAF.line, nhi:'NHI', drugs: DRUGS.BRAF.list, note: DRUGS.BRAF.note },
       ];
     } else if(m==='MET'){
       steps = [
         { title:'標靶：口服 MET 抑制劑', line:DRUGS.MET.line, nhi:'NHI', drugs: DRUGS.MET.list, note: DRUGS.MET.note },
-        { title:'若無法用標靶：含鉑化療搭配免疫治療', line:'替代方案', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin ± Pembrolizumab',z:'愛寧達 + 鉑類 ± 吉舒達'}], note:'' },
+        { title:'若無法用標靶：含鉑化療搭配免疫治療', line:'替代方案', nhi:'NHI', drugs:[chemoBackbone(isNS,{ioOptional:true})], note: chemoNote(isNS) },
       ];
     } else if(m==='KRAS'){
       steps = [
-        { title:'第一線：含鉑化療搭配免疫治療', line:'一線', nhi:'NHI', drugs:[{n:'Pemetrexed + Carboplatin + Pembrolizumab',z:'愛寧達 + 鉑類 + 吉舒達'}], note:'KRAS G12C 病人的免疫指標多偏高，對免疫治療反應通常較佳。' },
+        { title:'第一線：含鉑化療搭配免疫治療', line:'一線', nhi:'NHI', drugs:[chemoBackbone(isNS,{io:true})], note: chemoNote(isNS) + 'KRAS G12C 病人的免疫指標多偏高，對免疫治療反應通常較佳。' },
         { title:'第二線：口服 KRAS G12C 標靶', line:DRUGS.KRAS.line, nhi:'SELF', drugs: DRUGS.KRAS.list, note: DRUGS.KRAS.note },
       ];
       warns.push('KRAS G12C 口服標靶藥（Sotorasib）目前健保未給付，需自費');
@@ -427,7 +452,13 @@ function buildPathCore(state){
     }
       // V3.7.0: T790M 是「疊加」在主要突變上的抗藥性突變（用過第一/二代 TKI 後才驗得到）
     //   健保 Osimertinib 二線：需 T790M + 曾用 gefitinib/erlotinib/afatinib/dacomitinib 且已惡化
-    if(state.t790m === 'yes'){
+    // V3.9.2（內部複審 N-03）：T790M 是 EGFR 的抗藥性突變，在非 EGFR 背景下沒有臨床意義，
+    //   更不構成 Osimertinib 的使用依據。V3.8.0 加了 _alreadyOsi／_undecided 兩個守衛，
+    //   卻漏了最基本的「是不是 EGFR」→ 非 EGFR 病人一律落到 else 拿到換藥建議。
+    if(state.t790m === 'yes' && !EGFR_CLASSIC_SET.includes(m)){
+      warns.push('T790M 是 EGFR 標靶藥的抗藥性突變，在非 EGFR 的情況下不影響治療選擇，請與主治醫師確認檢測結果的意義');
+    }
+    if(state.t790m === 'yes' && EGFR_CLASSIC_SET.includes(m)){
       // V3.7.4: 健保二線 Osimertinib 限「先前用過 Gefitinib/Erlotinib/Afatinib/Dacomitinib」。
       //   若第一線用的已經是 Osimertinib，再列「可換 Osimertinib」是臨床錯誤（會讓病人以為還有藥可換）。
       const _isEgfr = EGFR_CLASSIC_SET.includes(m);   // V3.8.0
@@ -567,7 +598,26 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
       //   完全沒有分期資訊時也不列，交由醫師依實際期別評估
       const atezoEligible = stagesOf(state).length > 0 && !possiblyStage(state, /^IB$/);
       const atezoDrug = {n:'Atezolizumab（II 期以上、PD-L1 ≥1%、已完成含鉑化療者可考慮）',z:'癌自禦'};
-      if(isNS){
+      // V3.9.2（內部複審 N-04）：術後追加治療原本一律把三種藥並列，要病人自己對號入座
+      //   （「EGFR 陽性者…ALK 陽性者…」），完全沒用到已經問到的 driver 結果。
+      //   已知 driver 時只呈現對應的那一個。
+      const _osi  = {n:'Osimertinib（至多 3 年）',z:'泰格莎'};
+      const _alec = {n:'Alectinib（至多 2 年）',z:'安立適'};
+      const _knownDriver = ALL_DRIVERS.includes(m);
+      if(isNS && _knownDriver){
+        const pick = EGFR_CLASSIC_SET.includes(m) ? [_osi]
+                   : (m === 'ALK') ? [_alec]
+                   : (atezoEligible ? [atezoDrug] : []);
+        steps.push({ title:'術後追加治療（依您的基因結果）', line:'術後追加治療', phase:'consolidation', nhi:'SELF',
+          drugs: pick.length ? pick : [],
+          note: EGFR_CLASSIC_SET.includes(m)
+              ? '您帶有 EGFR 驅動基因，術後可考慮口服標靶藥作為追加治療（至多 3 年）。目前健保未給付術後追加治療，需自費或申請藥廠資源。'
+              : (m === 'ALK')
+              ? '您帶有 ALK 驅動基因，術後可考慮口服標靶藥作為追加治療（至多 2 年）。目前健保未給付術後追加治療，需自費或申請藥廠資源。'
+              : (pick.length
+                 ? '您的驅動基因目前沒有對應的術後標靶追加治療；若為 II 期以上、PD-L1 ≥1% 且已完成含鉑化療，可與醫師討論免疫治療。'
+                 : '您的驅動基因目前沒有對應的術後追加治療選項，以規律追蹤為主，請與主治醫師討論。') });
+      } else if(isNS){
         steps.push({ title:'術後追加治療：依基因檢測結果擇一', line:'術後追加治療（擇一）', phase:'consolidation', nhi:'SELF',
           drugs:[
             {n:'Osimertinib（EGFR 陽性者，至多 3 年）',z:'泰格莎'},
@@ -749,6 +799,22 @@ function drugChoice(state, stepOrKey, drugs){
            has: n => on.some(d => (d.n || '').indexOf(n) >= 0) };
 }
 
+/* V3.9.2（內部複審 N-02）：化療 backbone 依組織型態，所有分支一律引用，不再各自寫死。
+   Pemetrexed 對鱗狀細胞肺癌無效，指引與仿單皆不建議使用；原本 META 五個 driver 分支
+   都寫死 Pemetrexed，鱗狀癌帶 EGFR/ALK（少見但存在，腺鱗癌或病理修正後也會出現）
+   會拿到不適用的藥。BRAF 分支當初有做對，其餘漏了。 */
+function chemoBackbone(isNS, opts){
+  const o = opts || {};
+  const base = isNS ? { n:'Pemetrexed + Carboplatin/Cisplatin', z:'愛寧達 + 鉑類' }
+                    : { n:'Carboplatin + Paclitaxel',           z:'鉑類 + 紫杉醇' };
+  if(o.io) return { n: base.n + ' + Pembrolizumab', z: base.z + ' + 吉舒達' };
+  if(o.ioOptional) return { n: base.n + ' ± Pembrolizumab', z: base.z + ' ± 吉舒達' };
+  return base;
+}
+function chemoNote(isNS){
+  return isNS ? '非鱗狀標準接續方案。' : '鱗狀細胞癌不使用愛寧達（Pemetrexed），改以紫杉醇 + 鉑類為主。';
+}
+
 function riskList(state){
   return (state && Array.isArray(state.riskFactors) ? state.riskFactors : [])
     .map(k => RISK_LABELS_P[k]).filter(Boolean);
@@ -904,6 +970,15 @@ function ruleConsolidationIII(mut, isSquamous){
     return { kind:'individual', drug:'',
       label:'CCRT 完成且未惡化 → 鞏固治療需個別評估',
       note:'健保 Durvalumab 鞏固要求' + (isSquamous ? '鱗狀癌為 EGFR／ALK 原生型' : '非鱗狀癌為 EGFR／ALK／ROS-1 原生型') + '，此類病人不符合；目前無標準鞏固方案，建議 MDT 討論。（健保第 9 章 115/8/21）',
+      nhi:'' };
+  }
+  // V3.9.2（內部複審 N-06）：健保要求「EGFR/ALK/ROS-1 原生型」是需要檢測報告佐證的條件；
+  //   尚未檢測（PENDING）或病人選擇暫不檢測（DECLINED）時無法證明符合，
+  //   不可直接呈現 Durvalumab 鞏固，應先導向完成分子檢測。
+  if(['PENDING','DECLINED',''].includes(mut) || mut === undefined || mut === null){
+    return { kind:'pending', drug:'',
+      label:'CCRT 完成且未惡化 → 鞏固治療前需先完成分子檢測',
+      note:'健保 Durvalumab 鞏固要求' + (isSquamous ? '鱗狀癌為 EGFR／ALK 原生型' : '非鱗狀癌為 EGFR／ALK／ROS-1 原生型') + '，須檢附檢測報告；若為 EGFR exon19／L858R 則改用 Osimertinib 鞏固。分子結果出來後才能確定鞏固方向。',
       nhi:'' };
   }
   return { kind:'durvalumab', drug:'Durvalumab（抑癌寧）',

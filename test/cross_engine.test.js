@@ -136,5 +136,59 @@ ok(!/items\.push\(\{title:'CCRT 後鞏固', drugs:'Durvalumab'/.test(eduProHTML)
    '已移除無條件的 Durvalumab 鞏固卡片');
 ok(eduProHTML.includes('ruleConsolidationIII'), '醫護 QR 改呼叫共用規則');
 
+/* ═══ 9. 內部複審 N-02/N-03/N-04：_path.js 引擎自身的臨床錯誤 ═══ */
+section('引擎自身臨床正確性（內部複審新發現）');
+const engCtx = { console, JSON, Math, Date, Object, Array, String, Number, RegExp, parseInt, parseFloat, isNaN };
+vm.createContext(engCtx);
+vm.runInContext(read('lung/_staging.js') + '\n' + read('lung/_path.js'), engCtx);
+const runEng = (type, mut, extra) => {
+  const st = Object.assign({ type, stageCat:'META', stage:'IVA', possibleStages:['IVA'], mut,
+    pdl1:'', t790m:'', brainMet:'', drugOff:[], riskFactors:[], postOp:false, txProgress:'',
+    age:'', ecog:'', hbv:'', catastrophic:'' }, extra || {});
+  return vm.runInContext(`(function(){var s=${JSON.stringify(st)};var r=buildPathRaw(s);applyModifiers(r,s);return r;})()`, engCtx);
+};
+const allDrugs = r => (r.steps||[]).reduce((a,s)=>a.concat((s.drugs||[]).map(d=>d.n)),[]).join(' | ');
+
+// N-02：鱗狀癌任一 driver 都不得出現 Pemetrexed
+['EGFR_EX19','EGFR_L858R','EGFR_EX20','ALK','ROS1','BRAF','MET','KRAS','NEG','PENDING'].forEach(mut => {
+  ok(!/Pemetrexed/.test(allDrugs(runEng('NSCLC_SQ', mut))), `鱗狀 + ${mut} 不得出現 Pemetrexed`);
+});
+// 非鱗狀仍應保有 Pemetrexed backbone
+ok(/Pemetrexed/.test(allDrugs(runEng('NSCLC_NS','ALK'))), '非鱗狀 + ALK 仍用 Pemetrexed backbone');
+
+// N-03：非 EGFR 背景的 T790M 不得建議 Osimertinib
+['ALK','ROS1','BRAF','MET','KRAS','NEG','PENDING'].forEach(mut => {
+  const r = runEng('NSCLC_NS', mut, { t790m:'yes' });
+  const bad = (r.steps||[]).some(s => /T790M/.test(s.title||'') && /Osimertinib/.test(JSON.stringify(s.drugs||[])));
+  ok(!bad, `${mut} + T790M 不得建議換 Osimertinib`);
+});
+ok((runEng('NSCLC_NS','EGFR_EX19',{t790m:'yes'}).steps||[]).some(s => /T790M/.test(s.title||'')),
+   'EGFR + T790M 仍給二線建議');
+
+// N-04：術後追加治療要依 driver 分流
+const poEGFR = allDrugs(runEng('NSCLC_NS','EGFR_EX19',{ postOp:true, stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'] }));
+const poALK  = allDrugs(runEng('NSCLC_NS','ALK',      { postOp:true, stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'] }));
+ok(poEGFR !== poALK, '術後追加治療依 driver 不同');
+ok(/Osimertinib/.test(poEGFR) && !/Alectinib/.test(poEGFR), 'EGFR 術後只列 Osimertinib');
+ok(/Alectinib/.test(poALK) && !/Osimertinib/.test(poALK), 'ALK 術後只列 Alectinib');
+
+// N-05：SCLC 侷限期 + 已知腦轉移 → 不得輸出侷限期鞏固，應提示分期不一致
+const sclcBrain = runEng('SCLC','', { stageCat:'LOCAL', stage:'Limited', possibleStages:['Limited'], brainMet:'yes' });
+ok(!/Durvalumab/.test(allDrugs(sclcBrain)), 'SCLC 侷限期+腦轉移 不得給侷限期免疫鞏固');
+ok(/分期/.test(sclcBrain.pwTxt || ''), 'SCLC 侷限期+腦轉移 應提示分期需確認', sclcBrain.pwTxt);
+
+// N-06：第三期基因未驗/暫不檢測 → 不得直接給 Durvalumab 鞏固
+['PENDING','DECLINED'].forEach(mut => {
+  const r = runEng('NSCLC_NS', mut, { stageCat:'LOCAL', stage:'IIIB', possibleStages:['IIIB'] });
+  const drugHit = (r.steps||[]).some(s => (s.drugs||[]).some(d => /Durvalumab/.test(d.n)));
+  ok(!drugHit, `第三期 ${mut} 不得直接給 Durvalumab（給付需檢測報告佐證）`);
+});
+const negIII = runEng('NSCLC_NS','NEG', { stageCat:'LOCAL', stage:'IIIB', possibleStages:['IIIB'] });
+ok((negIII.steps||[]).some(s => (s.drugs||[]).some(d => /Durvalumab/.test(d.n))),
+   '第三期已確認 driver 陰性 → 仍可給 Durvalumab');
+
+// N-13：已被 durvaExcludedFor 取代的死常數不得殘留
+ok(!/const DURVA_EXCLUDED/.test(read('lung/_path.js')), 'DURVA_EXCLUDED 死常數已移除');
+
 console.log(`\n═══ 結果：${pass} 通過 / ${fail} 失敗 ═══`);
 process.exit(fail ? 1 : 0);
