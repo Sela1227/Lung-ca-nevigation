@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.18.4</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.18.5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1223,8 +1223,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.18.4';
-const SYSTEM_VERSION = 'V3.8.4';
+const MODULE_VERSION = 'V1.18.5';
+const SYSTEM_VERSION = 'V3.8.5';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -4097,10 +4097,33 @@ A.handleRestore = async function(e){
   } catch(err){ alert('還原失敗，資料庫維持原狀。\n' + (err && err.message ? err.message : '備份檔格式錯誤')); }
   e.target.value='';
 };
+/* V3.8.5（外部審核 P1-02）：原本逐筆 await put()，第 N 筆失敗時前 N-1 筆已永久寫入，
+   但畫面只說「格式錯誤」→ 使用者再匯入一次就重複。且直接 delete r.id 會改到來源物件。
+   改成與「整庫還原」同一原則：先 dry-run 驗證 → 單一 transaction → 全成或全不成。 */
 A.handleImport = async function(e){
   const f=e.target.files[0]; if(!f)return;
-  try{ const d=JSON.parse(await f.text()); if(!Array.isArray(d))throw 0; for(const r of d){delete r.id; await put('records',r);} alert(`匯入 ${d.length} 筆`); loadStats(); loadBackupStatus(); }
-  catch{alert('格式錯誤');} e.target.value='';
+  try{
+    const d=JSON.parse(await f.text());
+    if(!Array.isArray(d)) throw new Error('檔案格式不是紀錄陣列');
+    const bad = d.filter(r => !r || typeof r !== 'object' || (r.code===undefined && r.name===undefined));
+    if(bad.length){ alert(`有 ${bad.length} 筆資料格式不符，未寫入任何資料。`); e.target.value=''; return; }
+    if(!confirm(`將新增 ${d.length} 筆紀錄（不會覆蓋本機現有資料）。確定匯入？`)){ e.target.value=''; return; }
+    const db = await openDB();
+    const added = await new Promise((resolve, reject)=>{
+      const tx = db.transaction(['records'],'readwrite');
+      const store = tx.objectStore('records');
+      let n=0;
+      d.forEach(r => { const cp = Object.assign({}, r); delete cp.id; store.add(cp); n++; });   // 複製後再刪 id
+      tx.oncomplete = ()=>resolve(n);
+      tx.onerror = ()=>reject(tx.error);
+      tx.onabort = ()=>reject(tx.error || new Error('匯入中止'));
+    });
+    alert(`匯入完成：新增 ${added} 筆`);
+    loadStats(); loadBackupStatus();
+  } catch(err){
+    alert('匯入失敗，資料庫維持原狀。\n' + (err && err.message ? err.message : '檔案格式錯誤'));
+  }
+  e.target.value='';
 };
 function dl(c,n,t){ const b=new Blob([c],{type:t}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=n;a.click(); URL.revokeObjectURL(u); }
 

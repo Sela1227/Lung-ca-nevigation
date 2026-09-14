@@ -1,4 +1,55 @@
-# Cancer Navigation V3.8.4 — 彰濱秀傳癌症中心
+# Cancer Navigation V3.8.5 — 彰濱秀傳癌症中心
+
+## V3.8.5 — 2026-09-14
+**外部審核 V3.8.3 報告的四項**
+
+### P1-01：舊 QR 單一高風險因子被逐字拆開（上線閘門）
+
+V3.8.3 的 rf 正規化用「有沒有逗號」判斷新舊格式。但**舊格式只有一項時本來就沒有逗號**：
+
+| 舊 QR 的值 | V3.8.4 之前變成 |
+|---|---|
+| LVI | LVI,VPI,I |
+| VPI | VPI,POOR,I |
+| SIZE4 | SIZE4,I,Z,E,4 |
+| MARGIN | MARGIN,A,R,G,I,NX |
+
+**六個舊值全中。** 臨床後果：病人拿已經印出去的舊 QR 掃，會看到**病理報告上沒有的高風險因子** —— 而高風險因子正是決定「IA 要不要討論術後化療」的依據。
+
+修法：先比對完整舊 enum → 再看逗號 → 再看是否為合法短碼字元集 → 都不是就丟棄。並依審核建議在 payload 加 **v:2 schema 版本**，之後依版本走明確 parser，不再靠外觀猜。
+
+### P1-02：純紀錄匯入不是單一交易
+
+逐筆 await put()，第 N 筆失敗時前 N-1 筆已永久寫入，畫面卻只說「格式錯誤」→ 使用者再匯入一次就重複。改成與整庫還原同一原則：dry-run → 單一 transaction → 全成或全不成，並複製物件後再刪 id。
+
+### P2-01：README 被 shell 輸出污染
+
+V3.8.1 段落有 50 行 ps 程序列表。原因是打包腳本把含反引號的 Markdown 塞進 shell 雙引號字串，反引號被當命令替換執行。已清除並修復表格。
+
+### P2-02：測試隨包附上
+
+新增 `test/qr_payload.test.js`，**54 項斷言**，執行方式：
+
+```
+node test/qr_payload.test.js
+```
+
+涵蓋：risk factor 新舊格式邊界（含單項）、真實編碼往返（中文／罕用字／emoji／全形符號）、14 個顯示欄位稽核、新舊 QR 相容、448 組 patient↔edu round-trip、驅動基因分類完整性、臨床斷言、渲染層。
+
+審核說得對 —— 我宣稱「舊 QR 相容全綠」但矩陣沒涵蓋單項邊界；**測試不隨包，外部就只能相信我的宣稱**。而且這支測試寫完當場就抓到我 V3.8.4 的一個測試盲點。
+
+### 兩條教訓（BUG-83）
+
+1. **不要用「資料長什麼樣子」推斷它是哪個版本的格式** —— 這類啟發式在多數情況會過，然後在邊界悄悄錯掉。格式版本要明寫在資料裡。
+2. **每次「為了省空間改變編碼」，都要同時定義「怎麼分辨新舊」** —— V3.8.1 改了五種欄位編碼、全靠外觀判斷，結果 V3.8.2／V3.8.3／V3.8.5 連三版在修同一批後遺症。
+
+### 模組版號
+
+lung **V1.18.4 → V1.18.5**，系統版 V3.8.4 → V3.8.5。
+
+⚠️ 審核仍未能做真實 Chromium smoke test，建議上線前補一次。
+
+---
 
 ## V3.8.4 — 2026-09-14
 **同步化放療處方依組織型態分流**
@@ -118,59 +169,10 @@ Sela 回報「QR 圖形好複雜」，外部審核 P2-15 也量出已膨脹到 8
 
 | 做法 | 效果 |
 |------|------|
-| 有完整 TNM 時 //  PID TTY          TIME CMD
-    1 ?        00:00:00 process_api
-    2 ?        00:00:00 kthreadd
-    3 ?        00:00:00 pool_workqueue_release
-    4 ?        00:00:00 kworker/R-rcu_gp
-    5 ?        00:00:00 kworker/R-sync_wq
-    6 ?        00:00:00 kworker/R-kvfree_rcu_reclaim
-    7 ?        00:00:00 kworker/R-slub_flushwq
-    8 ?        00:00:00 kworker/R-netns
-    9 ?        00:00:00 kworker/0:0-events
-   10 ?        00:00:00 kworker/0:0H-events_highpri
-   11 ?        00:00:00 kworker/0:1-virtio_vsock
-   12 ?        00:00:00 kworker/u4:0-iou_exit
-   13 ?        00:00:00 kworker/R-mm_percpu_wq
-   14 ?        00:00:00 ksoftirqd/0
-   15 ?        00:00:00 rcu_preempt
-   16 ?        00:00:00 rcu_exp_par_gp_kthread_worker/0
-   17 ?        00:00:00 rcu_exp_gp_kthread_worker
-   18 ?        00:00:00 migration/0
-   19 ?        00:00:00 cpuhp/0
-   20 ?        00:00:00 kdevtmpfs
-   21 ?        00:00:00 kworker/R-inet_frag_wq
-   22 ?        00:00:00 rcu_tasks_kthread
-   23 ?        00:00:00 rcu_tasks_rude_kthread
-   24 ?        00:00:00 rcu_tasks_trace_kthread
-   25 ?        00:00:00 kauditd
-   26 ?        00:00:00 khungtaskd
-   27 ?        00:00:00 oom_reaper
-   28 ?        00:00:00 kworker/u4:1-ext4-rsv-conversion
-   29 ?        00:00:00 kworker/u4:2-iou_exit
-   30 ?        00:00:00 kworker/R-writeback
-   31 ?        00:00:00 kcompactd0
-   32 ?        00:00:00 ksmd
-   33 ?        00:00:00 khugepaged
-   34 ?        00:00:00 kworker/R-kblockd
-   35 ?        00:00:00 watchdogd
-   36 ?        00:00:00 kworker/R-quota_events_unbound
-   37 ?        00:00:00 kworker/0:1H-kblockd
-   38 ?        00:00:00 kswapd0
-   39 ?        00:00:00 kworker/u5:0
-   40 ?        00:00:00 kworker/R-kthrotld
-   41 ?        00:00:00 irq/24-ACPI:Ged
-   42 ?        00:00:00 irq/25-ACPI:Ged
-   43 ?        00:00:00 hwrng
-   44 ?        00:00:00 kworker/R-kstrp
-   50 ?        00:00:00 kworker/R-ext4-rsv-conversion
-   53 ?        00:00:00 rclone-filestor
-   91 ?        00:00:00 kworker/u4:3
-  221 ?        00:00:00 sh
-  226 ?        00:00:00 ps 不送（edu 重算） | −50 bytes |
+| 有完整 TNM 時 s/sl/ps 不送（edu 重算） | −50 bytes |
 | 空值不入 JSON（原本每欄都帶 空字串） | −40 bytes |
 | 固定值用短碼表（兩端共用） | −60 bytes |
-|  從「步驟鍵\|藥名」壓成「步驟鍵:索引」 | 79 → 15 bytes |
+| dx 從「步驟鍵+藥名」壓成「步驟鍵:索引」 | 79 → 15 bytes |
 
 ### 另外兩項（比省 byte 更直接影響掃描）
 
