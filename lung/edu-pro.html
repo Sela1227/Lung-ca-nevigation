@@ -229,7 +229,7 @@ function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;
       //   與 _path.js 修正過的內容相反。改由共用規則層決定（三頁同一來源）。
       (function(){
         const mut = _eduProMut(d);
-        const r = (typeof ruleConsolidationIII === 'function') ? ruleConsolidationIII(mut) : null;
+        const r = (typeof ruleConsolidationIII === 'function') ? ruleConsolidationIII(mut, d && d.t === 'SQ') : null;
         if(r) items.push({ title: r.label, drugs: r.drug || '（需個別評估）', note: r.note });
         else  items.push({title:'CCRT 後鞏固', drugs:'依 driver 判定', note:'EGFR ex19/L858R → Osimertinib；ALK/ROS1 → 個別評估；其餘符合條件 → Durvalumab'});
       })();

@@ -236,6 +236,13 @@ const ALL_DRUGS = [
     sideEff:'腹瀉、皮疹、甲溝炎、口腔潰瘍。',
     matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
 
+  // V3.9.1: 健保 9.138（115/8/1）新增給付
+  { en:'Aumolertinib',  zh:'普米維',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS'],
+    target:'EGFR ex19del／L858R（第一線，肺腺癌）；或先前 EGFR 標靶失敗且 T790M 陽性（第二線）',
+    purpose:'第三代 EGFR 標靶藥，健保 115/8/1 起給付。第一線與其他 EGFR 標靶藥擇一使用，不得互換。',
+    sideEff:'皮疹、腹瀉、肝指數上升、血球下降。',
+    matchKey:['NSCLC_NS:META:EGFR']},
+
   // ─── ALK / ROS1 標靶 ───
   { en:'Alectinib',     zh:'安立適',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
     target:'ALK 基因重組的非小細胞肺癌',

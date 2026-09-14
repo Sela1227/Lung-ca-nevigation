@@ -33,8 +33,9 @@ const DRUGS = {
   EGFR: {line:'一線標靶', nhi:'NHI', list:[
     {n:'Osimertinib',z:'泰格莎'},{n:'Gefitinib',z:'艾瑞莎'},
     {n:'Erlotinib',z:'得舒緩'},{n:'Afatinib',z:'妥復克'},
-    {n:'Dacomitinib',z:'肺欣妥'}],
-    note:'五藥擇一。Dacomitinib 限無腦轉移。'},
+    {n:'Dacomitinib',z:'肺欣妥'},
+    {n:'Aumolertinib',z:'普米維'}],
+    note:'六藥擇一，不得互換（健保第 9 章 115/8/21）。Dacomitinib 限無腦轉移；Osimertinib 與 Aumolertinib 第一線限肺腺癌。'},
   EGFR_BRAIN: {line:'一線（合併）', nhi:'NHI', list:[{n:'Erlotinib + Bevacizumab',z:'得舒緩 + 癌思停'}],
     note:'限 EGFR L858R 突變且有腦轉移。健保有給付，需事前審查。'},
   ALK: {line:'一線標靶', nhi:'NHI', list:[
@@ -254,7 +255,7 @@ function buildPathCore(state){
     ];
     // V3.6.2: 鞏固治療依驅動基因真正分流（原本一律列 Durvalumab、只在 EGFR+ 時補一句警語）
     // V3.9.0: 鞏固治療改由共用規則層決定（醫護版與 edu-pro 呼叫同一個函式）
-    const consol = ruleConsolidationIII(m);
+    const consol = ruleConsolidationIII(m, !isNS);   // V3.9.1: 排除集合依組織型態
     const isEgfrClassic = (consol.kind === 'osimertinib');
     const isOtherDriver = (consol.kind === 'individual');
     if(isEgfrClassic){
@@ -881,22 +882,33 @@ function b64uDec(s){
 
 /* 不可切除 III 期：definitive CCRT 之後的鞏固治療（NCCN NSCL-F + 健保 9.69）
    注意順序語意：鞏固是「CCRT 完成且未惡化之後」，不是 CCRT 的並列替代方案。 */
-function ruleConsolidationIII(mut){
+/* V3.9.1：依健保第 9 章（115/8/21）逐字核定 —
+   「限 durvalumab 用於第三期局部晚期、無法手術切除且腫瘤表現 PD-L1 ≥1% 之 NSCLC，
+     **非鱗狀癌者需為 EGFR/ALK/ROS-1 原生型、鱗狀癌者需為 EGFR/ALK 原生型**，
+     須於根治性同步放射治療合併至少 2 個週期含鉑化療後無惡化，至多 12 個月。」
+   → 排除集合依組織型態不同：鱗狀癌不要求 ROS-1 原生型（原本兩者都排除 ROS1，
+     會讓鱗狀 ROS1(+) 病人被多擋掉一個健保有給付的選項）。 */
+function durvaExcludedFor(isSquamous){
+  return isSquamous ? EGFR_ALL_SET.concat(['ALK'])          // 鱗狀：EGFR/ALK 原生型
+                    : EGFR_ALL_SET.concat(['ALK','ROS1']);  // 非鱗狀：EGFR/ALK/ROS-1 原生型
+}
+function ruleConsolidationIII(mut, isSquamous){
+  const excluded = durvaExcludedFor(!!isSquamous);
   if(EGFR_CLASSIC_SET.includes(mut)){
     return { kind:'osimertinib', drug:'Osimertinib（泰格莎）',
       label:'CCRT 完成且未惡化 → Osimertinib 鞏固',
       note:'EGFR exon19 缺失或 L858R：健保／NCCN 均以 Osimertinib 為鞏固治療（LAURA），不適用 Durvalumab。',
       nhi:'NHI' };
   }
-  if(DURVA_EXCLUDED.includes(mut)){   // EGFR_EX20 / EGFR_OTHER / ALK / ROS1
+  if(excluded.includes(mut)){   // 依組織型態：非鱗狀含 ROS1，鱗狀不含
     return { kind:'individual', drug:'',
       label:'CCRT 完成且未惡化 → 鞏固治療需個別評估',
-      note:'Durvalumab 鞏固的條件排除 EGFR／ALK／ROS-1 陽性者；此類病人目前無標準鞏固方案，建議 MDT 討論。',
+      note:'健保 Durvalumab 鞏固要求' + (isSquamous ? '鱗狀癌為 EGFR／ALK 原生型' : '非鱗狀癌為 EGFR／ALK／ROS-1 原生型') + '，此類病人不符合；目前無標準鞏固方案，建議 MDT 討論。（健保第 9 章 115/8/21）',
       nhi:'' };
   }
   return { kind:'durvalumab', drug:'Durvalumab（抑癌寧）',
     label:'CCRT 完成且未惡化 → Durvalumab 鞏固',
-    note:'健保條件：第三期無法手術切除、同步化放療後未惡化、PD-L1 ≥1%、EGFR／ALK／ROS-1 原生型，至多 12 個月。',
+    note:'健保條件（115/8/21）：第三期局部晚期、無法手術切除、PD-L1 ≥1%、' + (isSquamous ? '鱗狀癌需 EGFR／ALK 原生型' : '非鱗狀癌需 EGFR／ALK／ROS-1 原生型') + '，且須於根治性同步放射治療合併至少 2 個週期含鉑化療後無惡化，至多 12 個月。',
     nhi:'NHI' };
 }
 
@@ -914,7 +926,7 @@ function ruleLsSclcConsolidation(){
 function ruleEsSclcImmune(brainMet){
   if(brainMet === 'yes'){
     return { clinical:'化療合併免疫treatment在臨床上仍可能適用，但需評估腦部病灶控制與整體狀況',
-      nhi:'台灣健保現行給付條件不含已有腦／脊髓轉移者，若要使用需自費或另行申請',
+      nhi:'健保第 9 章（115/8/21）免疫檢查點抑制劑用於擴散期小細胞肺癌，明訂限「無腦部或無脊髓轉移」者，故目前不符給付條件；若要使用需自費或另行申請',
       firstLine:'化學治療（合併腦部放射線治療）', immuneNhiEligible:false };
   }
   return { clinical:'化療合併免疫治療為標準第一線',

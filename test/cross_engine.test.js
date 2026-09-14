@@ -59,6 +59,12 @@ const consol = R('ruleConsolidationIII');
 ok(!/Durvalumab/.test(consol('EGFR_EX19').drug + consol('EGFR_EX19').label),
    'EGFR ex19 的鞏固不得出現 Durvalumab');
 ok(/Osimertinib/.test(consol('EGFR_L858R').drug), 'L858R 的鞏固為 Osimertinib');
+// V3.9.1（健保 115/8/21 逐字）：非鱗狀需 EGFR/ALK/ROS-1 原生型、鱗狀只需 EGFR/ALK 原生型
+ok(consol('ROS1', false).kind === 'individual', '非鱗狀 ROS1(+) → 不符 Durvalumab 條件');
+ok(consol('ROS1', true).kind === 'durvalumab', '鱗狀 ROS1(+) → 仍符合 Durvalumab（條文未要求 ROS-1 原生型）');
+ok(consol('ALK', true).kind === 'individual' && consol('ALK', false).kind === 'individual',
+   'ALK(+) 兩種組織型態都不符 Durvalumab 條件');
+ok(/115\/8\/21/.test(consol('NEG', false).note), '健保條件標註條文版本', consol('NEG', false).note.slice(0,40));
 // 順序語意：label 必須表達「CCRT 之後」，不可寫成並列選項
 ['EGFR_EX19','ALK','NEG'].forEach(mut => {
   ok(/CCRT\s*完成|完成.*未惡化/.test(consol(mut).label),
