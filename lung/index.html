@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.7</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1224,8 +1224,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.19.7';
-const SYSTEM_VERSION = 'V3.9.7';
+const MODULE_VERSION = 'V1.19.8';
+const SYSTEM_VERSION = 'V3.9.8';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -4169,8 +4169,15 @@ A.handleRestore = async function(e){
       tx.onabort = ()=>reject(tx.error || new Error('aborted'));
     });
 
+    // V3.9.8（內部審核 P0-3）：整庫取代後，編輯中的 editId／draftId 仍指向已被刪除的舊 id。
+    //   下一次切頁的自動儲存會用那個 id 寫入 → **把前一位病人的表單內容寫進另一位病人的紀錄**。
+    //   還原後一律重置編輯狀態，回到乾淨的新病人。
+    if(mode === '1'){
+      editId = null; draftId = null;
+      try{ _dirty = false; }catch(e){}   // 避免殘留的 dirty 旗標觸發自動儲存
+    }
     alert(mode === '1'
-      ? `整庫取代完成\n刪除原有 ${stats.replaced} 筆、寫入 ${stats.added} 筆`
+      ? `整庫取代完成\n刪除原有 ${stats.replaced} 筆、寫入 ${stats.added} 筆\n（已重置編輯狀態，請重新開啟病人）`
       : `合併匯入完成\n新增 ${stats.added} 筆（本機原有 ${existing.length} 筆未變動）`);
     loadStats(); loadBackupStatus();
   } catch(err){ alert('還原失敗，資料庫維持原狀。\n' + (err && err.message ? err.message : '備份檔格式錯誤')); }

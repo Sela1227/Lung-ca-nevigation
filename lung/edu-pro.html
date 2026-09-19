@@ -85,6 +85,17 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
 <script>
 /* V3.8.0（外部審核 P0-2）：QR fragment 是外部可控輸入，所有欄位輸出前必須 escape */
 // V3.9.0: edu-pro payload → 共用規則層的 mutation enum
+// V3.9.8（P0-1）：醫護版的 pd 可能是 'high'/'low' 或數值（如 '80'），統一轉成規則層用的帶別
+function pdl1Band(v){
+  if(v === 'HIGH' || v === 'LOW') return v;
+  const s = String(v || '').toLowerCase();
+  if(s === 'high') return 'HIGH';
+  if(s === 'low')  return 'LOW';
+  if(s === 'neg')  return 'LOW';
+  const n = parseFloat(s.replace('%',''));
+  if(isNaN(n)) return '';
+  return n >= 50 ? 'HIGH' : 'LOW';
+}
 function _eduProMut(d){
   const m = (d && d.m) || '';
   if(/EX19|19del/i.test(m)) return 'EGFR_EX19';
@@ -96,6 +107,10 @@ function _eduProMut(d){
   if(/BRAF/i.test(m)) return 'BRAF';
   if(/MET/i.test(m))  return 'MET';
   if(/KRAS/i.test(m)) return 'KRAS';
+  // V3.9.8（內部審核 P0-1）：V3.9.5 加了這三個標記，但此處沒補 → 會落到 PENDING
+  if(/RET/i.test(m))  return 'RET';
+  if(/NTRK/i.test(m)) return 'NTRK';
+  if(/HER2|ERBB2/i.test(m)) return 'HER2';
   if(/PDL1|NEG/i.test(m)) return 'NEG';
   return 'PENDING';
 }
@@ -131,7 +146,7 @@ function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;
     if(t==='SC'){
       const isExt = (s==='Extensive' || s.startsWith('IV'));
       if(isExt){
-        if(b==='yes') return '化療（鉑類＋Etoposide）+ 腦放療控制病灶（免疫不適用）';
+        if(b==='yes') return '化療（鉑類＋Etoposide）+ 腦放療控制病灶（免疫：健保限無腦／脊髓轉移者）';   // V3.9.8 C4
         if(b==='no')  return '化療 + 免疫治療（Atezolizumab/Durvalumab，健保事審）';
         return '化療為基礎，依腦/脊髓影像決定是否加免疫';
       }
@@ -172,7 +187,9 @@ function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;
       const isExt = (s==='Extensive' || s.startsWith('IV'));
       if(isExt){
         if(b==='yes'){
-          items.push({title:'第一線：化療（不可加免疫）', drugs:'Cisplatin/Carboplatin + Etoposide', note:'健保 ICI 9.69 限「無腦/脊髓轉移」者才能加免疫'});
+          // V3.9.8（P0-2 / C4）：原本寫「不可加免疫」「免疫不適用」，把健保給付限制講成醫學禁忌。
+          items.push({title:'第一線：化學治療（合併腦部放射線治療）', drugs:'Cisplatin/Carboplatin + Etoposide',
+            note:'臨床上：化療合併免疫在臨床上仍可能適用，需評估腦部病灶控制與整體狀況。健保給付：第 9 章（115/8/21）明訂擴散期 SCLC 的免疫治療限「無腦部或無脊髓轉移」者，故目前不符給付條件。'});
           items.push({title:'腦病灶處理', drugs:'WBRT 或伽瑪刀 + 同步/序貫化療', note:'有症狀腦轉移：先放療控制症狀'});
         } else if(b==='no'){
           items.push({title:'第一線：化療 + 免疫', drugs:'Atezolizumab + Carboplatin + Etoposide / Durvalumab + Etoposide + 鉑類', note:'健保事審，PD-L1 不限'});
@@ -196,30 +213,43 @@ function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;
       return items;
     }
     // NSCLC
+    // V3.9.8（內部審核 P0-1）：V3.9.3 把 payload 的 m 改成次型 enum（EGFR_EX19／NEG／RET…），
+    //   但這裡仍比對舊值（'EGFR'、'PDL1_HIGH'）→ 永遠不成立 → 所有第四期病人都掉到
+    //   else 的「先做 NGS、等報告期間可先含鉑化療」。EGFR 陽性的第四期病人（台灣肺腺癌
+    //   最常見族群）拿到的列印手冊 QR 因此寫著「可先做含鉑化療」。
+    //   改走共用規則層，不再於本頁自寫字串比對。
     if(s.startsWith('IV')){
-      if(m==='EGFR'){
-        items.push({title:'第一線標靶', drugs:'Osimertinib / Gefitinib / Erlotinib / Afatinib / Dacomitinib', note:'五擇一不互換；Dacomitinib 限無腦轉移'});
-        items.push({title:'L858R + 腦轉移', drugs:'Erlotinib + Bevacizumab', note:'事審'});
-        items.push({title:'惡化後', drugs:'T790M 檢測 → Osimertinib 二線'});
-      } else if(m==='ALK'){
-        items.push({title:'第一線標靶', drugs:'Alectinib / Lorlatinib / Ceritinib / Brigatinib / Crizotinib', note:'五擇一'});
-      } else if(m==='ROS1'){
-        items.push({title:'第一線標靶', drugs:'Crizotinib / Entrectinib', note:'擇一'});
-      } else if(m==='BRAF'){
-        items.push({title:'第一線', drugs:'含鉑化療（Pemetrexed + 鉑類）'});
-        items.push({title:'第二線（含鉑後）', drugs:'Dabrafenib + Trametinib', note:'限 BRAF V600E'});
-      } else if(m==='MET'){
-        items.push({title:'標靶', drugs:'Tepotinib', note:'限 MET exon 14 skipping'});
-      } else if(m==='KRAS'){
-        items.push({title:'第一線', drugs:'含鉑化療 + 免疫'});
-        items.push({title:'第二線', drugs:'Sotorasib（自費，KRAS G12C）'});
-      } else if(m==='PDL1_HIGH'){
-        items.push({title:'第一線（IO+化療）', drugs:'Pembrolizumab + Pemetrexed + 鉑類 / Atezolizumab + Bevacizumab + Carboplatin + Paclitaxel', note:'PD-L1 ≥50% 健保事審'});
-      } else if(m==='PDL1_LOW'){
-        items.push({title:'第一線（化療±IO）', drugs:'Pemetrexed + Carboplatin/Cisplatin ± Pembrolizumab', note:'PD-L1 1-49% 加免疫須符合 ICI 9.69'});
-      } else {
-        items.push({title:'建議', drugs:'先做 NGS（EGFR/ALK/ROS1/BRAF/MET/KRAS/NTRK）+ PD-L1，依結果個人化'});
-        items.push({title:'等報告期間', drugs:'可先含鉑化療'});
+      const mutE = _eduProMut(d);
+      const pdE  = pdl1Band(d.pd);
+      const rMeta = (typeof ruleMetaSystemic === 'function') ? ruleMetaSystemic(mutE, pdE) : null;
+      if(rMeta){
+        items.push({ title:'第一線全身治療', drugs: rMeta.label,
+          note:'依分子檢測結果決定；實際藥品與健保條件見主畫面或藥物庫。' });
+      }
+      // 具體藥名一律取自 _path.js 的 DRUGS（單一真相），不在本頁另列
+      const D = (typeof DRUGS === 'object') ? DRUGS : null;
+      const pick = D && ({ EGFR_EX19:D.EGFR, EGFR_L858R:D.EGFR, EGFR_CLASSIC:D.EGFR, EGFR:D.EGFR,
+                           ALK:D.ALK, ROS1:D.ROS1, BRAF:D.BRAF, MET:D.MET, KRAS:D.KRAS,
+                           RET:D.RET, NTRK:D.NTRK, HER2:D.HER2 })[mutE];
+      if(pick){
+        items.push({ title: pick.line, drugs:(pick.list||[]).map(function(x){return x.n}).join(' / '), note: pick.note });
+      }
+      if(mutE === 'EGFR_L858R' && d.b === 'yes' && d.t !== 'SQ' && D && D.EGFR_BRAIN){
+        items.push({ title:'L858R + 腦轉移（健保合併方案）', drugs:(D.EGFR_BRAIN.list||[]).map(function(x){return x.n}).join(' / '), note:D.EGFR_BRAIN.note });
+      }
+      if(['EGFR_EX19','EGFR_L858R','EGFR_CLASSIC','EGFR'].indexOf(mutE) >= 0){
+        items.push({ title:'惡化後', drugs:'做抗藥基因檢測（T790M）→ 依結果決定二線', note:'健保二線 Osimertinib 限先前用過第一／二代 TKI 且 T790M 陽性。' });
+      }
+      // V3.9.8：driver 陰性時補具體的免疫／化療組合（藥名取自 _path.js）
+      if(mutE === 'NEG' && D){
+        // 藥物表依組織型態分 NS_/SQ_（V3.9.8 修正鍵名）
+        const pfx = (d.t === 'SQ') ? 'SQ_' : 'NS_';
+        const io = (pdE === 'HIGH') ? D[pfx+'PDL1H'] : (pdE === 'LOW' ? D[pfx+'PDL1L'] : null);
+        if(io) items.push({ title: io.line, drugs:(io.list||[]).map(function(x){return x.n}).join(' / '), note: io.note });
+        else   items.push({ title:'第一線', drugs:'Pembrolizumab ± 含鉑化療', note:'實際組合依 PD-L1 表現與健保條件決定；建議補驗 PD-L1。' });
+      }
+      if(mutE === 'PENDING' || mutE === 'DECLINED'){
+        items.push({ title:'等報告期間', drugs:'可先含鉑化療', note:'報告出來後依結果調整。' });
       }
       return items;
     }
@@ -241,7 +271,8 @@ function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;
     items.push({title:'不適合手術', drugs:'SBRT（限 T1-2 N0）'});
     items.push({title:'術後輔助化療（II 期或高風險 IB）', drugs:'Cisplatin + Vinorelbine / Cisplatin + Pemetrexed', note:'4 個療程；高齡可改 Carboplatin'});
     if(t==='NS'){
-      items.push({title:'EGFR(+) 鞏固', drugs:'Osimertinib', note:'IB-IIIA 術後至多 3 年（ADAURA）'});
+      // V3.9.8（P0-2）：術後追加治療健保未給付（V2.13.0／BUG-33 已確認），原本無自費標示
+      items.push({title:'EGFR(+) 鞏固', drugs:'Osimertinib', note:'IB-IIIA 術後至多 3 年（ADAURA）。健保未給付術後追加治療，需自費或申請藥廠資源。'});
     }
     return items;
   }
