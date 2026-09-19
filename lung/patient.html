@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
-<title>肺癌路徑查詢 V1.19.6 — 彰濱秀傳癌症中心</title>
+<title>肺癌路徑查詢 V1.19.7 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1093,6 +1093,21 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
     </div>
 
     <!-- NSCLC: ② PD-L1 免疫指標（單選，可與驅動基因併存） -->
+    <!-- V3.9.6（G-08）：是否可手術切除 —— 決定走手術路徑或同步化放療，
+         也是健保術前輔助治療的條件之一；僅在早期／局部晚期時顯示 -->
+    <div class="q4-sec-label" id="q4-lbl-resect" style="display:none">醫師評估是否可以手術切除<span class="q4-sec-opt">　由胸腔外科／多專科團隊判定</span></div>
+    <div class="pdl1-grid" id="opt-resect" style="display:none">
+      <button type="button" class="mut-btn" data-val="yes" onclick="pickResect(this)">
+        <span class="mut-tag">可以</span><div class="mut-tt">評估可手術切除</div><div class="mut-ss"></div>
+      </button>
+      <button type="button" class="mut-btn" data-val="no" onclick="pickResect(this)">
+        <span class="mut-tag">不行</span><div class="mut-tt">無法手術切除</div><div class="mut-ss">以化放療為主</div>
+      </button>
+      <button type="button" class="mut-btn muted" data-val="unknown" onclick="pickResect(this)">
+        <span class="mut-tag">尚未評估</span><div class="mut-tt">還沒確定</div><div class="mut-ss"></div>
+      </button>
+    </div>
+
     <!-- V3.7.0: T790M 是疊加的抗藥性突變，不與主要突變互斥 -->
     <div class="q4-sec-label" id="q4-lbl-t790">② 抗藥性突變<span class="q4-sec-opt">　用過標靶藥後才會驗到</span></div>
     <div class="pdl1-grid" id="opt-t790">
@@ -1436,7 +1451,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 <script src="_path.js"></script>
 <script>
 'use strict';
-const MODULE_VERSION = 'V1.19.6';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
+const MODULE_VERSION = 'V1.19.7';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
 
 /* ═══════════════════════════════════════════════════
    STATE
@@ -1456,6 +1471,7 @@ const S = {
   // V2.10.0: 期別來源 — false = 臨床期別 (cTNM)；true = 病理期別 (pTNM, 已手術)
   postOp:false,
   // Q4 基因/腦轉移
+  resectable:'',   // V3.9.6: 是否可手術切除
   neoIO:'',        // V3.9.6: 術前使用的免疫藥（術後接續同一種）
   riskFactors:[],  // V3.7.1: 病理高風險因子（複選）
   drugOff:[],      // V3.7.0: 個管取消勾選的藥（預設全選）
@@ -1517,7 +1533,7 @@ async function saveQuery(){
     code:S.code||'', name:(S.name||'').slice(0,8),
     type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
     mut:S.mut||'', pdl1:S.pdl1||'', t790m:S.t790m||'', brainMet:S.brainMet||'',
-    drugOff:[...(S.drugOff||[])], riskFactors:[...(S.riskFactors||[])], neoIO:S.neoIO||'',   // V3.7.0/V3.7.1
+    drugOff:[...(S.drugOff||[])], riskFactors:[...(S.riskFactors||[])], neoIO:S.neoIO||'', resectable:S.resectable||'',   // V3.7.0/V3.7.1
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
     consult:{...S.consult},   // V3.3.2: 照護團隊醫師選擇（原本漏存）
@@ -1670,6 +1686,8 @@ function restoreAllUI(){
   document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.toggle('selected', S.t790m===b.dataset.val));   // V3.7.0
   document.querySelectorAll('#opt-risk .mut-btn').forEach(b=>b.classList.toggle('selected', (S.riskFactors||[]).includes(b.dataset.val)));   // V3.7.1
   document.querySelectorAll('#opt-neoio .mut-btn').forEach(b=>b.classList.toggle('selected', (S.neoIO||'')===b.dataset.val));   // V3.9.6
+  applyResectVisibility();
+  document.querySelectorAll('#opt-resect .mut-btn').forEach(b=>b.classList.toggle('selected', (S.resectable||'')===b.dataset.val));   // V3.9.6
   applyBrainNsVisibility();
   document.querySelectorAll('#opt-brain-ns .mut-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
   document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
@@ -1688,7 +1706,7 @@ async function loadRecord(id){
     type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
     stage:rec.stage||'', stageCat:rec.stageCat||'',
     postOp:!!rec.postOp, mut:rec.mut||'', pdl1:rec.pdl1||'', t790m:rec.t790m||'', brainMet:rec.brainMet||'',
-    drugOff:[...(rec.drugOff||[])], riskFactors:[...(rec.riskFactors||[])], neoIO:rec.neoIO||'',   // V3.7.0/V3.7.1
+    drugOff:[...(rec.drugOff||[])], riskFactors:[...(rec.riskFactors||[])], neoIO:rec.neoIO||'', resectable:rec.resectable||'',   // V3.7.0/V3.7.1
     possibleStages:[], stageLabel:'', stageNeed:[],   // V3.6.5: 明確覆寫，restoreAllUI 再依 TNM 重算
     txProgress:rec.txProgress||'', consult:{...(rec.consult||{})},  // V3.3.2: 還原團隊選擇
   });
@@ -1803,13 +1821,16 @@ function buildGeneTestAdvice(){
     foot = `以您的分期，<b>EGFR、ALK、PD-L1 健保有給付</b>，ROS1 只需材料費（約數百元）。是否檢測、檢測哪些，由您與醫師討論後決定。`;
   } else if(isSquamous && advanced){
     // 鱗狀 + 晚期 → 只有 PD-L1 健保
-    subtitle = `以您的分期（${stageTxt}、鱗狀），PD-L1 健保給付`;
+    // V3.9.6（G-10，Sela 決定：提高建議強度）：NCCN 8.2026 明確指出，轉移性鱗狀細胞癌
+    //   **所有病人**都可考慮分子檢測，不限於不吸菸、小切片或混合組織型等特定族群
+    //   —— 因為鱗狀癌雖然比例較低，仍可能帶有可用藥的驅動基因。
+    subtitle = `以您的分期（${stageTxt}、鱗狀），指引建議都考慮做分子檢測`;
     items = [
-      {tag:'健保', name:'PD-L1 免疫指標', why:'鱗狀肺癌與免疫治療評估較相關'},
-      {tag:'自費', self:true, name:'EGFR / ALK 檢測', why:'鱗狀較少見，少數病人仍可能為陽性'},
-      {tag:'材料費', self:true, name:'ROS1 檢測', why:'依醫師評估'},
+      {tag:'健保', name:'PD-L1 免疫指標', why:'決定能不能用免疫治療，健保有給付'},
+      {tag:'材料費', self:true, name:'ROS1 檢測', why:'費用約數百元，若為陽性有對應的標靶藥'},
+      {tag:'自費', self:true, name:'EGFR / ALK 檢測', why:'鱗狀肺癌比例較低但仍可能陽性，驗到就有標靶藥可用'},
     ];
-    foot = `以您的分期，<b>PD-L1 健保有給付</b>；EGFR、ALK 在鱗狀肺癌屬自費項目，是否加驗由醫師依您的狀況評估。`;
+    foot = `國際治療指引建議<b>所有晚期鱗狀肺癌病人都考慮做分子檢測</b>，因為即使比例較低，一旦驗到驅動基因就有對應的標靶藥可用。<b>PD-L1 健保有給付</b>、ROS1 僅需材料費（約數百元）；EGFR、ALK 在鱗狀肺癌屬自費。是否要驗、先驗哪些，可與主治醫師討論。`;
   } else {
     // 早期 → 健保多不給付
     subtitle = `以您的分期（${stageTxt}、早期），部分僅需材料費、部分自費`;
@@ -2093,6 +2114,7 @@ function buildEduPayload(){
     tp: qrEnc('tp', S.txProgress),
     rf: (S.riskFactors||[]).map(x=>qrEnc('rf',x)).join(''),     // 單字母串接，免分隔符
     ni: S.neoIO || '',                                          // V3.9.6（G-06）：術前使用的免疫藥
+    rs: S.resectable || '',                                     // V3.9.6（G-08）：是否可切除
     dx: compactDrugOff(S.drugOff),                               // 步驟鍵:藥物索引
     tm: TEAM.depts.map((d,i)=> (S.consult[d.id] ? i+':'+S.consult[d.id] : '')).filter(Boolean).join(','),
     c:  TEAM.caseManager.name,
@@ -2459,11 +2481,31 @@ function pickBrain(btn){
 function pickMut(btn){
   S.mut = btn.dataset.val;
   document.querySelectorAll('#opt-mut .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  applyResectVisibility();    // V3.9.6
   applyT790Visibility();      // V3.9.2
   applyBrainNsVisibility();   // V3.7.0
   updateActBar();  // V3.4.0: 驅動基因選完不自動跳（讓使用者續填 PD-L1），由「下一步」前進
 }
 // V3.4.0: PD-L1 免疫指標（與驅動基因併存，可各自單選）
+// V3.9.6（G-08）：是否可手術切除
+function pickResect(btn){
+  S.resectable = btn.dataset.val;
+  document.querySelectorAll('#opt-resect .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  applyResectVisibility();
+  updateActBar();
+}
+// 只有早期／局部晚期才問（轉移期與期別未定不問）
+function applyResectVisibility(){
+  const need = (S.stageCat === 'EARLY' || S.stageCat === 'LOCAL') && !S.postOp;
+  ['q4-lbl-resect','opt-resect'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.style.display = need ? '' : 'none';
+  });
+  if(!need && S.resectable){
+    S.resectable = '';
+    document.querySelectorAll('#opt-resect .mut-btn').forEach(b=>b.classList.remove('selected'));
+  }
+}
+
 // V3.9.6（G-06）：術前用過哪一種免疫藥 → 術後接續同一種
 function pickNeoIO(btn){
   S.neoIO = btn.dataset.val || '';
@@ -2592,7 +2634,7 @@ function resetStageState(opts){
   if(!keepMode) tnmAdv = false;
 }
 function resetMolecularState(){
-  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[]; S.riskFactors=[]; S.neoIO='';   // V3.7.0/V3.7.1
+  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[]; S.riskFactors=[]; S.neoIO=''; S.resectable='';   // V3.7.0/V3.7.1
   document.querySelectorAll('.mut-btn, .brain-btn').forEach(b=>b.classList.remove('selected'));
 }
 function resetProgressState(){

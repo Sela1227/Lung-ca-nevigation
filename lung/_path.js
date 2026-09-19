@@ -219,6 +219,32 @@ function buildPathCore(state){
   const typeLabel = isNS ? '非小細胞肺癌（非鱗狀）' : (t==='NSCLC_SQ' ? '非小細胞肺癌（鱗狀）' : '肺癌');
 
   if(st==='EARLY'){
+    // V3.9.6（G-08，Sela 決定：加「是否可切除」欄位）：
+    //   NCCN 8.2026 的 Durvalumab 鞏固亦涵蓋**不可切除的第二期**（PS 0-1、definitive CCRT 後未惡化）。
+    //   但健保條文寫「第三期局部晚期」→ 第二期不符給付。依既定原則：呈現 + 標示健保不符。
+    if(state.resectable === 'no'){
+      const _c2 = ruleConsolidationIII(m, !isNS);
+      const _steps2 = [
+        { id:'early-unresect-ccrt', title:'無法手術切除時：以同步化放療為主要治療', line:'主要治療', nhi:'NHI',
+          drugs: isNS
+            ? [{n:'Carboplatin + Pemetrexed + 胸部放射線治療',z:'卡鉑 + 愛寧達 + 放射線治療'},
+               {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'順鉑 + 滅必治 + 放射線治療'}]
+            : [{n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'卡鉑 + 紫杉醇 + 放射線治療'},
+               {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'順鉑 + 滅必治 + 放射線治療'}],
+          note: chemoNote(isNS) + '化療與放射線治療同時進行。' },
+        { id:'early-unresect-consol', title:_c2.label, line:'鞏固治療',
+          nhi: _c2.kind === 'osimertinib' ? 'NHI' : 'SELF',
+          drugs: _c2.drug ? [{n:_c2.drug, z:''}] : [],
+          note: _c2.note + (_c2.kind === 'durvalumab'
+            ? '　※ 健保的 Durvalumab 鞏固條文限「第三期局部晚期」，第二期目前不符給付條件；國際指引則涵蓋不可切除的第二期，若考慮使用需自費或另行申請。' : '') },
+      ];
+      return {
+        stageTxt:`${typeLabel} 早期 (I-II) — 無法手術切除`,
+        pwTxt:'因腫瘤位置或身體狀況無法手術，以同步化放療為主要治療',
+        steps:_steps2,
+        warns:['是否可以手術由胸腔外科與多專科團隊判定；若評估後可以手術，治療方向會不同，請與主治醫師確認'],
+      };
+    }
     // V3.0.1: 細分 IA 與 IB+ 期別差異（病人語言）
     const stage = state.stage || '';
     // V3.6.4: 用「所有可能分期」判定，簡易模式 T1N0M0（IA1–IA3）也能正確走 IA 分支
@@ -452,6 +478,12 @@ function buildPathCore(state){
     } else if(m==='ROS1'){
       steps = [
         { id:'ros1-1l', title:'第一線：口服 ROS1 標靶藥', line:DRUGS.ROS1.line, nhi:'NHI', drugs: DRUGS.ROS1.list, note: DRUGS.ROS1.note },
+        // V3.9.6（G-09，Sela 決定：呈現並標自費）：NCCN 8.2026（Version 7 起）新增
+        //   Zidesamtinib 為 ROS1 後線選項，腦部病灶為 preferred；亦可用於 G2032R 等抗藥突變。
+        //   健保第 9 章查無此藥 → 標示自費。
+        { id:'ros1-2l-zide', title:'產生抗藥性後：新一代 ROS1 標靶藥', line:'後線標靶', nhi:'SELF',
+          drugs:[{n:'Zidesamtinib',z:'（新一代 ROS1 抑制劑）'}],
+          note:'國際指引（NCCN）將此藥列為 ROS1 抗藥後的選項，對腦部病灶尤其建議；也適用於 G2032R 等抗藥性突變。台灣健保目前查無此藥的給付條文，需自費或申請臨床試驗。' },
         { id:'ros1-chemo', title:'若產生抗藥性或多線失敗：接續化療', line:'接續治療', nhi:'NHI', drugs:[chemoBackbone(isNS)], note: chemoNote(isNS) },
       ];
     } else if(m==='BRAF'){
@@ -1193,6 +1225,12 @@ function ruleNeoadjuvant(state, isSquamous){
     return { eligible:false, reason:'pending', regimen:[],
       label:'術前輔助治療：需先確認 EGFR／ALK 檢測結果',
       note:'健保術前輔助治療限「不具 EGFR 或 ALK 腫瘤基因異常」者，須有檢測報告才能判定是否符合。' };
+  }
+  // V3.9.6（G-08 附帶）：有了「是否可切除」欄位後，術前輔助不再只能標示「需 MDT 判定」
+  if(state && state.resectable === 'no'){
+    return { eligible:false, reason:'unresectable', regimen:[],
+      label:'術前輔助治療：不適用（評估為無法手術切除）',
+      note:'術前輔助治療的目的是讓腫瘤縮小以利手術，健保條文亦限「可切除」者。若評估為無法切除，治療方向以同步化放療為主。' };
   }
   if(!isM0 || !(sizeGe4 || nodePos)){
     return { eligible:false, reason:'stage', regimen:[],

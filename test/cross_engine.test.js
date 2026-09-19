@@ -354,5 +354,43 @@ ok(/Tarlatamab/.test(allDrugs(sclcEs)), 'G-07 SCLC 後線含 Tarlatamab');
 ok(/細胞激素釋放症候群/.test(JSON.stringify(sclcEs)), 'G-07 說明 CRS 風險');
 ok(/健保未給付|自費/.test(JSON.stringify(sclcEs)), 'G-07 標示自費');
 
+/* ═══ 14. NCCN 差異 G-08～G-10 ═══ */
+section('NCCN 差異項目 G-08～G-10');
+
+// G-08：是否可切除 × 組織型態 × driver 的完整矩陣（記取只改一條分支的教訓）
+[['NSCLC_NS','NEG'], ['NSCLC_SQ','NEG'], ['NSCLC_NS','EGFR_EX19'], ['NSCLC_NS','ALK']].forEach(([type, mut]) => {
+  const surg = runEng(type, mut, { stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'], resectable:'yes' });
+  const unre = runEng(type, mut, { stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'], resectable:'no' });
+  ok((surg.steps||[]).some(s => /手術切除/.test(s.title||'')), `G-08 ${type}/${mut} 可切除 → 手術路徑`);
+  ok((unre.steps||[]).some(s => /同步化放療/.test(s.title||'')), `G-08 ${type}/${mut} 不可切除 → 化放療路徑`);
+  ok(!(unre.steps||[]).some(s => /術前輔助|手術前可先做/.test(s.title||'')), `G-08 ${type}/${mut} 不可切除時不得提術前輔助`);
+});
+// 不可切除 II 期的鞏固要依 driver 分流，且標示健保第二期不符
+const unreNeg = runEng('NSCLC_NS','NEG', { stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'], resectable:'no' });
+ok(/Durvalumab/.test(allDrugs(unreNeg)), 'G-08 不可切除 II 期 driver 陰性 → Durvalumab 鞏固');
+ok(/第二期目前不符給付/.test(JSON.stringify(unreNeg)), 'G-08 標示健保第二期不符給付');
+const unreEgfr = runEng('NSCLC_NS','EGFR_EX19', { stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'], resectable:'no' });
+ok(/Osimertinib/.test(allDrugs(unreEgfr)) && !/Durvalumab/.test(allDrugs(unreEgfr)),
+   'G-08 不可切除 II 期 EGFR+ → Osimertinib 鞏固（非 Durvalumab）');
+// 不可切除的 IIIA 不得再提術前輔助
+const unreIIIA = runEng('NSCLC_NS','NEG', { stageCat:'LOCAL', stage:'IIIA', possibleStages:['IIIA'], resectable:'no' });
+ok(!(unreIIIA.steps||[]).some(s => /手術前可先做/.test(s.title||'')), 'G-08 不可切除 IIIA 不得提術前輔助');
+// 輸入端
+ok(read('lung/patient.html').includes('opt-resect'), 'G-08 民眾版有「是否可切除」欄位');
+ok(read('lung/patient.html').includes('rs: S.resectable'), 'G-08 QR payload 帶 resectable');
+ok(read('lung/edu-patient.html').includes('resectable: d.rs'), 'G-08 edu 接收 resectable');
+
+// G-09：ROS1 抗藥後 Zidesamtinib，標自費
+const ros1 = runEng('NSCLC_NS','ROS1');
+ok(/Zidesamtinib/.test(allDrugs(ros1)), 'G-09 ROS1 抗藥後有 Zidesamtinib');
+ok(/查無此藥的給付條文|自費/.test(JSON.stringify(ros1)), 'G-09 標示自費');
+ok((ros1.steps||[]).some(s => /接續化療/.test(s.title||'')), 'G-09 仍保留化療選項');
+
+// G-10：鱗狀癌檢測建議強度提高
+const sqAdvice = read('lung/patient.html');
+ok(/指引建議都考慮做分子檢測/.test(sqAdvice), 'G-10 鱗狀檢測建議強度提高');
+ok(/所有晚期鱗狀肺癌病人都考慮做分子檢測/.test(sqAdvice), 'G-10 說明「所有病人都考慮」');
+ok(/ROS1 僅需材料費/.test(sqAdvice), 'G-10 保留費用差異說明');
+
 console.log(`\n═══ 結果：${pass} 通過 / ${fail} 失敗 ═══`);
 process.exit(fail ? 1 : 0);
