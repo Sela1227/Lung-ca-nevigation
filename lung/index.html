@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.9</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1211,9 +1211,30 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <input type="file" id="imp-file" accept=".json" style="display:none" onchange="APP.handleImport(event)">
 <input type="file" id="imp-backup" accept=".json" style="display:none" onchange="APP.handleRestore(event)">
 
-<script src="_staging.js"></script>
-<script src="_path.js"></script>   <!-- V3.9.0: 共用臨床規則層 -->
+<script src="_staging.js?v=3.9.10"></script>
+<script src="_path.js?v=3.9.10"></script>   <!-- V3.9.0: 共用臨床規則層 -->
 <script>
+
+/* V3.9.10（內部審核 P1-7）：共用檔版號不符時明確失敗，不靜默降級。
+   GitHub Pages 預設快取 10 分鐘、院內代理可能更久 → 會出現「新 HTML + 舊 _path.js」。 */
+(function(){
+  var want = 'V3.9.10';
+  var okPath = (typeof PATH_VERSION !== 'undefined' && PATH_VERSION === want);
+  var okStag = (typeof STAGING_VERSION !== 'undefined' && STAGING_VERSION === want);
+  if(okPath && okStag) return;
+  var msg = '系統檔案版本不一致（可能是瀏覽器快取），請重新整理頁面（Windows: Ctrl+F5／Mac: Cmd+Shift+R）。'
+          + '在此之前顯示的治療內容可能不是最新版本。';
+  function show(){
+    if(!document.body) return setTimeout(show, 50);
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div style="background:#B3261E;color:#fff;padding:12px 16px;font-size:14px;font-weight:700;line-height:1.5;position:relative;z-index:9999">⚠ ' + msg + '</div>');
+  }
+  show();
+  if(typeof console !== 'undefined') console.error('[version] 期望 ' + want + '，實得 path=' +
+    (typeof PATH_VERSION !== 'undefined' ? PATH_VERSION : '(未載入)') + ' staging=' +
+    (typeof STAGING_VERSION !== 'undefined' ? STAGING_VERSION : '(未載入)'));
+})();
+
 // ═══════════════════════════════════════════
 //  ALL APP LOGIC — single global object
 // ═══════════════════════════════════════════
@@ -1224,8 +1245,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.19.9';
-const SYSTEM_VERSION = 'V3.9.9';
+const MODULE_VERSION = 'V1.19.10';
+const SYSTEM_VERSION = 'V3.9.10';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1430,10 +1451,21 @@ function openDB(){
     r.onerror = e => fail(e);
   });
 }
-function put(s,d){ return new Promise(r=>{ const t=db.transaction(s,'readwrite'); t.objectStore(s).put(d); t.oncomplete=()=>r(); }); }
-function get(s,k){ return new Promise(r=>{ const t=db.transaction(s); const q=t.objectStore(s).get(k); q.onsuccess=()=>r(q.result); }); }
-function getAll(s){ return new Promise(r=>{ const t=db.transaction(s); const q=t.objectStore(s).getAll(); q.onsuccess=()=>r(q.result); }); }
-function del(s,k){ return new Promise(r=>{ const t=db.transaction(s,'readwrite'); t.objectStore(s).delete(k); t.oncomplete=()=>r(); }); }
+/* V3.9.10（內部審核 P1-6）：原本只處理 oncomplete／onsuccess，沒有 onerror／onabort
+   → 寫入失敗（容量滿、資料無法序列化、iOS 清除儲存）時 Promise **永遠不會結束**，
+   呼叫端的 await 卡住，畫面沒反應也沒有任何訊息。改為三種結果都處理，
+   並讓 put() 回傳新 key（供新增紀錄直接取得 id，不必再 getAll 取最後一筆）。 */
+function _txp(tx, getResult){
+  return new Promise((ok, fail) => {
+    tx.oncomplete = () => ok(typeof getResult === 'function' ? getResult() : undefined);
+    tx.onerror    = () => fail(tx.error || new Error('IndexedDB 交易失敗'));
+    tx.onabort    = () => fail(tx.error || new Error('IndexedDB 交易被中止'));
+  });
+}
+function put(s,d){ const t=db.transaction(s,'readwrite'); const q=t.objectStore(s).put(d); return _txp(t, ()=>q.result); }
+function get(s,k){ const t=db.transaction(s); const q=t.objectStore(s).get(k); return _txp(t, ()=>q.result); }
+function getAll(s){ const t=db.transaction(s); const q=t.objectStore(s).getAll(); return _txp(t, ()=>q.result); }
+function del(s,k){ const t=db.transaction(s,'readwrite'); t.objectStore(s).delete(k); return _txp(t); }
 
 // ── Navigation ──
 // V2.7.0 perf: cache panel/nav-item NodeLists (do NOT re-querySelectorAll on every nav)
@@ -1485,7 +1517,11 @@ async function autoUpdateRecord(){
     Object.assign(existing, collectStateFields());
     await put('records', existing);
     _dirty = false;  // V3.1.2 #2: 已寫入，清除未儲存旗標
-  }catch(e){}
+  }catch(e){
+    // V3.9.10（P1-6）：原本 catch 空白 → 自動更新失敗時完全無聲，_dirty 也已被清掉
+    console.error('[record] 自動更新失敗', e);
+    alert('這筆紀錄自動儲存失敗：' + (e && e.message ? e.message : '未知錯誤') + '\n請手動儲存或匯出備份，避免資料遺失。');
+  }
 }
 A.back = function(){ const flow=['patient','basicck','decision','checklist','pathway','summary','edu']; const i=flow.indexOf(cur); if(i>0) A.go(flow[i-1]); };
 A.next = function(){ const flow=['patient','basicck','decision','checklist','pathway','summary','edu']; const i=flow.indexOf(cur); readForm(); if(i>=0&&i<flow.length-1) A.go(flow[i+1]); };
@@ -1554,14 +1590,32 @@ A.pickGender = function(v){ A.S.gender=v; document.querySelectorAll('.gender-btn
 A.pickECOG = function(v){ A.S.ecog=v; document.querySelectorAll('.ecog-btn').forEach(b=>b.classList.toggle('selected',b.dataset.val===v)); };
 
 // ── Draft auto-save ──
+/* V3.9.10（內部審核 P1-6）：兩個問題 —
+   1. 新草稿的 id 用 `getAll()` 取最後一筆，而不是 put() 回傳的 key →
+      快速連點或滑動換頁時兩次呼叫都看到 draftId=null → **產生重複草稿**。
+   2. 沒有單飛鎖，換頁時的 saveDraft 可能重入。
+   改為用 put() 回傳的 key，並加上單飛鎖；寫入失敗時保留 _dirty 並提示。 */
+let _draftSaving = null;
 async function saveDraft(){
   if(!A.S.code && !A.S.type) return;
   if(editId) return;
-  const d = {...A.S, updatedAt: new Date().toISOString()};
-  if(draftId) d.id = draftId; else delete d.id;
-  await put('drafts', d);
-  if(!draftId){ const all = await getAll('drafts'); draftId = all[all.length-1]?.id; }
-  _dirty = false;  // V3.1.2 #2: 草稿已存，清除未儲存旗標
+  if(_draftSaving) return _draftSaving;          // 單飛：同時間只跑一次
+  _draftSaving = (async () => {
+    const d = {...A.S, updatedAt: new Date().toISOString()};
+    if(draftId) d.id = draftId; else delete d.id;
+    try{
+      const key = await put('drafts', d);
+      if(!draftId && key != null) draftId = key;  // 直接用寫入回傳的 key
+      _dirty = false;
+    }catch(e){
+      // 寫入失敗（容量滿、儲存被清除）→ 保留 _dirty，讓離開頁面時仍會提醒
+      console.error('[draft] 自動儲存失敗', e);
+      alert('草稿自動儲存失敗：' + (e && e.message ? e.message : '瀏覽器儲存空間可能已滿') + '\n請盡快手動儲存或匯出備份。');
+    }finally{
+      _draftSaving = null;
+    }
+  })();
+  return _draftSaving;
 }
 
 // ── Record list ──
@@ -3307,7 +3361,9 @@ function buildEduPayload(){
 
 function buildEduURL(){
   const json = JSON.stringify(buildEduPayload());
-  const b64 = btoa(unescape(encodeURIComponent(json)));
+  // V3.9.10（內部審核 P1-5）：V3.8.1 已確認標準 base64 的 + / = 會被部分 App 二次編碼
+  //   導致「資料解析失敗」，但當時只修了民眾版。改用共用的 b64uEnc（base64url）。
+  const b64 = (typeof b64uEnc === 'function') ? b64uEnc(json) : btoa(unescape(encodeURIComponent(json)));
   return EDU_BASE_URL + '#' + b64;
 }
 
@@ -3319,11 +3375,11 @@ function renderEduQR(){
     const url = buildEduURL();
     new QRCode(container, {
       text: url,
-      width: 150,
-      height: 150,
+      width: 260,      // V3.9.10（P1-5）：payload 變長後 150px 太密，提高掃描成功率
+      height: 260,
       colorDark: '#000000',
       colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.L
+      correctLevel: QRCode.CorrectLevel.M   // V3.9.10（P1-5）：L→M，列印或折損時仍可掃
     });
   } catch(e){ container.innerHTML = '<span style="font-size:11px;color:var(--text3)">QR 產生失敗</span>'; }
 }
@@ -4246,6 +4302,10 @@ document.querySelector('.content').addEventListener('touchend',e=>{const dx=e.ch
 })();
 
 async function boot(){
+  // V3.9.10（內部審核 P1-6）：未要求持久化時，瀏覽器在儲存壓力下可回收本站資料；
+  //   iOS／iPadOS Safari 對「未加入主畫面」的網站，7 天未互動會清除腳本寫入的儲存。
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+
   await openDB();
   document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'});
   document.getElementById('pt-casedate').value = todayStr();

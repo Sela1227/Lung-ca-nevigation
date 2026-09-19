@@ -80,9 +80,30 @@ body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui
 <body>
 <div id="app"></div>
 <div class="page-footer" id="page-footer"></div>
-<script src="_staging.js"></script>
-<script src="_path.js"></script>
+<script src="_staging.js?v=3.9.10"></script>
+<script src="_path.js?v=3.9.10"></script>
 <script>
+
+/* V3.9.10（內部審核 P1-7）：共用檔版號不符時明確失敗，不靜默降級。
+   GitHub Pages 預設快取 10 分鐘、院內代理可能更久 → 會出現「新 HTML + 舊 _path.js」。 */
+(function(){
+  var want = 'V3.9.10';
+  var okPath = (typeof PATH_VERSION !== 'undefined' && PATH_VERSION === want);
+  var okStag = (typeof STAGING_VERSION !== 'undefined' && STAGING_VERSION === want);
+  if(okPath && okStag) return;
+  var msg = '系統檔案版本不一致（可能是瀏覽器快取），請重新整理頁面（Windows: Ctrl+F5／Mac: Cmd+Shift+R）。'
+          + '在此之前顯示的治療內容可能不是最新版本。';
+  function show(){
+    if(!document.body) return setTimeout(show, 50);
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div style="background:#B3261E;color:#fff;padding:12px 16px;font-size:14px;font-weight:700;line-height:1.5;position:relative;z-index:9999">⚠ ' + msg + '</div>');
+  }
+  show();
+  if(typeof console !== 'undefined') console.error('[version] 期望 ' + want + '，實得 path=' +
+    (typeof PATH_VERSION !== 'undefined' ? PATH_VERSION : '(未載入)') + ' staging=' +
+    (typeof STAGING_VERSION !== 'undefined' ? STAGING_VERSION : '(未載入)'));
+})();
+
 /* V3.8.0（外部審核 P0-2）：QR fragment 是外部可控輸入，所有欄位輸出前必須 escape */
 // V3.9.0: edu-pro payload → 共用規則層的 mutation enum
 // V3.9.8（P0-1）：醫護版的 pd 可能是 'high'/'low' 或數值（如 '80'），統一轉成規則層用的帶別
@@ -283,7 +304,8 @@ function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;
 
   let d;
   try {
-    const json = decodeURIComponent(escape(atob(frag)));
+    // V3.9.10（P1-5）：改用共用的 b64uDec（相容舊的標準 base64）
+    const json = (typeof b64uDec === 'function') ? b64uDec(frag) : decodeURIComponent(escape(atob(frag)));
     d = JSON.parse(json);
   } catch(e){ showError('資料解析失敗','QR code 內容無法解讀，請確認連結完整。'); return; }
 

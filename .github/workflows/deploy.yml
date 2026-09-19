@@ -28,10 +28,23 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      # V3.9.10（內部審核 P1-8）：原本 path:'.' 會把 CLAUDE.md、README.md（含醫護密碼與
+      #   內部教訓）、SELA-handoff.md、docs/（未核定的臨床決策清單）、test/ 全部公開到
+      #   GitHub Pages，且可被搜尋引擎索引。改成白名單組裝，只上傳真正要對外的檔案。
+      - name: Assemble site (whitelist only)
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r lung favicon _site/
+          cp .nojekyll _site/ 2>/dev/null || true
+          # 明確排除：CLAUDE.md / README.md / SELA-*.md / docs/ / test/ / .github/
+          echo "--- 將上傳的內容 ---"
+          find _site -maxdepth 2 -type f | sort
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'          # 純靜態，整個 repo 直接上傳，不需 build
+          path: '_site'      # V3.9.10（審核 P1-8）：只上傳白名單，不再整個 repo 公開
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

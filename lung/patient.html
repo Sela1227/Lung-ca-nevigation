@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
-<title>肺癌路徑查詢 V1.19.9 — 彰濱秀傳癌症中心</title>
+<title>肺癌路徑查詢 V1.19.10 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1447,11 +1447,32 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
   </button>
 </div>
 
-<script src="_staging.js"></script>
-<script src="_path.js"></script>
+<script src="_staging.js?v=3.9.10"></script>
+<script src="_path.js?v=3.9.10"></script>
 <script>
+
+/* V3.9.10（內部審核 P1-7）：共用檔版號不符時明確失敗，不靜默降級。
+   GitHub Pages 預設快取 10 分鐘、院內代理可能更久 → 會出現「新 HTML + 舊 _path.js」。 */
+(function(){
+  var want = 'V3.9.10';
+  var okPath = (typeof PATH_VERSION !== 'undefined' && PATH_VERSION === want);
+  var okStag = (typeof STAGING_VERSION !== 'undefined' && STAGING_VERSION === want);
+  if(okPath && okStag) return;
+  var msg = '系統檔案版本不一致（可能是瀏覽器快取），請重新整理頁面（Windows: Ctrl+F5／Mac: Cmd+Shift+R）。'
+          + '在此之前顯示的治療內容可能不是最新版本。';
+  function show(){
+    if(!document.body) return setTimeout(show, 50);
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div style="background:#B3261E;color:#fff;padding:12px 16px;font-size:14px;font-weight:700;line-height:1.5;position:relative;z-index:9999">⚠ ' + msg + '</div>');
+  }
+  show();
+  if(typeof console !== 'undefined') console.error('[version] 期望 ' + want + '，實得 path=' +
+    (typeof PATH_VERSION !== 'undefined' ? PATH_VERSION : '(未載入)') + ' staging=' +
+    (typeof STAGING_VERSION !== 'undefined' ? STAGING_VERSION : '(未載入)'));
+})();
+
 'use strict';
-const MODULE_VERSION = 'V1.19.9';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
+const MODULE_VERSION = 'V1.19.10';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
 
 /* ═══════════════════════════════════════════════════
    STATE
