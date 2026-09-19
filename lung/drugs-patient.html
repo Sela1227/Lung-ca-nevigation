@@ -2,11 +2,28 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+<link rel="icon" href="../favicon/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+<link rel="manifest" href="../favicon/site.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover">
 <meta name="theme-color" content="#0d9488">
 <title>肺癌常用藥物（民眾版） — 彰濱秀傳癌症中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* A11y: 鍵盤 focus 環 */
+:focus-visible{outline:2.5px solid var(--teal);outline-offset:2px;border-radius:5px}
+/* A11y: 尊重減少動態偏好 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
 :root{
   --teal:#0d9488; --teal2:#0f766e; --teal-d:#115e59;
   --teal-bg:rgba(13,148,136,.08); --teal-bdr:rgba(13,148,136,.22); --teal-soft:#e6f5f3;
@@ -20,7 +37,7 @@
   --purple:#7c3aed; --purple-bg:#ede9fe;
 }
 html,body{min-height:100%}
-body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.55}
+body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.55}
 
 /* Header */
 .hdr{background:linear-gradient(135deg,#115e59 0%,#0f766e 50%,#0d9488 100%);color:#fff;padding:18px 18px 22px;text-align:left}
@@ -219,6 +236,20 @@ const ALL_DRUGS = [
     sideEff:'腹瀉、皮疹、甲溝炎、口腔潰瘍。',
     matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
 
+  // V3.9.1: 健保 9.138（115/8/1）新增給付
+  { en:'Aumolertinib',  zh:'普米維',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS'],
+    target:'EGFR ex19del／L858R（第一線，肺腺癌）；或先前 EGFR 標靶失敗且 T790M 陽性（第二線）',
+    purpose:'第三代 EGFR 標靶藥，健保 115/8/1 起給付。第一線與其他 EGFR 標靶藥擇一使用，不得互換。',
+    sideEff:'皮疹、腹瀉、肝指數上升、血球下降。',
+    matchKey:['NSCLC_NS:META:EGFR']},
+
+  // V3.9.4: 健保 115/6/1 起給付術前（前導）輔助治療
+  { en:'Nivolumab',     zh:'保疾伏',   cat:'IO', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
+    target:'可切除、腫瘤 ≥4 公分或淋巴結 N1／N2（排除 N3）、無遠端轉移，且不具 EGFR／ALK 基因異常者',
+    purpose:'手術前先做的免疫合併化療（前導治療），目的是讓腫瘤縮小、提高手術成功率。至多 3 個療程。',
+    sideEff:'疲倦、皮疹、腹瀉、甲狀腺功能異常；少數會有免疫相關發炎反應。',
+    matchKey:['NSCLC_NS:EARLY:','NSCLC_SQ:EARLY:']},
+
   // ─── ALK / ROS1 標靶 ───
   { en:'Alectinib',     zh:'安立適',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ'],
     target:'ALK 基因重組的非小細胞肺癌',
@@ -271,7 +302,7 @@ const ALL_DRUGS = [
     target:'EGFR exon 20 ins 第一線（合併化療）；其他 EGFR 突變失敗後',
     purpose:'EGFR/MET 雙特異抗體。健保限 EGFR exon 20 ins 第一線併用 carboplatin + pemetrexed (9.126)；用於 Osimertinib 失敗後通常需自費。',
     sideEff:'輸注反應（發燒、寒顫）、皮疹、甲溝炎、低血鎂。',
-    matchKey:['NSCLC_NS:META:EGFR','NSCLC_SQ:META:EGFR']},
+    matchKey:['NSCLC_NS:META:EGFR_EX20','NSCLC_SQ:META:EGFR_EX20']},
 
   // ─── 抗血管 ───
   { en:'Bevacizumab',   zh:'癌思停',   cat:'TARGET', nhi:'NHI', applyTo:['NSCLC_NS'],
@@ -303,7 +334,7 @@ const ALL_DRUGS = [
     purpose:'破壞腫瘤細胞 DNA。鉑類雙藥的核心藥。',
     sideEff:'噁心嘔吐、腎功能影響、聽力下降、神經麻痺、骨髓抑制。',
     matchKey:['NSCLC_NS:EARLY:','NSCLC_SQ:EARLY:','NSCLC_NS:LOCAL:','NSCLC_SQ:LOCAL:','SCLC:LOCAL:','SCLC:META:']},
-  { en:'Carboplatin',   zh:'碳鉑',     cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
+  { en:'Carboplatin',   zh:'卡鉑',     cat:'CHEMO',  nhi:'NHI', applyTo:['NSCLC_NS','NSCLC_SQ','SCLC'],
     target:'NSCLC / SCLC 化療（高齡或腎不佳優先）',
     purpose:'順鉑的替代藥，副作用較輕，腎功能影響較小。',
     sideEff:'骨髓抑制（白血球/血小板下降）、噁心、疲倦。',
@@ -344,6 +375,8 @@ let curQ = '';
 let matchType = '';   // 從 query 帶來的 type
 let matchStage = '';
 let matchMut = '';
+let matchPdl1 = '';      // V3.6.4
+let matchDriverRaw = '';  // V3.6.4
 
 function getFiltered(){
   return ALL_DRUGS.filter(d=>{
@@ -489,7 +522,7 @@ function clearSearch(){
   render();
 }
 function clearMatch(){
-  matchType=''; matchStage=''; matchMut='';
+  matchType=''; matchStage=''; matchMut=''; matchPdl1=''; matchDriverRaw='';
   document.getElementById('match-banner').style.display='none';
   // 順便清 type filter（讓使用者看全部）
   setTypeF('ALL');
@@ -506,15 +539,27 @@ function readQueryMatch(){
   const sp = new URLSearchParams(location.search);
   const t = sp.get('type') || '';
   const s = sp.get('stage') || '';
-  const m = sp.get('mut') || '';
+  // V3.6.4: 新 contract — driver 與 PD-L1 分開；保留 mut 供舊連結/SCLC 使用
+  const driver = sp.get('driver') || '';
+  const pdl1   = sp.get('pdl1') || '';
+  const m = driver || sp.get('mut') || '';
   if(!t) return;
   matchType = t;
   matchStage = s;
-  matchMut = m;
+  // 驅動基因優先；已確認陰性(NEG)才用 PD-L1 決定免疫藥；未檢測(PENDING)不做個人化配對
+  matchMut = ({EGFR_CLASSIC:'EGFR', EGFR:'EGFR', EGFR_EX19:'EGFR', EGFR_L858R:'EGFR', EGFR_OTHER:'EGFR', EGFR_EX20:'EGFR_EX20'})[m]   // V3.8.0
+          || (['ALK','ROS1','BRAF','MET','KRAS'].includes(m) ? m
+          : (m === 'NEG' ? ({HIGH:'PDL1_HIGH', LOW:'PDL1_LOW'})[pdl1] || ''
+          : (m === 'PENDING' ? '' : m)));
+  matchPdl1 = pdl1;
+  matchDriverRaw = m;
   // 顯示 banner
   const typeLabel = ({NSCLC_NS:'非小細胞肺癌（非鱗）',NSCLC_SQ:'非小細胞肺癌（鱗狀）',SCLC:'小細胞肺癌'})[t] || t;
   const stageLabel = ({EARLY:'早期',LOCAL:'局部晚期',META:'轉移期/擴散期'})[s] || s;
-  const mutLabel = m ? ({EGFR:'EGFR(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS(+)',PDL1_HIGH:'PD-L1≥50%',PDL1_LOW:'PD-L1<50%',NONE:'尚未檢測'})[m] || m : '';
+  // V3.6.4: 支援新 enum，並把 PD-L1 一起顯示
+  const driverLabel = m ? ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX19:'EGFR ex19del(+)',EGFR_L858R:'EGFR L858R(+)',EGFR_OTHER:'EGFR 其他型(+)',EGFR_EX20:'EGFR exon20 ins(+)',DECLINED:'暫不檢測',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NEG:'無驅動基因',PENDING:'基因檢測中',NONE:'尚未檢測'})[m] || m : '';
+  const pdl1Label = ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%',UNKNOWN:'PD-L1 未驗'})[pdl1] || '';
+  const mutLabel = [driverLabel, pdl1Label].filter(Boolean).join('　·　');
   const banner = document.getElementById('match-banner');
   banner.style.display = '';
   banner.className = 'match-banner';

@@ -2,14 +2,31 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+<link rel="icon" href="../favicon/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+<link rel="manifest" href="../favicon/site.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="robots" content="noindex, nofollow">
 <title>個人化照護導航手冊（醫護版） — 彰濱秀傳癌症中心</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+/* A11y: 鍵盤 focus 環 */
+:focus-visible{outline:2.5px solid var(--primary);outline-offset:2px;border-radius:5px}
+/* A11y: 尊重減少動態偏好 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
 :root{--primary:#5B8FB9;--primary-dark:#4A7A9E;--primary-light:#EAF1F7;--rose:#e11d48;--text:#2C3E50;--text2:#5A6B7C;--text3:#8A9BAA;--surface:#fff;--surface2:#F1F4F8;--border:#E2E8F0}
-body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;background:#F7F9FB;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+body{font-family:'Microsoft JhengHei','微軟正黑體','Noto Sans TC',system-ui,sans-serif;background:#F7F9FB;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 .edu-handout{max-width:800px;width:100%;border:2px solid var(--primary);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.08)}
 .edu-hdr{background:var(--primary);color:#fff;padding:20px 28px;text-align:center}
 .edu-hdr h2{font-size:22px;font-weight:900;margin-bottom:4px}
@@ -63,7 +80,26 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
 <body>
 <div id="app"></div>
 <div class="page-footer" id="page-footer"></div>
+<script src="_staging.js"></script>
+<script src="_path.js"></script>
 <script>
+/* V3.8.0（外部審核 P0-2）：QR fragment 是外部可控輸入，所有欄位輸出前必須 escape */
+// V3.9.0: edu-pro payload → 共用規則層的 mutation enum
+function _eduProMut(d){
+  const m = (d && d.m) || '';
+  if(/EX19|19del/i.test(m)) return 'EGFR_EX19';
+  if(/L858R/i.test(m))      return 'EGFR_L858R';
+  if(/EX20|exon20/i.test(m))return 'EGFR_EX20';
+  if(/^EGFR/i.test(m))      return 'EGFR_OTHER';   // 位點不明 → 不可當 classic
+  if(/ALK/i.test(m))  return 'ALK';
+  if(/ROS1/i.test(m)) return 'ROS1';
+  if(/BRAF/i.test(m)) return 'BRAF';
+  if(/MET/i.test(m))  return 'MET';
+  if(/KRAS/i.test(m)) return 'KRAS';
+  if(/PDL1|NEG/i.test(m)) return 'NEG';
+  return 'PENDING';
+}
+function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 (function(){
   const app = document.getElementById('app');
   const footer = document.getElementById('page-footer');
@@ -101,7 +137,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
       }
       // Limited
       if(b==='yes') return '同步化放療 + 腦轉移治療性放療（不再做 PCI）';
-      if(b==='no')  return '同步化放療 + CR/PR 後預防性全腦照射 (PCI)';
+      if(b==='no')  return '同步化放療 + CR/PR 後預防性全腦照射 (PCI) → 免疫鞏固（Durvalumab，健保未給付）';   // V3.9.0: P0-03
       return '同步化放療，PCI 評估前先確認腦部影像';
     }
     if(s.startsWith('IV')){
@@ -189,7 +225,14 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     }
     if(s.startsWith('III')){
       items.push({title:'同步化放療 (CCRT)', drugs:'Cisplatin + Etoposide + 胸部放療 / Carboplatin + Paclitaxel + RT', note:'每次 2 Gy 總劑量 60-66 Gy'});
-      items.push({title:'CCRT 後鞏固', drugs:'Durvalumab', note:'PD-L1 ≥1%，至多 12 個月（PACIFIC）'});
+      // V3.9.0（路徑漂移複審 P0-02）：原本一律列 Durvalumab，EGFR ex19/L858R 病人也會拿到，
+      //   與 _path.js 修正過的內容相反。改由共用規則層決定（三頁同一來源）。
+      (function(){
+        const mut = _eduProMut(d);
+        const r = (typeof ruleConsolidationIII === 'function') ? ruleConsolidationIII(mut, d && d.t === 'SQ') : null;
+        if(r) items.push({ title: r.label, drugs: r.drug || '（需個別評估）', note: r.note });
+        else  items.push({title:'CCRT 後鞏固', drugs:'依 driver 判定', note:'EGFR ex19/L858R → Osimertinib；ALK/ROS1 → 個別評估；其餘符合條件 → Durvalumab'});
+      })();
       items.push({title:'部分病人', drugs:'可先手術 + 術後輔助治療'});
       return items;
     }
@@ -228,7 +271,7 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     h += '<div class="edu-hdr"><h2><i class="fa-solid fa-book-medical"></i> 個人化照護導航手冊 — 醫護版</h2><p>彰濱秀傳癌症中心多專科團隊</p></div>';
     h += '<div class="edu-body">';
     h += '<div class="edu-info">';
-    h += `<div><b>姓名：</b>${d.n||'—'}</div>`;
+    h += `<div><b>姓名：</b>${esc(d.n||'—')}</div>`;
     h += `<div><b>診斷：</b>${typeName}</div>`;
     h += `<div><b>分期：</b>${stageTxt}</div>`;
     h += '</div>';
@@ -246,9 +289,9 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     TEAM.forEach((t,i)=>{
       const doc = d.tm && d.tm[i] ? d.tm[i] : '';
       const style = doc ? 'font-weight:700;color:#166534' : 'color:#999;font-style:italic';
-      h += `<tr><td>${t.dept}</td><td style="${style}">${doc ? doc+' 醫師' : '（待安排）'}</td></tr>`;
+      h += `<tr><td>${esc(t.dept)}</td><td style="${style}">${doc ? esc(doc)+' 醫師' : '（待安排）'}</td></tr>`;
     });
-    if(d.c) h += `<tr style="background:#f0fdfa"><td>個案管理師</td><td style="font-weight:700;color:#0891b2">${d.c}</td></tr>`;
+    if(d.c) h += `<tr style="background:#f0fdfa"><td>個案管理師</td><td style="font-weight:700;color:#0891b2">${esc(d.c)}</td></tr>`;
     h += '</table>';
     h += '<div class="edu-emg"><b><i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
     h += '</div>';
@@ -268,14 +311,14 @@ body{font-family:'Microsoft JhengHei','微軟正黑體',system-ui,sans-serif;bac
     h += '</div>';
     h += '<p class="edu-note">＊依本院診療指引與健保第 9 章彙整，實際處方由主治醫師依病人狀況決定。</p>';
     h += '</div></div>';
-    h += `<div class="edu-footer">本頁為醫護內部快速查閱用。如有疑問請聯繫個案管理師${d.c?'（'+d.c+'）':''}。</div>`;
+    h += `<div class="edu-footer">本頁為醫護內部快速查閱用。如有疑問請聯繫個案管理師${d.c?'（'+esc(d.c)+'）':''}。</div>`;
     h += '</div></div>';
     app.innerHTML = h;
-    footer.innerHTML = `產生日期：${d.d||'—'}<br>此頁面為醫護快速查閱版本（病人版本請改用 edu-patient.html）。<br>彰濱秀傳紀念醫院 癌症中心`;
+    footer.innerHTML = `產生日期：${esc(d.d||'—')}<br>此頁面為醫護快速查閱版本（病人版本請改用 edu-patient.html）。<br>彰濱秀傳紀念醫院 癌症中心`;
   }
 
   function showError(title, msg){
-    app.innerHTML = `<div class="edu-error"><i class="fa-solid fa-circle-exclamation"></i><h3>${title}</h3><p>${msg}</p></div>`;
+    app.innerHTML = `<div class="edu-error"><i class="fa-solid fa-circle-exclamation"></i><h3>${esc(title)}</h3><p>${esc(msg)}</p></div>`;
     footer.innerHTML = '彰濱秀傳紀念醫院 癌症中心';
   }
 })();
