@@ -21,7 +21,11 @@
    新增 enum 只改這裡；下方所有分類判斷一律引用這些常數。                */
 const EGFR_CLASSIC_SET = ['EGFR','EGFR_CLASSIC','EGFR_EX19','EGFR_L858R'];
 const EGFR_ALL_SET     = EGFR_CLASSIC_SET.concat(['EGFR_EX20','EGFR_OTHER']);
-const NON_EGFR_DRIVERS = ['ALK','ROS1','BRAF','MET','KRAS'];
+// V3.9.5（NCCN 8.2026 差異比對 G-01）：NCCN 的可用藥標記清單為
+//   ALK、BRAF、EGFR、ERBB2(HER2)、KRAS、METex14、NTRK1/2/3、RET、ROS1。
+//   原本缺 RET／NTRK／HER2，而醫護版其實有收集這三項 → 送進規則層時全部
+//   落到 'EGFR_OTHER'，RET 融合病人會被當成少見型 EGFR 處理。
+const NON_EGFR_DRIVERS = ['ALK','ROS1','BRAF','MET','KRAS','RET','NTRK','HER2'];
 const ALL_DRIVERS      = EGFR_ALL_SET.concat(NON_EGFR_DRIVERS);
 // V3.9.2（內部複審 N-13）：原本的 DURVA_EXCLUDED 在 V3.9.1 已被 durvaExcludedFor(isSquamous)
 //   取代（排除集合依組織型態不同），留著會讓人以為那是唯一事實來源 → 移除，避免誤用。
@@ -37,6 +41,16 @@ const DRUGS = {
     note:'六藥擇一，不得互換（健保第 9 章 115/8/21）。Dacomitinib 限無腦轉移；Osimertinib 與 Aumolertinib 第一線限肺腺癌。'},
   EGFR_BRAIN: {line:'一線（合併）', nhi:'NHI', list:[{n:'Erlotinib + Bevacizumab',z:'得舒緩 + 癌思停'}],
     note:'限 EGFR L858R 突變且有腦轉移。健保有給付，需事前審查。'},
+  // V3.9.5: 健保狀態逐條核實於第 9 章 115/8/21 —
+  //   RET（selpercatinib／pralsetinib）：查無條文 → 健保未給付
+  //   NTRK（larotrectinib 9.95）：有給付，但限「無合適替代治療選項」等條件
+  //   HER2（zongertinib／trastuzumab deruxtecan）：肺癌適應症查無條文 → 健保未給付
+  RET: {line:'一線標靶', nhi:'SELF', list:[{n:'Selpercatinib',z:'（RET 抑制劑）'},{n:'Pralsetinib',z:'（RET 抑制劑）'}],
+    note:'NCCN 對 RET 融合陽性建議使用 RET 抑制劑。台灣健保第 9 章目前查無此類藥品用於肺癌的給付條文，需自費或申請藥廠資源／臨床試驗。'},
+  NTRK: {line:'一線標靶', nhi:'NHI', list:[{n:'Larotrectinib',z:'維泰凱'},{n:'Entrectinib',z:'羅思克'}],
+    note:'健保 9.95 Larotrectinib 適用有 NTRK 基因融合的實體腫瘤，但條文要求「沒有合適的替代治療選項」等條件，需事前審查。'},
+  HER2: {line:'標靶治療', nhi:'SELF', list:[{n:'Zongertinib',z:'（HER2 TKI）'},{n:'Fam-trastuzumab deruxtecan',z:'優赫得'}],
+    note:'NCCN 8.2026 將 zongertinib 列為 HER2(ERBB2) 突變的第一線選項，惡化後可用 trastuzumab deruxtecan。台灣健保第 9 章的 trastuzumab deruxtecan 給付限乳癌與胃癌，查無肺癌適應症 → 肺癌使用需自費。'},
   ALK: {line:'一線標靶', nhi:'NHI', list:[
     {n:'Alectinib',z:'安立適'},{n:'Lorlatinib',z:'瘤利欣'},
     {n:'Ceritinib',z:'立克癌'},{n:'Brigatinib',z:'癌倍利'},
@@ -76,13 +90,18 @@ const DRUGS = {
     note:'限無腦/脊髓轉移，健保事審。'},
   SCLC_LS_CCRT: {line:'侷限期同步化放療', nhi:'NHI', list:[{n:'Cisplatin + Etoposide + 胸部放射線治療',z:'鉑類 + 滅必治 + 放射線治療'}],
     note:''},
+  // V3.9.6（G-07）：NCCN SCLC 1.2027 將 Tarlatamab（DLL3×CD3 雙特異抗體）列為
+  //   category 1、preferred 的後線治療（中位 OS 13.6 vs 8.3 個月）；但 CRS 達 56%，
+  //   需專屬監測與處置流程。台灣健保第 9 章查無此藥 → 標示自費。
+  SCLC_2L_TARLA: {line:'後線（國際指引首選）', nhi:'SELF', list:[{n:'Tarlatamab',z:'（DLL3 雙特異抗體）'}],
+    note:'國際指引（NCCN）將此藥列為復發後的首選之一，研究顯示比傳統化療延長存活。但約一半病人會出現「細胞激素釋放症候群」（發燒、血壓下降等），需要在有監測與處置條件的院所使用；台灣健保未給付，需自費。'},
   SCLC_2L: {line:'二線', nhi:'NHI', list:[{n:'Topotecan',z:'喜樹鹼'}],
     note:'含鉑治療後復發使用。'},
 };
 
 function mutDisplay(m){
   // V3.6.1: NEG=確認無驅動基因、PENDING=尚未檢測（皆不顯示為「陽性基因」）
-  return ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX19:'EGFR ex19del(+)',EGFR_L858R:'EGFR L858R(+)',EGFR_OTHER:'EGFR 其他型(+)',EGFR_EX20:'EGFR exon20 ins(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NONE:''}[m] || '');
+  return ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX19:'EGFR ex19del(+)',EGFR_L858R:'EGFR L858R(+)',EGFR_OTHER:'EGFR 其他型(+)',EGFR_EX20:'EGFR exon20 ins(+)',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',RET:'RET 融合(+)',NTRK:'NTRK 融合(+)',HER2:'HER2(+)',NONE:''}[m] || '');
 }
 function pdl1Display(v){ return ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%'}[v] || ''); }
 
@@ -146,6 +165,9 @@ function buildPathCore(state){
         steps.push({ title:'治療反應佳後依腦影像決定追加治療', line:'追加治療', note:'先做腦部 MRI 確認沒有轉移；若陰性可選 MRI 監測 或 預防性腦部照射。' });
       }
       steps.push({ id:'sclc-es-2l', title:'治療失敗或復發後：接續化療（第二線）', line:DRUGS.SCLC_2L.line, nhi:'NHI', drugs: DRUGS.SCLC_2L.list, note: DRUGS.SCLC_2L.note });
+      // V3.9.6（G-07）：國際指引首選的後線選項，標示自費與 CRS 風險
+      steps.push({ id:'sclc-2l-tarla', title:'復發後的另一種選擇（國際指引首選）', line:DRUGS.SCLC_2L_TARLA.line,
+        nhi:'SELF', drugs: DRUGS.SCLC_2L_TARLA.list, note: DRUGS.SCLC_2L_TARLA.note });
 
       return {
         stageTxt:'小細胞肺癌 擴散型', pwTxt: brain==='yes' ? '以化療為主 + 放療控制腦病灶' : '全身性化療搭配免疫治療',
@@ -357,9 +379,16 @@ function buildPathCore(state){
       //   但健保的一線 EGFR TKI 條文寫的是 Exon 19 Del 或 Exon 21 L858R，uncommon 不在其中，
       //   而 III 期分支又把 EGFR_OTHER 排除在 classic 之外 → 同一 enum 兩個分期兩種語意。
       //   統一為「需個別評估」，不列 classic 藥單（不臆測 uncommon 的用藥，待肺癌團隊核定，見待核定 C5）。
+      // V3.9.6（G-03，Sela 決定：列 afatinib／osimertinib 並標健保差異）：
+      //   NCCN 8.2026 對 EGFR S768I／L861Q／G719X 建議 afatinib 或 osimertinib 為首選第一線。
+      //   健保條文措辭不同：afatinib(9.45)、gefitinib(9.24)、erlotinib(9.29) 寫「EGFR-TK 基因突變」未限次型；
+      //   osimertinib(9.80)、dacomitinib(9.83)、aumolertinib(9.138) 明文限 Exon 19 Del 或 L858R。
       steps = [
-        { id:'egfr-other-1l', title:'第一線：用藥需個別評估', line:'一線',
-          note:'您的 EGFR 屬於較少見的突變型（非 exon19 缺失、非 L858R）。健保第一線 EGFR 標靶藥的給付條文限 exon19 缺失或 L858R，您的情況需由主治醫師依實際位點評估用藥，部分位點有對應的標靶藥可討論。' },
+        { id:'egfr-other-1l', title:'第一線：口服 EGFR 標靶藥（少見型）', line:'一線', nhi:'NHI',
+          drugs:[{n:'Afatinib',z:'妥復克'},{n:'Osimertinib',z:'泰格莎'}],
+          note:'國際指引對少見型 EGFR（G719X／S768I／L861Q）建議以 Afatinib 或 Osimertinib 為首選；不同位點對哪一種反應較好略有差異，由主治醫師判斷。' },
+        { id:'egfr-other-nhi', title:'健保給付要注意的地方', line:'補充說明',
+          note:'健保條文中，Afatinib、Gefitinib、Erlotinib 寫的是「具有 EGFR-TK 基因突變」未限定次型；但 Osimertinib、Dacomitinib、Aumolertinib 明文限「Exon 19 缺失或 L858R」。因此少見型病人能申請到哪一種，需由主治醫師依實際位點與申請經驗判斷。' },
         { id:'egfr-other-chemo', title:'若不適合標靶：含鉑化療（可合併免疫）', line:'一線替代', nhi:'NHI',
           drugs:[chemoBackbone(isNS,{ioOptional:true})], note: chemoNote(isNS) },
       ];
@@ -390,6 +419,15 @@ function buildPathCore(state){
             ? ('主治醫師已為您選擇 ' + (_fl.on[0].z || _fl.on[0].n) + '。口服，需依醫囑規律服用並定期回診評估療效。')
             : ('以上藥物由主治醫師擇一使用。' + (_fl.has('Dacomitinib') ? 'Dacomitinib 限無腦轉移。' : '')));
       steps.forEach(s => { if(s.note === '__FL_NOTE__') s.note = _flNote; });
+      // V3.9.6（G-02，Sela 決定：加一行說明並標健保未給付）：
+      //   NCCN 8.2026 對 EGFR ex19del／L858R 的第一線 preferred、category 1 有三者並列 —
+      //   Osimertinib 單藥、Osimertinib+(carboplatin或cisplatin)/pemetrexed（限非鱗狀，FLAURA2）、
+      //   Lazertinib+Amivantamab（MARIPOSA）。台灣健保第一線僅給付單藥擇一，故僅作說明不列為選項。
+      steps.splice(1, 0, { id:'egfr-1l-intl', title:'國際指引另有兩種第一線組合', line:'補充說明',
+        note:'國際治療指引（NCCN）另將「口服標靶藥 + 化療」' + (isNS ? '' : '（限非鱗狀）') +
+             '與「Lazertinib + Amivantamab」列為同級的第一線選擇，研究顯示可延長疾病控制時間。' +
+             '台灣健保第一線目前只給付單一口服標靶藥（六藥擇一），這兩種組合健保未給付，' +
+             '若想了解可與主治醫師討論自費或臨床試驗的可能。' });
       const _resistNote = (_fl.on.length === 1 && _fl.has('Osimertinib'))
         ? '您第一線使用的已是 Osimertinib。若病情惡化，可再做抗藥基因檢測，依結果與醫師討論後續治療。'
         : (_fl.on.length === 1
@@ -426,6 +464,31 @@ function buildPathCore(state){
         { id:'met-tki', title:'標靶：口服 MET 抑制劑', line:DRUGS.MET.line, nhi:'NHI', drugs: DRUGS.MET.list, note: DRUGS.MET.note },
         { id:'met-chemo-io', title:'若無法用標靶：含鉑化療搭配免疫治療', line:'替代方案', nhi:'NHI', drugs:[chemoBackbone(isNS,{ioOptional:true})], note: chemoNote(isNS) },
       ];
+    } else if(m==='RET'){
+      // V3.9.5（G-01）：RET 融合原本會落到 EGFR_OTHER（被當成少見型 EGFR）
+      steps = [
+        { id:'ret-1l', title:'第一線：口服 RET 標靶藥', line:DRUGS.RET.line, nhi:'SELF',
+          drugs: DRUGS.RET.list, note: DRUGS.RET.note },
+        { id:'ret-chemo', title:'若無法使用標靶：含鉑化療（可合併免疫）', line:'替代方案', nhi:'NHI',
+          drugs:[chemoBackbone(isNS,{ioOptional:true})], note: chemoNote(isNS) },
+      ];
+      warns.push('RET 融合的標靶藥目前台灣健保未給付肺癌適應症，若考慮使用需與醫師討論自費或臨床試驗');
+    } else if(m==='NTRK'){
+      steps = [
+        { id:'ntrk-1l', title:'第一線：口服 NTRK 標靶藥', line:DRUGS.NTRK.line, nhi:'NHI',
+          drugs: DRUGS.NTRK.list, note: DRUGS.NTRK.note },
+        { id:'ntrk-chemo', title:'若不符合給付條件：含鉑化療（可合併免疫）', line:'替代方案', nhi:'NHI',
+          drugs:[chemoBackbone(isNS,{ioOptional:true})], note: chemoNote(isNS) },
+      ];
+      warns.push('NTRK 標靶藥的健保條文要求「沒有合適的替代治療選項」，能否申請需由主治醫師評估');
+    } else if(m==='HER2'){
+      steps = [
+        { id:'her2-1l', title:'標靶治療（HER2 突變）', line:DRUGS.HER2.line, nhi:'SELF',
+          drugs: DRUGS.HER2.list, note: DRUGS.HER2.note },
+        { id:'her2-chemo', title:'第一線也可用：含鉑化療（可合併免疫）', line:'一線', nhi:'NHI',
+          drugs:[chemoBackbone(isNS,{ioOptional:true})], note: chemoNote(isNS) },
+      ];
+      warns.push('HER2 突變的標靶藥目前台灣健保未給付肺癌適應症；免疫治療單用對 HER2 突變效果通常較差');
     } else if(m==='KRAS'){
       steps = [
         { id:'kras-1l', title:'第一線：含鉑化療搭配免疫治療', line:'一線', nhi:'NHI', drugs:[chemoBackbone(isNS,{io:true})], note: chemoNote(isNS) + 'KRAS G12C 病人的免疫指標多偏高，對免疫治療反應通常較佳。' },
@@ -624,6 +687,13 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
       //   完全沒有分期資訊時也不列，交由醫師依實際期別評估
       const atezoEligible = stagesOf(state).length > 0 && !possiblyStage(state, /^IB$/);
       const atezoDrug = {n:'Atezolizumab（II 期以上、PD-L1 ≥1%、已完成含鉑化療者可考慮）',z:'癌自禦'};
+      // V3.9.6（G-05）：NCCN 8.2026 將 Pembrolizumab 與 Atezolizumab 同列 category 1 的術後輔助免疫
+      const pembroDrug = {n:'Pembrolizumab（II 期以上、已完成含鉑化療者可考慮；PD-L1 <1% 的效益未明）',z:'吉舒達'};
+      // V3.9.6（G-06）：NCCN 明訂圍手術期 ICI 應視為單一療程、不建議中途換藥
+      const NEO_IO = { nivolumab:{n:'Nivolumab（接續術前使用的同一種免疫藥）',z:'保疾伏'},
+                       pembrolizumab:{n:'Pembrolizumab（接續術前使用的同一種免疫藥，至多 39 週）',z:'吉舒達'},
+                       durvalumab:{n:'Durvalumab（接續術前使用的同一種免疫藥）',z:'抑癌寧'} };
+      const _neoIO = (state && state.neoIO) || '';
       // V3.9.2（內部複審 N-04）：術後追加治療原本一律把三種藥並列，要病人自己對號入座
       //   （「EGFR 陽性者…ALK 陽性者…」），完全沒用到已經問到的 driver 結果。
       //   已知 driver 時只呈現對應的那一個。
@@ -631,31 +701,53 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
       const _alec = {n:'Alectinib（至多 2 年）',z:'安立適'};
       const _knownDriver = ALL_DRIVERS.includes(m);
       if(isNS && _knownDriver){
+        // V3.9.6（G-04，Sela 決定：呈現並標自費）：NCCN 8.2026 新增 Selpercatinib
+        //   用於已切除 stage IB–IIIA 的 RET 融合陽性 NSCLC（category 1）。
+        //   健保第 9 章查無 selpercatinib 條文 → 標示自費。
+        const _sel = {n:'Selpercatinib（RET 融合陽性，自費）',z:'（RET 抑制劑）'};
         const pick = EGFR_CLASSIC_SET.includes(m) ? [_osi]
                    : (m === 'ALK') ? [_alec]
-                   : (atezoEligible ? [atezoDrug] : []);
+                   : (m === 'RET') ? [_sel]
+                   : (NEO_IO[_neoIO] ? [NEO_IO[_neoIO]]
+                   : (atezoEligible ? [atezoDrug, pembroDrug] : []));
         steps.push({ id:'postop-addon-driver', title:'術後追加治療（依您的基因結果）', line:'術後追加治療', phase:'consolidation', nhi:'SELF',
           drugs: pick.length ? pick : [],
           note: EGFR_CLASSIC_SET.includes(m)
               ? '您帶有 EGFR 驅動基因，術後可考慮口服標靶藥作為追加治療（至多 3 年）。目前健保未給付術後追加治療，需自費或申請藥廠資源。'
               : (m === 'ALK')
               ? '您帶有 ALK 驅動基因，術後可考慮口服標靶藥作為追加治療（至多 2 年）。目前健保未給付術後追加治療，需自費或申請藥廠資源。'
+              : (m === 'RET')
+              ? '您帶有 RET 融合。國際指引建議已切除的 IB–IIIA 期 RET 融合陽性病人，術後可考慮口服 RET 標靶藥。台灣健保目前查無此藥的給付條文，需自費或申請藥廠資源／臨床試驗。'
               : (pick.length
-                 ? '您的驅動基因目前沒有對應的術後標靶追加治療；若為 II 期以上、PD-L1 ≥1% 且已完成含鉑化療，可與醫師討論免疫治療。'
+                 ? (NEO_IO[_neoIO]
+                    ? '您手術前已使用過免疫合併化療，國際指引建議術後接續使用「同一種」免疫藥，不建議中途更換。'
+                    : '您的驅動基因目前沒有對應的術後標靶追加治療；若為 II 期以上且已完成含鉑化療，可與醫師討論免疫治療（Atezolizumab 需 PD-L1 ≥1%；Pembrolizumab 在 PD-L1 <1% 的效益未明）。')
                  : '您的驅動基因目前沒有對應的術後追加治療選項，以規律追蹤為主，請與主治醫師討論。') });
+      } else if(NEO_IO[_neoIO]){
+        // V3.9.6（G-06）：術前用過 ICI → 術後接續同一種（優先於下方的一般選項）
+        steps.push({ id:'postop-addon-neoio', title:'術後追加治療：接續術前的免疫藥', line:'術後追加治療', phase:'consolidation', nhi:'SELF',
+          drugs:[NEO_IO[_neoIO]],
+          note:'您手術前已使用過免疫合併化療，國際指引建議術後接續使用「同一種」免疫藥，不建議中途更換。目前健保未給付術後追加治療，需自費或申請藥廠資源。' });
       } else if(isNS){
+        // V3.9.6（G-05）：Atezolizumab 與 Pembrolizumab 同列 category 1，兩者擇一
         steps.push({ id:'postop-addon-any', title:'術後追加治療：依基因檢測結果擇一', line:'術後追加治療（擇一）', phase:'consolidation', nhi:'SELF',
           drugs:[
             {n:'Osimertinib（EGFR 陽性者，至多 3 年）',z:'泰格莎'},
             {n:'Alectinib（ALK 陽性者，至多 2 年）',z:'安立適'},
-            ...(atezoEligible ? [atezoDrug] : []),
+            ...(atezoEligible ? [atezoDrug, pembroDrug] : []),
           ],
-          note:'手術後若做基因檢測發現 EGFR 或 ALK 陽性，可考慮口服標靶藥' + (atezoEligible ? '；若為 II 期以上、PD-L1 ≥1% 且已完成含鉑化療，也可考慮免疫治療' : '（IB 期不在術後免疫治療的適應症內）') + '。一個病人通常只會用一種，依檢測結果決定。目前健保未給付術後追加治療，需自費或申請藥廠資源。' });
+          note:'手術後若做基因檢測發現 EGFR 或 ALK 陽性，可考慮口服標靶藥' + (atezoEligible ? '；若為 II 期以上且已完成含鉑化療，也可考慮免疫治療（Atezolizumab 需 PD-L1 ≥1%；Pembrolizumab 在 PD-L1 <1% 的效益未明）' : '（IB 期不在術後免疫治療的適應症內）') + '。一個病人通常只會用一種，依檢測結果決定。目前健保未給付術後追加治療，需自費或申請藥廠資源。' });
       } else if(atezoEligible){
-        // 鱗狀只剩 Atezolizumab 選項
-        steps.push({ id:'postop-addon-io', title:'術後追加治療：免疫治療', line:'術後追加治療', phase:'consolidation', nhi:'SELF',
-          drugs:[atezoDrug],
-          note:'II 期以上、PD-L1 ≥1% 且已完成含鉑化療者可考慮。目前健保未給付術後追加治療，需自費。' });
+        // V3.9.6（G-05／G-06）：術前用過 ICI → 接續同一種；否則 Atezolizumab／Pembrolizumab 擇一
+        if(NEO_IO[_neoIO]){
+          steps.push({ id:'postop-addon-neoio', title:'術後追加治療：接續術前的免疫藥', line:'術後追加治療', phase:'consolidation', nhi:'SELF',
+            drugs:[NEO_IO[_neoIO]],
+            note:'您手術前已使用過免疫合併化療，國際指引建議術後接續使用「同一種」免疫藥，不建議中途更換。目前健保未給付術後追加治療，需自費或申請藥廠資源。' });
+        } else {
+          steps.push({ id:'postop-addon-io', title:'術後追加治療：免疫治療（擇一）', line:'術後追加治療', phase:'consolidation', nhi:'SELF',
+            drugs:[atezoDrug, pembroDrug],
+            note:'II 期以上且已完成含鉑化療者可考慮，兩者擇一。Atezolizumab 需 PD-L1 ≥1%；Pembrolizumab 在 PD-L1 <1% 的效益未明。目前健保未給付術後追加治療，需自費。' });
+        }
       }
     }
     steps.push({ title:'規律追蹤：前 2 年每 3-6 個月做電腦斷層', line:'術後追蹤', phase:'followup',

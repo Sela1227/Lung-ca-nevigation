@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d9488">
-<title>肺癌路徑查詢 V1.19.4 — 彰濱秀傳癌症中心</title>
+<title>肺癌路徑查詢 V1.19.6 — 彰濱秀傳癌症中心</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1060,6 +1060,21 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
         <div class="mut-tt">KRAS G12C (+)</div>
         <div class="mut-ss">較新藥</div>
       </button>
+      <button type="button" class="mut-btn" data-val="RET" onclick="pickMut(this)">
+        <span class="mut-tag">RET</span>
+        <div class="mut-tt">RET 融合</div>
+        <div class="mut-ss">有對應標靶藥</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="NTRK" onclick="pickMut(this)">
+        <span class="mut-tag">NTRK</span>
+        <div class="mut-tt">NTRK 融合</div>
+        <div class="mut-ss">少見但有標靶藥</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="HER2" onclick="pickMut(this)">
+        <span class="mut-tag">HER2</span>
+        <div class="mut-tt">HER2 突變</div>
+        <div class="mut-ss">有標靶藥可討論</div>
+      </button>
       <button type="button" class="mut-btn muted" data-val="NEG" onclick="pickMut(this)">
         <span class="mut-tag">都陰性</span>
         <div class="mut-tt">已檢測，無驅動基因</div>
@@ -1223,6 +1238,24 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
           <div class="prog-tt">發現復發或惡化</div>
           <div class="prog-ss">影像或症狀顯示腫瘤回來了</div>
         </div>
+      </button>
+    </div>
+
+    <!-- V3.9.6（G-06）：術前用過哪一種免疫藥 —— 國際指引明訂圍手術期 ICI 應視為
+         單一療程、不建議中途換藥，術後追加治療要接續同一種 -->
+    <div class="q4-sec-label" id="q5-lbl-neoio">手術前是否做過免疫合併化療<span class="q4-sec-opt">　有的話請選用的是哪一種</span></div>
+    <div class="pdl1-grid" id="opt-neoio">
+      <button type="button" class="mut-btn muted" data-val="" onclick="pickNeoIO(this)">
+        <span class="mut-tag">沒有</span><div class="mut-tt">術前沒做免疫</div><div class="mut-ss"></div>
+      </button>
+      <button type="button" class="mut-btn" data-val="nivolumab" onclick="pickNeoIO(this)">
+        <span class="mut-tag">保疾伏</span><div class="mut-tt">Nivolumab</div><div class="mut-ss">健保術前給付</div>
+      </button>
+      <button type="button" class="mut-btn" data-val="pembrolizumab" onclick="pickNeoIO(this)">
+        <span class="mut-tag">吉舒達</span><div class="mut-tt">Pembrolizumab</div><div class="mut-ss"></div>
+      </button>
+      <button type="button" class="mut-btn" data-val="durvalumab" onclick="pickNeoIO(this)">
+        <span class="mut-tag">抑癌寧</span><div class="mut-tt">Durvalumab</div><div class="mut-ss"></div>
       </button>
     </div>
 
@@ -1403,7 +1436,7 @@ body.summary .actbar{position:sticky;bottom:0;z-index:50}
 <script src="_path.js"></script>
 <script>
 'use strict';
-const MODULE_VERSION = 'V1.19.4';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
+const MODULE_VERSION = 'V1.19.6';   // V3.8.0（審核 P3-17）：民眾版原本完全沒有版號字串
 
 /* ═══════════════════════════════════════════════════
    STATE
@@ -1423,6 +1456,7 @@ const S = {
   // V2.10.0: 期別來源 — false = 臨床期別 (cTNM)；true = 病理期別 (pTNM, 已手術)
   postOp:false,
   // Q4 基因/腦轉移
+  neoIO:'',        // V3.9.6: 術前使用的免疫藥（術後接續同一種）
   riskFactors:[],  // V3.7.1: 病理高風險因子（複選）
   drugOff:[],      // V3.7.0: 個管取消勾選的藥（預設全選）
   t790m:'',        // V3.7.0: T790M 抗藥性突變（疊加，不互斥）
@@ -1483,7 +1517,7 @@ async function saveQuery(){
     code:S.code||'', name:(S.name||'').slice(0,8),
     type:S.type, t:S.t||'', n:S.n||'', m:S.m||'', stage:S.stage, stageCat:S.stageCat,
     mut:S.mut||'', pdl1:S.pdl1||'', t790m:S.t790m||'', brainMet:S.brainMet||'',
-    drugOff:[...(S.drugOff||[])], riskFactors:[...(S.riskFactors||[])],   // V3.7.0/V3.7.1
+    drugOff:[...(S.drugOff||[])], riskFactors:[...(S.riskFactors||[])], neoIO:S.neoIO||'',   // V3.7.0/V3.7.1
     age:S.age, ecog:S.ecog, hbv:S.hbv, catastrophic:S.catastrophic,
     postOp:S.postOp, txProgress:S.txProgress||'',
     consult:{...S.consult},   // V3.3.2: 照護團隊醫師選擇（原本漏存）
@@ -1635,6 +1669,7 @@ function restoreAllUI(){
   applyT790Visibility();   // V3.9.2
   document.querySelectorAll('#opt-t790 .mut-btn').forEach(b=>b.classList.toggle('selected', S.t790m===b.dataset.val));   // V3.7.0
   document.querySelectorAll('#opt-risk .mut-btn').forEach(b=>b.classList.toggle('selected', (S.riskFactors||[]).includes(b.dataset.val)));   // V3.7.1
+  document.querySelectorAll('#opt-neoio .mut-btn').forEach(b=>b.classList.toggle('selected', (S.neoIO||'')===b.dataset.val));   // V3.9.6
   applyBrainNsVisibility();
   document.querySelectorAll('#opt-brain-ns .mut-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
   document.querySelectorAll('#opt-brain .brain-btn').forEach(b=>b.classList.toggle('selected', S.brainMet===b.dataset.val));
@@ -1653,7 +1688,7 @@ async function loadRecord(id){
     type:rec.type||'', t:rec.t||'', n:rec.n||'', m:rec.m||'',
     stage:rec.stage||'', stageCat:rec.stageCat||'',
     postOp:!!rec.postOp, mut:rec.mut||'', pdl1:rec.pdl1||'', t790m:rec.t790m||'', brainMet:rec.brainMet||'',
-    drugOff:[...(rec.drugOff||[])], riskFactors:[...(rec.riskFactors||[])],   // V3.7.0/V3.7.1
+    drugOff:[...(rec.drugOff||[])], riskFactors:[...(rec.riskFactors||[])], neoIO:rec.neoIO||'',   // V3.7.0/V3.7.1
     possibleStages:[], stageLabel:'', stageNeed:[],   // V3.6.5: 明確覆寫，restoreAllUI 再依 TNM 重算
     txProgress:rec.txProgress||'', consult:{...(rec.consult||{})},  // V3.3.2: 還原團隊選擇
   });
@@ -2057,6 +2092,7 @@ function buildEduPayload(){
     e:  qrEnc('e', S.ecog),
     tp: qrEnc('tp', S.txProgress),
     rf: (S.riskFactors||[]).map(x=>qrEnc('rf',x)).join(''),     // 單字母串接，免分隔符
+    ni: S.neoIO || '',                                          // V3.9.6（G-06）：術前使用的免疫藥
     dx: compactDrugOff(S.drugOff),                               // 步驟鍵:藥物索引
     tm: TEAM.depts.map((d,i)=> (S.consult[d.id] ? i+':'+S.consult[d.id] : '')).filter(Boolean).join(','),
     c:  TEAM.caseManager.name,
@@ -2428,6 +2464,13 @@ function pickMut(btn){
   updateActBar();  // V3.4.0: 驅動基因選完不自動跳（讓使用者續填 PD-L1），由「下一步」前進
 }
 // V3.4.0: PD-L1 免疫指標（與驅動基因併存，可各自單選）
+// V3.9.6（G-06）：術前用過哪一種免疫藥 → 術後接續同一種
+function pickNeoIO(btn){
+  S.neoIO = btn.dataset.val || '';
+  document.querySelectorAll('#opt-neoio .mut-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+  updateActBar();
+}
+
 // V3.7.1: 病理高風險因子（複選，個管依病理報告勾）
 const RISK_LABELS = {LVI:'淋巴管／血管侵犯', VPI:'臟層肋膜侵犯', SIZE4:'腫瘤 ≥4 公分', POOR:'低分化', MARGIN:'切緣陽性', NX:'淋巴結廓清不完整'};
 function toggleRisk(btn){
@@ -2549,7 +2592,7 @@ function resetStageState(opts){
   if(!keepMode) tnmAdv = false;
 }
 function resetMolecularState(){
-  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[]; S.riskFactors=[];   // V3.7.0/V3.7.1
+  S.mut=''; S.pdl1=''; S.brainMet=''; S.t790m=''; S.drugOff=[]; S.riskFactors=[]; S.neoIO='';   // V3.7.0/V3.7.1
   document.querySelectorAll('.mut-btn, .brain-btn').forEach(b=>b.classList.remove('selected'));
 }
 function resetProgressState(){

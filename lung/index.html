@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.4</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1224,8 +1224,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.19.4';
-const SYSTEM_VERSION = 'V3.9.4';
+const MODULE_VERSION = 'V1.19.6';
+const SYSTEM_VERSION = 'V3.9.6';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -1986,7 +1986,9 @@ function mutEnumForRules(S){
   if(S.mutation === 'ALK')   return 'ALK';
   if(S.mutation === 'OTHER_TKI'){
     const d = S.drivers || {};
-    for(const k of ['ros1','braf','met','kras']) if(d[k] === '+') return k.toUpperCase();
+    // V3.9.5（G-01）：原本只認 ros1/braf/met/kras，RET／NTRK／HER2 陽性會掉到
+    //   下方的 return 'EGFR_OTHER' → 被規則層當成少見型 EGFR 處理。
+    for(const k of ['ros1','braf','met','kras','ret','ntrk','her2']) if(d[k] === '+') return k.toUpperCase();
     return 'EGFR_OTHER';
   }
   if(['PDL1_HIGH','PDL1_LOW','PDL1_NEG'].includes(S.mutation)) return 'NEG';

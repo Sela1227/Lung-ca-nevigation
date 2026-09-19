@@ -548,7 +548,7 @@ function readQueryMatch(){
   matchStage = s;
   // 驅動基因優先；已確認陰性(NEG)才用 PD-L1 決定免疫藥；未檢測(PENDING)不做個人化配對
   matchMut = ({EGFR_CLASSIC:'EGFR', EGFR:'EGFR', EGFR_EX19:'EGFR', EGFR_L858R:'EGFR', EGFR_OTHER:'EGFR', EGFR_EX20:'EGFR_EX20'})[m]   // V3.8.0
-          || (['ALK','ROS1','BRAF','MET','KRAS'].includes(m) ? m
+          || (['ALK','ROS1','BRAF','MET','KRAS','RET','NTRK','HER2'].includes(m) ? m
           : (m === 'NEG' ? ({HIGH:'PDL1_HIGH', LOW:'PDL1_LOW'})[pdl1] || ''
           : (m === 'PENDING' ? '' : m)));
   matchPdl1 = pdl1;
@@ -557,7 +557,7 @@ function readQueryMatch(){
   const typeLabel = ({NSCLC_NS:'非小細胞肺癌（非鱗）',NSCLC_SQ:'非小細胞肺癌（鱗狀）',SCLC:'小細胞肺癌'})[t] || t;
   const stageLabel = ({EARLY:'早期',LOCAL:'局部晚期',META:'轉移期/擴散期'})[s] || s;
   // V3.6.4: 支援新 enum，並把 PD-L1 一起顯示
-  const driverLabel = m ? ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX19:'EGFR ex19del(+)',EGFR_L858R:'EGFR L858R(+)',EGFR_OTHER:'EGFR 其他型(+)',EGFR_EX20:'EGFR exon20 ins(+)',DECLINED:'暫不檢測',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',NEG:'無驅動基因',PENDING:'基因檢測中',NONE:'尚未檢測'})[m] || m : '';
+  const driverLabel = m ? ({EGFR:'EGFR(+)',EGFR_CLASSIC:'EGFR ex19/L858R(+)',EGFR_EX19:'EGFR ex19del(+)',EGFR_L858R:'EGFR L858R(+)',EGFR_OTHER:'EGFR 其他型(+)',EGFR_EX20:'EGFR exon20 ins(+)',DECLINED:'暫不檢測',ALK:'ALK(+)',ROS1:'ROS1(+)',BRAF:'BRAF(+)',MET:'MET(+)',KRAS:'KRAS G12C(+)',RET:'RET 融合(+)',NTRK:'NTRK 融合(+)',HER2:'HER2(+)',NEG:'無驅動基因',PENDING:'基因檢測中',NONE:'尚未檢測'})[m] || m : '';
   const pdl1Label = ({HIGH:'PD-L1≥50%',LOW:'PD-L1<50%',UNKNOWN:'PD-L1 未驗'})[pdl1] || '';
   const mutLabel = [driverLabel, pdl1Label].filter(Boolean).join('　·　');
   const banner = document.getElementById('match-banner');

@@ -262,5 +262,97 @@ ok(/Nivolumab/.test(JSON.stringify(nsNeo.drugs)) && /Nivolumab/.test(JSON.string
 // 不得殘留「健保尚未給付」的過時說法
 ok(!/術前免疫合併化療目前健保尚未給付/.test(read('lung/_path.js')), '已移除「術前免疫健保尚未給付」的過時註記');
 
+/* ═══ 12. NCCN 8.2026 差異比對 G-01：RET／NTRK／HER2 ═══ */
+section('RET／NTRK／HER2 分子標記（G-01）');
+
+// 民眾版 Q4 要能選這三個
+['RET','NTRK','HER2'].forEach(v => {
+  ok(read('lung/patient.html').includes(`data-val="${v}"`), `民眾版 Q4 有 ${v} 選項`);
+});
+
+// 醫護版的 enum 映射不得再把三者當成 EGFR_OTHER
+const mapSrc = (read('lung/index.html').match(/function mutEnumForRules\([\s\S]*?\n\}/) || [''])[0];
+['ret','ntrk','her2'].forEach(k => {
+  ok(mapSrc.includes(`'${k}'`), `mutEnumForRules 認得 ${k}（否則會落到 EGFR_OTHER）`);
+});
+
+// 三者要走自己的治療分支，不得與少見型 EGFR 相同
+const egfrOther = allDrugs(runEng('NSCLC_NS','EGFR_OTHER'));
+['RET','NTRK','HER2'].forEach(mut => {
+  const d = allDrugs(runEng('NSCLC_NS', mut));
+  ok(d !== egfrOther, `${mut} 的治療內容與 EGFR_OTHER 不同`);
+  ok(d.length > 0, `${mut} 有治療內容`);
+});
+ok(/Selpercatinib|Pralsetinib/.test(allDrugs(runEng('NSCLC_NS','RET'))), 'RET → RET 抑制劑');
+ok(/Larotrectinib|Entrectinib/.test(allDrugs(runEng('NSCLC_NS','NTRK'))), 'NTRK → NTRK 抑制劑');
+ok(/Zongertinib|deruxtecan/.test(allDrugs(runEng('NSCLC_NS','HER2'))), 'HER2 → HER2 標靶');
+
+// 健保狀態要如實標示（RET／HER2 查無肺癌給付條文）
+const retR = runEng('NSCLC_NS','RET');
+ok((retR.warns||[]).some(w => /健保未給付|未給付/.test(w)), 'RET 明確標示健保未給付肺癌適應症');
+const her2R = runEng('NSCLC_NS','HER2');
+ok((her2R.warns||[]).some(w => /健保未給付|未給付/.test(w)), 'HER2 明確標示健保未給付肺癌適應症');
+
+// 鱗狀癌的這三個分支也不得出現 Pemetrexed（延續 N-02）
+['RET','NTRK','HER2'].forEach(mut => {
+  ok(!/Pemetrexed/.test(allDrugs(runEng('NSCLC_SQ', mut))), `鱗狀 + ${mut} 不得出現 Pemetrexed`);
+});
+
+// driver 分類完整性：三者要被當成驅動基因（PS3-4 標靶提示、PD-L1 高的標靶優先警語）
+['RET','NTRK','HER2'].forEach(mut => {
+  const r = runEng('NSCLC_NS', mut, { pdl1:'HIGH' });
+  ok((r.warns||[]).some(w => /標靶/.test(w)), `${mut} + PD-L1 高 → 仍提示標靶優先`);
+});
+
+/* ═══ 13. NCCN 差異 G-02～G-07（Sela 逐項核定後實作）═══ */
+section('NCCN 差異項目 G-02～G-07');
+const postOpEng = (mut, extra) => runEng('NSCLC_NS', mut,
+  Object.assign({ postOp:true, stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'] }, extra || {}));
+
+// G-02：EGFR 一線加一行 NCCN 組合說明，並標健保未給付
+const eg1 = runEng('NSCLC_NS','EGFR_EX19');
+ok((eg1.steps||[]).some(s => /國際指引另有/.test(s.title||'')), 'G-02 有國際指引組合的說明');
+ok(/健保未給付|健保第一線目前只給付/.test(JSON.stringify(eg1)), 'G-02 標示健保未給付');
+ok(!/Lazertinib/.test(allDrugs(eg1)), 'G-02 未把未給付組合列入藥單（僅說明）');
+
+// G-03：少見型 EGFR 列 afatinib／osimertinib 並標健保差異
+const egO = runEng('NSCLC_NS','EGFR_OTHER');
+ok(/Afatinib/.test(allDrugs(egO)) && /Osimertinib/.test(allDrugs(egO)), 'G-03 列出 Afatinib／Osimertinib');
+ok(/未限定次型/.test(JSON.stringify(egO)), 'G-03 說明健保條文的次型差異');
+ok(!/Pemetrexed/.test(allDrugs(runEng('NSCLC_SQ','EGFR_OTHER'))), 'G-03 鱗狀不得出現 Pemetrexed');
+
+// G-04：術後 RET → Selpercatinib，標自費
+const retPo = postOpEng('RET');
+ok(/Selpercatinib/.test(allDrugs(retPo)), 'G-04 術後 RET 列 Selpercatinib');
+ok(/自費/.test(JSON.stringify(retPo)), 'G-04 標示自費');
+
+// G-05：術後免疫加 Pembrolizumab 並註明 PD-L1<1% 效益未明
+const negPo = postOpEng('NEG');
+ok(/Pembrolizumab/.test(allDrugs(negPo)), 'G-05 術後免疫含 Pembrolizumab');
+ok(/Atezolizumab/.test(allDrugs(negPo)), 'G-05 仍保留 Atezolizumab');
+ok(/PD-L1 <1% 的效益未明/.test(JSON.stringify(negPo)), 'G-05 註明 PD-L1<1% 效益未明');
+
+// G-06：術前用過哪個 ICI → 術後接續同一種，不得換藥
+[['nivolumab','Nivolumab'], ['pembrolizumab','Pembrolizumab'], ['durvalumab','Durvalumab']].forEach(([k, name]) => {
+  const r = postOpEng('NEG', { neoIO:k });
+  const d = allDrugs(r);
+  ok(d.includes(name), `G-06 術前 ${k} → 術後接續 ${name}`);
+  ok(!/Atezolizumab/.test(d), `G-06 術前 ${k} 時不得改給 Atezolizumab`);
+  const sq = runEng('NSCLC_SQ','NEG', { postOp:true, stageCat:'EARLY', stage:'IIB', possibleStages:['IIB'], neoIO:k });
+  ok(allDrugs(sq).includes(name), `G-06 鱗狀 術前 ${k} → 術後接續 ${name}`);
+});
+// driver 陽性時仍以標靶優先（不被 ICI 接續覆蓋）
+ok(/Osimertinib/.test(allDrugs(postOpEng('EGFR_EX19', { neoIO:'nivolumab' }))), 'G-06 EGFR+ 仍以標靶為術後追加');
+// 民眾版要有輸入欄位
+ok(read('lung/patient.html').includes('opt-neoio'), 'G-06 民眾版 Q5 有術前免疫藥欄位');
+ok(read('lung/patient.html').includes('ni: S.neoIO'), 'G-06 QR payload 帶 neoIO');
+ok(read('lung/edu-patient.html').includes('neoIO: d.ni'), 'G-06 edu 接收 neoIO');
+
+// G-07：SCLC 後線 Tarlatamab，標自費 + CRS
+const sclcEs = runEng('SCLC','', { stageCat:'META', stage:'', possibleStages:[], brainMet:'no' });
+ok(/Tarlatamab/.test(allDrugs(sclcEs)), 'G-07 SCLC 後線含 Tarlatamab');
+ok(/細胞激素釋放症候群/.test(JSON.stringify(sclcEs)), 'G-07 說明 CRS 風險');
+ok(/健保未給付|自費/.test(JSON.stringify(sclcEs)), 'G-07 標示自費');
+
 console.log(`\n═══ 結果：${pass} 通過 / ${fail} 失敗 ═══`);
 process.exit(fail ? 1 : 0);
