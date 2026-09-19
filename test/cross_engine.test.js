@@ -64,7 +64,10 @@ ok(consol('ROS1', false).kind === 'individual', '非鱗狀 ROS1(+) → 不符 Du
 ok(consol('ROS1', true).kind === 'durvalumab', '鱗狀 ROS1(+) → 仍符合 Durvalumab（條文未要求 ROS-1 原生型）');
 ok(consol('ALK', true).kind === 'individual' && consol('ALK', false).kind === 'individual',
    'ALK(+) 兩種組織型態都不符 Durvalumab 條件');
-ok(/115\/8\/21/.test(consol('NEG', false).note), '健保條件標註條文版本', consol('NEG', false).note.slice(0,40));
+// V3.9.9（P1-1）：病人可見文字不再出現條文編號／版本（禁字規範），
+//   改為確認「健保條件有被說明」；條文出處保留在程式註解與待核定文件中。
+ok(/健保條件/.test(consol('NEG', false).note) && /PD-L1/.test(consol('NEG', false).note),
+   '健保條件有明確說明', consol('NEG', false).note.slice(0,40));
 // 順序語意：label 必須表達「CCRT 之後」，不可寫成並列選項
 ['EGFR_EX19','ALK','NEG'].forEach(mut => {
   ok(/CCRT\s*完成|完成.*未惡化/.test(consol(mut).label),

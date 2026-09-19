@@ -46,11 +46,11 @@ const DRUGS = {
   //   NTRK（larotrectinib 9.95）：有給付，但限「無合適替代治療選項」等條件
   //   HER2（zongertinib／trastuzumab deruxtecan）：肺癌適應症查無條文 → 健保未給付
   RET: {line:'一線標靶', nhi:'SELF', list:[{n:'Selpercatinib',z:'（RET 抑制劑）'},{n:'Pralsetinib',z:'（RET 抑制劑）'}],
-    note:'NCCN 對 RET 融合陽性建議使用 RET 抑制劑。台灣健保第 9 章目前查無此類藥品用於肺癌的給付條文，需自費或申請藥廠資源／臨床試驗。'},
+    note:'國際治療指引對 RET 融合陽性建議使用對應的口服標靶藥。台灣健保目前沒有給付這類藥品用於肺癌，需自費或申請藥廠資源／臨床試驗。'},
   NTRK: {line:'一線標靶', nhi:'NHI', list:[{n:'Larotrectinib',z:'維泰凱'},{n:'Entrectinib',z:'羅思克'}],
-    note:'健保 9.95 Larotrectinib 適用有 NTRK 基因融合的實體腫瘤，但條文要求「沒有合適的替代治療選項」等條件，需事前審查。'},
-  HER2: {line:'標靶治療', nhi:'SELF', list:[{n:'Zongertinib',z:'（HER2 TKI）'},{n:'Fam-trastuzumab deruxtecan',z:'優赫得'}],
-    note:'NCCN 8.2026 將 zongertinib 列為 HER2(ERBB2) 突變的第一線選項，惡化後可用 trastuzumab deruxtecan。台灣健保第 9 章的 trastuzumab deruxtecan 給付限乳癌與胃癌，查無肺癌適應症 → 肺癌使用需自費。'},
+    note:'健保對 NTRK 基因融合的實體腫瘤有給付，但要求「沒有其他合適的治療選項」等條件，需事前審查。'},
+  HER2: {line:'標靶治療', nhi:'SELF', list:[{n:'Zongertinib',z:'（HER2 口服標靶藥）'},{n:'Fam-trastuzumab deruxtecan',z:'優赫得'}],
+    note:'國際治療指引將 Zongertinib 列為 HER2 基因突變的第一線選項，惡化後可用 Trastuzumab deruxtecan。台灣健保這兩種藥目前只給付乳癌與胃癌，用於肺癌需自費。'},
   ALK: {line:'一線標靶', nhi:'NHI', list:[
     {n:'Alectinib',z:'安立適'},{n:'Lorlatinib',z:'瘤利欣'},
     {n:'Ceritinib',z:'立克癌'},{n:'Brigatinib',z:'癌倍利'},
@@ -80,9 +80,9 @@ const DRUGS = {
     note:'鱗狀原生型。'},
   // V3.6.2: III 期不可切除、CCRT 後的鞏固治療分兩條（NCCN 3.2026 NSCL-F）：
   //   EGFR ex19del/L858R → Osimertinib；其餘（driver 陰性）→ Durvalumab（明確排除 EGFR ex19del/L858R）
-  CONSOLID_OSI: {line:'同步化放療後鞏固（EGFR 陽性）', nhi:'NHI', list:[{n:'Osimertinib',z:'泰格莎'}],
+  CONSOLID_OSI: {line:'同步化放療後維持治療（EGFR 陽性）', nhi:'NHI', list:[{n:'Osimertinib',z:'泰格莎'}],
     note:'限 EGFR exon19 缺失或 L858R 突變、第三期無法手術切除、同步化放療後病情穩定者，口服至疾病惡化。'},
-  CONSOLIDATION: {line:'同步化放療後鞏固', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
+  CONSOLIDATION: {line:'同步化放療後維持治療', nhi:'NHI', list:[{n:'Durvalumab',z:'抑癌寧'}],
     note:'限第三期無法手術切除、同步化放療後病情穩定、且 PD-L1 表現 ≥1%、未帶有 EGFR/ALK/ROS-1 等驅動基因者，可用至 12 個月（健保條件）。'},
   SCLC_ES: {line:'一線', nhi:'NHI', list:[
     {n:'Atezolizumab + Carboplatin + Etoposide',z:'癌自禦 + 鉑類 + 滅必治'},
@@ -93,8 +93,8 @@ const DRUGS = {
   // V3.9.6（G-07）：NCCN SCLC 1.2027 將 Tarlatamab（DLL3×CD3 雙特異抗體）列為
   //   category 1、preferred 的後線治療（中位 OS 13.6 vs 8.3 個月）；但 CRS 達 56%，
   //   需專屬監測與處置流程。台灣健保第 9 章查無此藥 → 標示自費。
-  SCLC_2L_TARLA: {line:'後線（國際指引首選）', nhi:'SELF', list:[{n:'Tarlatamab',z:'（DLL3 雙特異抗體）'}],
-    note:'國際指引（NCCN）將此藥列為復發後的首選之一，研究顯示比傳統化療延長存活。但約一半病人會出現「細胞激素釋放症候群」（發燒、血壓下降等），需要在有監測與處置條件的院所使用；台灣健保未給付，需自費。'},
+  SCLC_2L_TARLA: {line:'復發後治療（國際指引首選）', nhi:'SELF', list:[{n:'Tarlatamab',z:'（DLL3 雙特異抗體）'}],
+    note:'國際治療指引將這個藥列為復發後的首選之一，研究顯示比傳統化療延長存活。但約一半病人會出現「細胞激素釋放症候群」（發燒、血壓下降等），需要在有監測與處置條件的院所使用；台灣健保未給付，需自費。'},
   SCLC_2L: {line:'二線', nhi:'NHI', list:[{n:'Topotecan',z:'喜樹鹼'}],
     note:'含鉑治療後復發使用。'},
 };
@@ -201,13 +201,13 @@ function buildPathCore(state){
       }
       // V3.6.2: 同步化放療後無惡化者，加免疫鞏固（NCCN 2.2026 依 ADRIATIC，category 1，至多 24 個月）
       //   PCI 若要做，應在鞏固治療之前 → 故此步排在 PCI 之後
-      steps.push({ id:'sclc-ls-consol', title:'同步化放療後病情未惡化者:免疫鞏固治療', line:'鞏固治療', nhi:'SELF',
+      steps.push({ id:'sclc-ls-consol', title:'同步化放療後病情未惡化者:免疫維持治療', line:'維持治療', nhi:'SELF',
         drugs:[{n:'Durvalumab',z:'抑癌寧'}],
-        note:'同步化放療結束、病情沒有惡化時使用，可延長存活，最長 24 個月。若要做預防性腦部照射，一般安排在鞏固治療之前。' });
+        note:'同步化放療結束、病情沒有惡化時使用，可延長存活，最長 24 個月。若要做預防性腦部照射，一般安排在免疫維持治療之前。' });
       const warns = ['若年紀較大或體力較差：同步化放療負擔重，可改成分開做（先化療再放療）'];
-      warns.push('侷限期的免疫鞏固治療（Durvalumab）目前台灣健保尚未給付此適應症，需自費或申請藥廠資源，可與主治醫師討論');
+      warns.push('侷限期的免疫維持治療（Durvalumab）目前台灣健保尚未給付這個用法，需自費或申請藥廠資源，可與主治醫師討論');
       if(brain==='yes') warns.push('已有腦轉移：屬擴散期，治療策略需修正');
-      return { stageTxt:'小細胞肺癌 侷限型', pwTxt:'以同步化放療為主，之後視情況加免疫鞏固', steps, warns };
+      return { stageTxt:'小細胞肺癌 侷限型', pwTxt:'以同步化放療為主，之後視情況加免疫維持治療', steps, warns };
     }
     return { stageTxt:'小細胞肺癌', pwTxt:'依分期決定方向',
       steps:[{ title:'請先完成完整影像檢查（CT、腦 MRI、骨掃描）', note:'分期確認後才能決定治療。' }],
@@ -232,11 +232,11 @@ function buildPathCore(state){
             : [{n:'Carboplatin + Paclitaxel + 胸部放射線治療',z:'卡鉑 + 紫杉醇 + 放射線治療'},
                {n:'Cisplatin + Etoposide + 胸部放射線治療',z:'順鉑 + 滅必治 + 放射線治療'}],
           note: chemoNote(isNS) + '化療與放射線治療同時進行。' },
-        { id:'early-unresect-consol', title:_c2.label, line:'鞏固治療',
+        { id:'early-unresect-consol', title:_c2.label, line:'維持治療',
           nhi: _c2.kind === 'osimertinib' ? 'NHI' : 'SELF',
           drugs: _c2.drug ? [{n:_c2.drug, z:''}] : [],
           note: _c2.note + (_c2.kind === 'durvalumab'
-            ? '　※ 健保的 Durvalumab 鞏固條文限「第三期局部晚期」，第二期目前不符給付條件；國際指引則涵蓋不可切除的第二期，若考慮使用需自費或另行申請。' : '') },
+            ? '　※ 台灣健保的免疫維持治療限「第三期」，第二期目前不符給付條件；國際治療指引則涵蓋無法手術切除的第二期，若考慮使用需自費或另行申請。' : '') },
       ];
       return {
         stageTxt:`${typeLabel} 早期 (I-II) — 無法手術切除`,
@@ -330,7 +330,7 @@ function buildPathCore(state){
         drugs: DRUGS.CONSOLID_OSI.list, note: DRUGS.CONSOLID_OSI.note });
     } else if(consol.kind === 'pending'){
       // V3.9.2（內部複審 N-06）：基因未驗/暫不檢測時不得直接呈現 Durvalumab 鞏固
-      steps.push({ title:'同步化放療結束後:先完成分子檢測再決定鞏固治療', line:'鞏固治療',
+      steps.push({ title:'同步化放療結束後:先完成基因檢測再決定維持治療', line:'維持治療',
         note: consol.note });
     } else if(isOtherDriver){
       steps.push({ title:'同步化放療結束後:維持治療需個別評估', line:'維持治療',
@@ -366,14 +366,14 @@ function buildPathCore(state){
       warns.unshift('您帶有 ' + (mutDisplay(m) || '驅動基因') + '：同步化放療後的免疫維持治療通常不適用（此類藥物排除帶有驅動基因者），維持治療請與主治醫師個別討論');
     }
     if(!isIIIA){
-      warns.unshift((state.stage || state.stageLabel || 'III') + ' 期腫瘤範圍較廣（涉及 T4 或多處淋巴轉移），一般不建議先手術，以同步化放療為主' + (isEgfrClassic ? '，之後接口服標靶維持' : isOtherDriver ? '，之後的維持治療需個別評估' : consol.kind === 'pending' ? '，鞏固方向待分子檢測結果' : '，之後接免疫維持治療'));
+      warns.unshift((state.stage || state.stageLabel || 'III') + ' 期腫瘤範圍較廣（涉及 T4 或多處淋巴轉移），一般不建議先手術，以同步化放療為主' + (isEgfrClassic ? '，之後接口服標靶維持' : isOtherDriver ? '，之後的維持治療需個別評估' : consol.kind === 'pending' ? '，維持治療方向待基因檢測結果' : '，之後接免疫維持治療'));
     }
     return {
       stageTxt:`${typeLabel} 局部晚期 (III)`,
       // V3.6.2: 主結論隨鞏固分流變化（原本一律寫「免疫維持」，跟 EGFR 分流自相矛盾）
       pwTxt: isEgfrClassic ? '以同步化放療為主，治療結束後接口服標靶維持治療'
            : isOtherDriver ? '以同步化放療為主，治療結束後的維持治療需個別評估'
-           : consol.kind === 'pending' ? '以同步化放療為主，鞏固治療方向待分子檢測結果確定'
+           : consol.kind === 'pending' ? '以同步化放療為主，維持治療方向待基因檢測結果確定'
            : '以同步化放療為主，治療結束後再用免疫維持治療',
       steps, warns,
     };
@@ -394,7 +394,7 @@ function buildPathCore(state){
             ? [{n:'Amivantamab + Carboplatin + Pemetrexed',z:'瑞普替 + 鉑類 + 愛寧達'}]
             : [{n:'Amivantamab（合併化療組合需個別評估）',z:'瑞普替'}],
           note: isNS
-            ? 'EGFR exon20 插入突變適用的第一線組合（健保 9.126，114/10/1 起給付，需事前審查）。'
+            ? 'EGFR exon20 插入突變適用的第一線組合（健保有給付，需事前審查）。'
             : '健保給付的組合為 Amivantamab + 鉑類 + 愛寧達（Pemetrexed）；愛寧達不用於鱗狀細胞癌，因此鱗狀癌的合併方案需由主治醫師個別評估。' },
         { title:'病情惡化後：化療或臨床試驗', line:'接續治療', note:'exon20 插入突變的後線選擇較少，可與醫師討論臨床試驗機會。' },
       ];
@@ -483,7 +483,7 @@ function buildPathCore(state){
         //   健保第 9 章查無此藥 → 標示自費。
         { id:'ros1-2l-zide', title:'產生抗藥性後：新一代 ROS1 標靶藥', line:'後線標靶', nhi:'SELF',
           drugs:[{n:'Zidesamtinib',z:'（新一代 ROS1 抑制劑）'}],
-          note:'國際指引（NCCN）將此藥列為 ROS1 抗藥後的選項，對腦部病灶尤其建議；也適用於 G2032R 等抗藥性突變。台灣健保目前查無此藥的給付條文，需自費或申請臨床試驗。' },
+          note:'國際治療指引將這個藥列為 ROS1 標靶藥失效後的選項，對腦部病灶尤其建議；對部分抗藥性突變也有效。台灣健保目前沒有給付這個藥，需自費或參加臨床試驗。' },
         { id:'ros1-chemo', title:'若產生抗藥性或多線失敗：接續化療', line:'接續治療', nhi:'NHI', drugs:[chemoBackbone(isNS)], note: chemoNote(isNS) },
       ];
     } else if(m==='BRAF'){
@@ -639,9 +639,9 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
     const steps = [surgeryStep];
     steps.push({ title:'術後輔助化療：Cisplatin + Etoposide', line:'術後輔助', phase:'adjuvant_chemo', nhi:'NHI',
       drugs:[{n:'Cisplatin + Etoposide',z:'鉑類 + 滅必治'}],
-      note:'4 個療程。SCLC 即使早期切除，仍建議全身性化療鞏固。' });
+      note:'4 個療程。小細胞肺癌即使早期切除，仍建議做全身性化療。' });
     if(st==='LOCAL' || st==='EARLY'){
-      steps.push({ title:'若病理發現 N(+)：加縱膈放療', line:'術後鞏固', phase:'consolidation',
+      steps.push({ title:'若病理發現 N(+)：加縱膈放療', line:'術後追加治療', phase:'consolidation',
         note:'術前未預期到的淋巴結轉移建議加放療。' });
     }
     if(brain==='no'){
@@ -840,7 +840,7 @@ function buildPostOpPath(t, st, m, brain, stageIn, state){
     if(!isNS) warns.push('鱗狀肺癌目前無口服標靶追加治療藥物');
     return {
       stageTxt:`${typeLabel} 局部晚期 (III) — 術後`,
-      pwTxt:'術後輔助化療 + 標靶/免疫鞏固 + 密集追蹤',
+      pwTxt:'術後輔助化療 + 標靶或免疫追加治療 + 密集追蹤',
       steps, warns,
     };
   }
@@ -1123,15 +1123,23 @@ function durvaExcludedFor(isSquamous){
 function ruleConsolidationIII(mut, isSquamous){
   const excluded = durvaExcludedFor(!!isSquamous);
   if(EGFR_CLASSIC_SET.includes(mut)){
+    // V3.9.9（內部審核 P1-2，逐字核對健保 9.80 / 115/8/21）：
+    //   9.80 的給付只有兩項 —— 第一線（EGFR ex19del/L858R 的 **IIIB、IIIC 或第Ⅳ期肺腺癌**）
+    //   與第二線（T790M）。**條文中沒有「同步化放療後鞏固」這個適應症**，IIIA 也不在期別範圍。
+    //   先前標為 nhi:'NHI' 是錯的（專案 BUG-33 其實早已記載 9.80 無術後鞏固適應症）。
+    //   改為不標健保、如實說明條文現況，申請與否由主治醫師判斷。
     return { kind:'osimertinib', drug:'Osimertinib（泰格莎）',
-      label:'CCRT 完成且未惡化 → Osimertinib 鞏固',
-      note:'EGFR exon19 缺失或 L858R：健保／NCCN 均以 Osimertinib 為鞏固治療（LAURA），不適用 Durvalumab。',
-      nhi:'NHI' };
+      label:'同步化放療完成且未惡化 → 口服標靶維持治療',
+      note:'國際治療指引對帶有 EGFR exon19 缺失或 L858R 的第三期病人，建議同步化放療後以口服標靶藥（Osimertinib）維持。' +
+           '台灣健保目前給付的是「第一線使用」與「出現 T790M 抗藥性後的第二線使用」兩種情況，' +
+           '沒有列出「化放療後維持」這一項；能不能申請需由主治醫師依您的情況判斷，必要時需自費。' +
+           '免疫維持治療（Durvalumab）的條件則明確排除 EGFR 陽性者。',
+      nhi:'' };
   }
   if(excluded.includes(mut)){   // 依組織型態：非鱗狀含 ROS1，鱗狀不含
     return { kind:'individual', drug:'',
-      label:'CCRT 完成且未惡化 → 鞏固治療需個別評估',
-      note:'健保 Durvalumab 鞏固要求' + (isSquamous ? '鱗狀癌為 EGFR／ALK 原生型' : '非鱗狀癌為 EGFR／ALK／ROS-1 原生型') + '，此類病人不符合；目前無標準鞏固方案，建議 MDT 討論。（健保第 9 章 115/8/21）',
+      label:'同步化放療完成且未惡化 → 維持治療需個別評估',
+      note:'健保的免疫維持治療要求' + (isSquamous ? '鱗狀癌沒有帶 EGFR、ALK 基因異常' : '非鱗狀癌沒有帶 EGFR、ALK、ROS-1 基因異常') + '，您的情況不符合；目前沒有標準的維持治療方案，建議與多專科團隊討論。',
       nhi:'' };
   }
   // V3.9.2（內部複審 N-06）：健保要求「EGFR/ALK/ROS-1 原生型」是需要檢測報告佐證的條件；
@@ -1139,22 +1147,22 @@ function ruleConsolidationIII(mut, isSquamous){
   //   不可直接呈現 Durvalumab 鞏固，應先導向完成分子檢測。
   if(['PENDING','DECLINED',''].includes(mut) || mut === undefined || mut === null){
     return { kind:'pending', drug:'',
-      label:'CCRT 完成且未惡化 → 鞏固治療前需先完成分子檢測',
-      note:'健保 Durvalumab 鞏固要求' + (isSquamous ? '鱗狀癌為 EGFR／ALK 原生型' : '非鱗狀癌為 EGFR／ALK／ROS-1 原生型') + '，須檢附檢測報告；若為 EGFR exon19／L858R 則改用 Osimertinib 鞏固。分子結果出來後才能確定鞏固方向。',
+      label:'同步化放療完成且未惡化 → 決定維持治療前需先完成基因檢測',
+      note:'健保的免疫維持治療要求' + (isSquamous ? '鱗狀癌沒有帶 EGFR、ALK 基因異常' : '非鱗狀癌沒有帶 EGFR、ALK、ROS-1 基因異常') + '，需要檢測報告佐證；若是 EGFR exon19 缺失或 L858R，維持治療會改用口服標靶藥。基因結果出來後才能確定方向。',
       nhi:'' };
   }
   return { kind:'durvalumab', drug:'Durvalumab（抑癌寧）',
-    label:'CCRT 完成且未惡化 → Durvalumab 鞏固',
-    note:'健保條件（115/8/21）：第三期局部晚期、無法手術切除、PD-L1 ≥1%、' + (isSquamous ? '鱗狀癌需 EGFR／ALK 原生型' : '非鱗狀癌需 EGFR／ALK／ROS-1 原生型') + '，且須於根治性同步放射治療合併至少 2 個週期含鉑化療後無惡化，至多 12 個月。',
+    label:'同步化放療完成且未惡化 → 免疫維持治療',
+    note:'健保條件：第三期、無法手術切除、免疫指標 PD-L1 ≥1%、' + (isSquamous ? '鱗狀癌需沒有帶 EGFR、ALK 基因異常' : '非鱗狀癌需沒有帶 EGFR、ALK、ROS-1 基因異常') + '，且須在同步化放療（至少 2 個療程含鉑化療）之後病情沒有惡化，最長使用 12 個月。',
     nhi:'NHI' };
 }
 
 /* 侷限期 SCLC：同步化放療後的鞏固（ADRIATIC / FDA 2024-12；台灣健保尚未給付） */
 function ruleLsSclcConsolidation(){
   return { drug:'Durvalumab（抑癌寧）',
-    label:'同步化放療後未惡化 → 免疫鞏固治療',
-    note:'依 ADRIATIC 試驗，可延長存活，最長 24 個月；若要做預防性腦部照射（PCI），一般安排在鞏固治療之前。',
-    clinical:'臨床有 category 1 證據',
+    label:'同步化放療後未惡化 → 免疫維持治療',
+    note:'研究顯示可延長存活，最長使用 24 個月；若要做預防性腦部照射，一般安排在免疫維持治療之前。',
+    clinical:'國際指引列為首選',
     nhi:'台灣健保尚未給付此適應症，需自費或申請藥廠資源' };
 }
 
@@ -1162,8 +1170,8 @@ function ruleLsSclcConsolidation(){
    不可把 reimbursement restriction 寫成 medical contraindication。 */
 function ruleEsSclcImmune(brainMet){
   if(brainMet === 'yes'){
-    return { clinical:'化療合併免疫treatment在臨床上仍可能適用，但需評估腦部病灶控制與整體狀況',
-      nhi:'健保第 9 章（115/8/21）免疫檢查點抑制劑用於擴散期小細胞肺癌，明訂限「無腦部或無脊髓轉移」者，故目前不符給付條件；若要使用需自費或另行申請',
+    return { clinical:'化療合併免疫治療在臨床上仍可能適用，但需評估腦部病灶控制與整體狀況',
+      nhi:'台灣健保的免疫治療給付限「沒有腦部或脊髓轉移」的擴散期小細胞肺癌，所以您目前不符合給付條件；若要使用需自費或另行申請',
       firstLine:'化學治療（合併腦部放射線治療）', immuneNhiEligible:false };
   }
   return { clinical:'化療合併免疫治療為標準第一線',
@@ -1174,15 +1182,15 @@ function ruleEsSclcImmune(brainMet){
    M stage 決定「局部治療策略」，不決定「要不要做 precision therapy」。 */
 function ruleMetaSystemic(mut, pdl1){
   if(EGFR_CLASSIC_SET.includes(mut)) return { kind:'targeted', label:'EGFR 標靶（依 exon19／L858R 選藥）' };
-  if(mut === 'EGFR_EX20')            return { kind:'targeted', label:'EGFR exon20：Amivantamab 合併化療（非一般 EGFR TKI）' };
-  if(mut === 'EGFR_OTHER')           return { kind:'targeted', label:'EGFR 其他型：依實際位點與 MDT 討論選藥' };
+  if(mut === 'EGFR_EX20')            return { kind:'targeted', label:'EGFR exon20 插入：Amivantamab 合併化療（與一般 EGFR 標靶藥不同）' };
+  if(mut === 'EGFR_OTHER')           return { kind:'targeted', label:'少見型 EGFR：依實際位點由多專科團隊討論選藥' };
   if(NON_EGFR_DRIVERS.includes(mut)) return { kind:'targeted', label:mut + ' 對應標靶藥' };
   if(mut === 'NEG'){
     if(pdl1 === 'HIGH') return { kind:'io',   label:'無驅動基因 + PD-L1 ≥50%：免疫單藥或免疫+化療' };
     if(pdl1 === 'LOW')  return { kind:'iochemo', label:'無驅動基因 + PD-L1 <50%：免疫 + 化療' };
     return { kind:'pending-pdl1', label:'已確認無驅動基因，建議補驗 PD-L1 再決定免疫' };
   }
-  return { kind:'pending', label:'驅動基因尚未確認：先完成分子檢測，勿逕行決定免疫治療' };
+  return { kind:'pending', label:'驅動基因尚未確認：建議先完成基因檢測，再決定要不要用免疫治療' };
 }
 
 /* ═══ V3.9.4：術前（前導）輔助治療 — 健保第 9 章 115/6/1、115/8/1 ═══
@@ -1218,29 +1226,29 @@ function ruleNeoadjuvant(state, isSquamous){
   if(egfrOrAlk){
     return { eligible:false, reason:'egfr-alk', regimen:[],
       label:'術前輔助治療：不適用',
-      note:'健保術前輔助治療（免疫合併化療）限「不具 EGFR 或 ALK 腫瘤基因異常」者，您帶有' +
+      note:'健保的術前輔助治療（免疫合併化療）限「沒有帶 EGFR 或 ALK 基因異常」的病人，您帶有' +
            (mutDisplay(mut) || '該基因異常') + '，不符合此項給付條件。' };
   }
   if(molUnknown){
     return { eligible:false, reason:'pending', regimen:[],
       label:'術前輔助治療：需先確認 EGFR／ALK 檢測結果',
-      note:'健保術前輔助治療限「不具 EGFR 或 ALK 腫瘤基因異常」者，須有檢測報告才能判定是否符合。' };
+      note:'健保的術前輔助治療限「沒有帶 EGFR 或 ALK 基因異常」的病人，需要有檢測報告才能判定是否符合。' };
   }
   // V3.9.6（G-08 附帶）：有了「是否可切除」欄位後，術前輔助不再只能標示「需 MDT 判定」
   if(state && state.resectable === 'no'){
     return { eligible:false, reason:'unresectable', regimen:[],
       label:'術前輔助治療：不適用（評估為無法手術切除）',
-      note:'術前輔助治療的目的是讓腫瘤縮小以利手術，健保條文亦限「可切除」者。若評估為無法切除，治療方向以同步化放療為主。' };
+      note:'術前輔助治療的目的是讓腫瘤縮小以利手術，健保也限「可以手術切除」的病人。若評估為無法切除，治療方向以同步化放療為主。' };
   }
   if(!isM0 || !(sizeGe4 || nodePos)){
     return { eligible:false, reason:'stage', regimen:[],
       label:'術前輔助治療：依目前分期不符合條件',
-      note:'健保術前輔助治療限「腫瘤 ≥4 公分或淋巴結陽性 N1／N2（排除 N3）且無遠端轉移（M0）」者。' };
+      note:'健保的術前輔助治療限「腫瘤 ≥4 公分或有淋巴結轉移（不含較廣泛的 N3）、且沒有遠端轉移」的病人。' };
   }
   return { eligible:true, reason:'', regimen,
     label:'手術前可先做術前輔助治療（免疫合併化療）',
-    note:'健保條件（115/6/1、115/8/1）：可切除、腫瘤 ≥4 公分或 N1／N2（排除 N3）、M0、不具 EGFR／ALK 基因異常，' +
+    note:'健保條件：可以手術切除、腫瘤 ≥4 公分或有淋巴結轉移（但不含較廣泛的 N3）、沒有遠端轉移，且沒有帶 EGFR 或 ALK 基因異常，' +
          (isSquamous ? '鱗狀癌限 Nivolumab 併含鉑化療' : '非鱗狀癌限 Nivolumab 併 Pemetrexed 及含鉑化療') +
-         '，至多 3 個療程。是否可切除需由胸腔外科與多專科團隊判定。',
+         '，最多 3 個療程。能不能手術由胸腔外科與多專科團隊判定。',
     nhi:'NHI' };
 }

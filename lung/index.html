@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="肺癌路徑">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.8</title>
+<title>彰濱秀傳癌症中心 — 肺癌臨床路徑 V1.19.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1224,8 +1224,8 @@ var APP = {};
 // ║  // ─── VERSION ───────────────────────────────────
 // MODULE_VERSION: 這個癌別模組自己的版號（獨立演進）
 // SYSTEM_VERSION: Cancer Navigation 系統總版號（打包發布用）
-const MODULE_VERSION = 'V1.19.8';
-const SYSTEM_VERSION = 'V3.9.8';
+const MODULE_VERSION = 'V1.19.9';
+const SYSTEM_VERSION = 'V3.9.9';
 
 
 // ─── Nordic Minimal SVG Icons ─────────────────────
@@ -3366,7 +3366,7 @@ function renderEduHandout(){
   });
   h += `<tr style="background:#F3F7FB"><td>${tm.caseManager.title}</td><td style="font-weight:700;color:#4A7A9E">${esc(tm.caseManager.name)}</td></tr>`;
   h += '</table>';
-  h += '<div class="edu-emg"><b><i class="fa-solid fa-circle-exclamation" style="color:var(--rose);margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸</div>';
+  h += '<div class="edu-emg"><b><i class="fa-solid fa-circle-exclamation" style="color:var(--rose);margin-right:4px"></i> 緊急回診：</b>發燒＞38.5°C、劇烈胸痛、呼吸困難、咳血、嚴重皮疹/腹瀉/黃疸 → <b>立即至急診</b></div>';
   h += '</div>';
   // Right column: goal + plan + side effects
   h += '<div class="edu-col">';
@@ -3389,7 +3389,9 @@ function renderEduHandout(){
   }
   h += '<p class="edu-note">＊實際方案由主治醫師依您的狀況調整。</p>';
   h += `<h4 class="edu-sh"><i class="fa-solid fa-shield-heart"></i> 副作用管理</h4>`;
-  h += '<p class="edu-p">持續發燒、皮膚紅腫或皮疹、腹瀉不止、呼吸急促、嚴重疲倦無法進食 → 請聯繫個管師。</p>';
+  // V3.9.9（內部審核 P1-10）：V3.7.1 已訂下原則 —— 緊急狀況的第一動作要是「24 小時找得到的管道」，
+  //   不能是特定某個人（個管師可能下班／休假／忙線，聯繫不上就延誤）。此處未套用，補正。
+  h += '<p class="edu-p">持續發燒、皮膚紅腫或皮疹、腹瀉不止、呼吸急促、嚴重疲倦無法進食 → <b>請立即至急診就醫</b>，不需等待門診時間；狀況較輕但持續不適，可於上班時間聯繫個案管理師或提前回診。</p>';
   h += '</div></div>';
   // QR card
   h += '<div class="edu-qr-card">';
